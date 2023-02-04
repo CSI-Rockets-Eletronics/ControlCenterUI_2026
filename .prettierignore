@@ -1,0 +1,2 @@
+# xstate typegen
+src/machines/**/*.typegen.ts

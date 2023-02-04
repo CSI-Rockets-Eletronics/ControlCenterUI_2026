@@ -1,0 +1,66 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended",
+    "plugin:import/recommended",
+    "plugin:react/recommended",
+    "plugin:react/jsx-runtime",
+    "plugin:react-hooks/recommended",
+    "plugin:react-perf/recommended",
+    "plugin:tailwind/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint",
+    "simple-import-sort",
+    "unused-imports",
+    "no-relative-import-paths"
+  ],
+  "rules": {
+    "sort-imports": "off", // disable built-in sort-imports (in case some other preset enables it)
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error",
+    "import/first": "error",
+    "import/newline-after-import": "error",
+    "@typescript-eslint/no-unused-vars": "off",
+    "unused-imports/no-unused-imports": "error",
+    "unused-imports/no-unused-vars": [
+      "warn",
+      {
+        "vars": "all",
+        "varsIgnorePattern": "^_",
+        "args": "after-used",
+        "argsIgnorePattern": "^_"
+      }
+    ],
+    "no-relative-import-paths/no-relative-import-paths": [
+      "error",
+      { "prefix": "@", "allowSameFolder": true }
+    ],
+    "@typescript-eslint/consistent-type-imports": [
+      "error",
+      { "fixStyle": "inline-type-imports" }
+    ],
+    "react/prop-types": "off",
+    "react-perf/jsx-no-new-object-as-prop": [
+      "error",
+      { "nativeAllowList": ["style"] }
+    ]
+  },
+  "settings": {
+    "import/resolver": {
+      "typescript": {}
+    },
+    "react": {
+      "version": "detect"
+    }
+  },
+  "ignorePatterns": ["src/machines/**/*.typegen.ts"],
+  "overrides": [
+    {
+      "files": ["src/machines/**/*.ts"],
+      "rules": { "@typescript-eslint/consistent-type-imports": "off" }
+    }
+  ]
+}
