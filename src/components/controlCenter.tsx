@@ -26,12 +26,16 @@ export default memo(function ControlCenter() {
 
   const isPreFire = isStandby || isLaunch;
 
-  const mainPanel = isPreFire ? <PreFirePanel /> : <RecoveryPanel />;
+  const mainPanel = isPreFire ? (
+    <PreFirePanel isLaunch={isLaunch} />
+  ) : (
+    <RecoveryPanel />
+  );
 
   return (
     <div className="flex flex-col h-full">
       <div>
-        <p>CURRENT STATE: {currentState}</p>
+        <p>Current State: {currentState}</p>
       </div>
       <div className="grow">{mainPanel}</div>
       <SyncStatusBanner />

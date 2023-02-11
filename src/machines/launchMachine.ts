@@ -22,7 +22,7 @@ const rangePermitIsComplete = (state: State<unknown, { type: "" }>) =>
     state.matches(`recovery.landed.rangePermit.${item}.yes`)
   );
 
-type Events = { type: Command } | { type: "RESET" };
+type Events = { type: Command } | { type: "RESET" } | { type: "REPORT_INCONSISTENT_BASELINE" };
 
 export default createMachine(
   {
@@ -34,11 +34,15 @@ export default createMachine(
     id: "launch",
     on: {
       RESET: "resetMachine",
+      REPORT_INCONSISTENT_BASELINE: "inconsistentBaseline",
     },
     initial: "resetMachine",
     states: {
       resetMachine: {
         always: "preFire",
+      },
+      inconsistentBaseline: {
+        type: "final",
       },
       preFire: {
         type: "parallel",
@@ -59,6 +63,7 @@ export default createMachine(
                 states: {
                   standby: {
                     type: "parallel",
+                    on: { STANDBY_STATE_ACTIVATE_STANDBY: undefined },
                     states: {
                       preFillChecklist: {
                         type: "parallel",
@@ -135,10 +140,10 @@ export default createMachine(
                       },
                     },
                   },
-                  keep: {},
-                  fill: {},
-                  purge: {},
-                  pulse: {},
+                  keep: { on: { STANDBY_STATE_ACTIVATE_KEEP: undefined } },
+                  fill: { on: { STANDBY_STATE_ACTIVATE_FILL: undefined } },
+                  purge: { on: { STANDBY_STATE_ACTIVATE_PURGE: undefined } },
+                  pulse: { on: { STANDBY_STATE_ACTIVATE_PULSE: undefined } },
                 },
               },
               launch: {

@@ -36,7 +36,15 @@ export default function CommandSenderProvider({ children }: Props) {
 
   useEffect(() => {
     launchActorRef.send("RESET");
-    baselineCommands.forEach((command) => launchActorRef.send(command));
+
+    for (const command of baselineCommands) {
+      if (launchActorRef.getSnapshot()?.can(command)) {
+        launchActorRef.send(command);
+      } else {
+        launchActorRef.send("REPORT_INCONSISTENT_BASELINE");
+        break;
+      }
+    }
   }, [baselineCommands, launchActorRef]);
 
   const retryBlockingSync = useCallback(() => {
