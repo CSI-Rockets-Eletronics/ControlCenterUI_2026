@@ -1,46 +1,28 @@
-import { createMachine } from "xstate";
+import { createMachine, State } from "xstate";
 
-type Events =
-  // pre-fire go poll
-  | { type: "GO_POLL_TOGGLE_SAFETY_OFFICER_1" }
-  | { type: "GO_POLL_TOGGLE_SAFETY_OFFICER_2" }
-  | { type: "GO_POLL_TOGGLE_ADVISER" }
-  | { type: "GO_POLL_TOGGLE_PROP_LEAD" }
-  | { type: "GO_POLL_TOGGLE_ELEC_LEAD" }
-  // standby pre-fill checklist
-  | { type: "PRE_FILL_CHECKLIST_TOGGLE_FILL_RELAY" }
-  | { type: "PRE_FILL_CHECKLIST_TOGGLE_ABORT_RELAY" }
-  | { type: "PRE_FILL_CHECKLIST_TOGGLE_FIRE_RELAY" }
-  | { type: "PRE_FILL_CHECKLIST_TOGGLE_FILL_SOLENOID" }
-  | { type: "PRE_FILL_CHECKLIST_TOGGLE_ABORT_SOLENOID" }
-  | { type: "PRE_FILL_CHECKLIST_TOGGLE_WET_GROUND" }
-  | { type: "PRE_FILL_CHECKLIST_TOGGLE_OPEN_TANK" }
-  // standby state selection
-  | { type: "STANDBY_STATE_ACTIVATE_STANDBY" }
-  | { type: "STANDBY_STATE_ACTIVATE_KEEP" }
-  | { type: "STANDBY_STATE_ACTIVATE_FILL" }
-  | { type: "STANDBY_STATE_ACTIVATE_PURGE" }
-  | { type: "STANDBY_STATE_ACTIVATE_PULSE" }
-  // standby go to launch mode
-  | { type: "GO_TO_LAUNCH_MODE" }
-  // launch mode command center
-  | { type: "LAUNCH_MODE_COMMAND_CENTER_EXECUTE_KEEP" }
-  | { type: "LAUNCH_MODE_COMMAND_CENTER_STOP_KEEP" }
-  | { type: "LAUNCH_MODE_COMMAND_CENTER_EXECUTE_ARM" }
-  | { type: "LAUNCH_MODE_COMMAND_CENTER_STOP_ARM" }
-  | { type: "LAUNCH_MODE_COMMAND_CENTER_EXECUTE_FIRE" }
-  | { type: "LAUNCH_MODE_COMMAND_CENTER_STOP_FIRE" }
-  // launch mode abort control
-  | { type: "LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ARM" }
-  | { type: "LAUNCH_MODE_ABORT_CONTROL_STOP_ARM" }
-  | { type: "LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ABORT" }
-  | { type: "LAUNCH_MODE_ABORT_CONTROL_STOP_ABORT" }
-  // recovery visual contact confirmation
-  | { type: "CONFIRM_VISUAL_CONTACT" }
-  // recovery range permit
-  | { type: "RANGE_PERMIT_TOGGLE_SAFETY_OFFICER_1" }
-  | { type: "RANGE_PERMIT_TOGGLE_SAFETY_OFFICER_2" }
-  | { type: "RANGE_PERMIT_TOGGLE_ADVISER" };
+import { Command } from "@/lib/command";
+
+const preFillChecklistIsComplete = (state: State<unknown, { type: "" }>) =>
+  ["fillRelay", "abortRelay", "fireRelay", "fillSolenoid", "abortSolenoid", "wetGround", "openTank"].every((item) =>
+    state.matches(`preFire.operationState.standby.standby.preFillChecklist.${item}.yes`)
+  );
+
+const readyToFire = (state: State<unknown, { type: "" }>) => {
+  const gollPollIsComplete = ["safetyOfficer1", "safetyOfficer2", "adviser", "propLead", "elecLead"].every((item) =>
+    state.matches(`preFire.goPoll.${item}.yes`)
+  );
+  const allArmed = ["commandCenter.arm", "abortControl.arm"].every((item) =>
+    state.matches(`preFire.operationState.launch.${item}.executing`)
+  );
+  return gollPollIsComplete && allArmed;
+};
+
+const rangePermitIsComplete = (state: State<unknown, { type: "" }>) =>
+  ["safetyOfficer1", "safetyOfficer2", "adviser"].every((item) =>
+    state.matches(`recovery.landed.rangePermit.${item}.yes`)
+  );
+
+type Events = { type: Command } | { type: "RESET" };
 
 export default createMachine(
   {
@@ -50,8 +32,14 @@ export default createMachine(
       events: {} as Events,
     },
     id: "launch",
-    initial: "preFire",
+    on: {
+      RESET: "resetMachine",
+    },
+    initial: "resetMachine",
     states: {
+      resetMachine: {
+        always: "preFire",
+      },
       preFire: {
         type: "parallel",
         states: {
@@ -59,6 +47,14 @@ export default createMachine(
             initial: "standby",
             states: {
               standby: {
+                on: {
+                  GO_TO_LAUNCH_MODE: "launch",
+                  STANDBY_STATE_ACTIVATE_STANDBY: ".standby",
+                  STANDBY_STATE_ACTIVATE_KEEP: ".keep",
+                  STANDBY_STATE_ACTIVATE_FILL: ".fill",
+                  STANDBY_STATE_ACTIVATE_PURGE: ".purge",
+                  STANDBY_STATE_ACTIVATE_PULSE: ".pulse",
+                },
                 initial: "standby",
                 states: {
                   standby: {
@@ -118,6 +114,25 @@ export default createMachine(
                           },
                         },
                       },
+                      preFillChecklistComplete: {
+                        initial: "no",
+                        states: {
+                          no: {
+                            always: { target: "yes", cond: "preFillChecklistIsComplete" },
+                            on: {
+                              GO_TO_LAUNCH_MODE: undefined,
+                              STANDBY_STATE_ACTIVATE_STANDBY: undefined,
+                              STANDBY_STATE_ACTIVATE_KEEP: undefined,
+                              STANDBY_STATE_ACTIVATE_FILL: undefined,
+                              STANDBY_STATE_ACTIVATE_PURGE: undefined,
+                              STANDBY_STATE_ACTIVATE_PULSE: undefined,
+                            },
+                          },
+                          yes: {
+                            always: { target: "no", cond: "preFillChecklistIsNotComplete" },
+                          },
+                        },
+                      },
                     },
                   },
                   keep: {},
@@ -132,15 +147,58 @@ export default createMachine(
                   commandCenter: {
                     type: "parallel",
                     states: {
-                      keep: { initial: "notStarted", states: { notStarted: {}, executing: {}, stopped: {} } },
-                      arm: { initial: "notStarted", states: { notStarted: {}, executing: {}, stopped: {} } },
+                      keep: {
+                        initial: "notStarted",
+                        states: {
+                          notStarted: { on: { LAUNCH_MODE_COMMAND_CENTER_EXECUTE_KEEP: "executing" } },
+                          executing: { on: { LAUNCH_MODE_COMMAND_CENTER_STOP_KEEP: "stopped" } },
+                          stopped: { on: { LAUNCH_MODE_COMMAND_CENTER_EXECUTE_KEEP: "executing" } },
+                        },
+                      },
+                      arm: {
+                        initial: "notStarted",
+                        states: {
+                          notStarted: { on: { LAUNCH_MODE_COMMAND_CENTER_EXECUTE_ARM: "executing" } },
+                          executing: { on: { LAUNCH_MODE_COMMAND_CENTER_STOP_ARM: "stopped" } },
+                          stopped: { on: { LAUNCH_MODE_COMMAND_CENTER_EXECUTE_ARM: "executing" } },
+                        },
+                      },
+                      fire: {
+                        initial: "notReady",
+                        states: {
+                          notReady: { always: { target: "notStarted", cond: "readyToFire" } },
+                          notStarted: {
+                            always: { target: "notReady", cond: "notReadyToFire" },
+                            on: { LAUNCH_MODE_COMMAND_CENTER_EXECUTE_FIRE: "executing" },
+                          },
+                          executing: { on: { LAUNCH_MODE_COMMAND_CENTER_STOP_FIRE: "stopped" } },
+                          stopped: {
+                            always: { target: "notReady", cond: "notReadyToFire" },
+                            on: { LAUNCH_MODE_COMMAND_CENTER_EXECUTE_FIRE: "executing" },
+                          },
+                        },
+                      },
                     },
                   },
                   abortControl: {
                     type: "parallel",
                     states: {
-                      arm: { initial: "notStarted", states: { notStarted: {}, executing: {}, stopped: {} } },
-                      abort: { initial: "notStarted", states: { notStarted: {}, executing: {}, stopped: {} } },
+                      arm: {
+                        initial: "notStarted",
+                        states: {
+                          notStarted: { on: { LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ARM: "executing" } },
+                          executing: { on: { LAUNCH_MODE_ABORT_CONTROL_STOP_ARM: "stopped" } },
+                          stopped: { on: { LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ARM: "executing" } },
+                        },
+                      },
+                      abort: {
+                        initial: "notStarted",
+                        states: {
+                          notStarted: { on: { LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ABORT: "executing" } },
+                          executing: { on: { LAUNCH_MODE_ABORT_CONTROL_STOP_ABORT: "stopped" } },
+                          stopped: { on: { LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ABORT: "executing" } },
+                        },
+                      },
                     },
                   },
                 },
@@ -192,7 +250,7 @@ export default createMachine(
       recovery: {
         initial: "pendingVisualContact",
         states: {
-          pendingVisualContact: {},
+          pendingVisualContact: { on: { CONFIRM_VISUAL_CONTACT: "inFlight" } },
           inFlight: {},
           landed: {
             type: "parallel",
@@ -230,7 +288,12 @@ export default createMachine(
     },
   },
   {
-    actions: {},
-    guards: {},
+    guards: {
+      preFillChecklistIsComplete: (_, __, { state }) => preFillChecklistIsComplete(state),
+      preFillChecklistIsNotComplete: (_, __, { state }) => !preFillChecklistIsComplete(state),
+      readyToFire: (_, __, { state }) => readyToFire(state),
+      notReadyToFire: (_, __, { state }) => !readyToFire(state),
+      // rangePermitIsComplete: (_, __, { state }) => rangePermitIsComplete(state),
+    },
   }
 );
