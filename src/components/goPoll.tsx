@@ -58,7 +58,7 @@ export default memo(function GoPoll() {
 
   return (
     <div>
-      <p>GO/NO GO POLL</p>
+      <p>Go/No Go Poll</p>
       <Entry
         label="SAFETY OFFICER 1"
         yes={safetyOfficer1Yes}
@@ -85,7 +85,7 @@ export default memo(function GoPoll() {
         toggleCommand="GO_POLL_TOGGLE_ELEC_LEAD"
       />
       <p>
-        {count}/{total} GO
+        {count}/{total} Go
       </p>
     </div>
   );
