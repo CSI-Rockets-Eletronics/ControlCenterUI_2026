@@ -3,7 +3,7 @@ import { assign, createMachine } from "xstate";
 import Api from "@/lib/api";
 import { Command, isValidCommand } from "@/lib/command";
 
-const TARGET = "launch_commands_test_3";
+const TARGET = "launch_commands_test_4";
 
 const SILENT_RESYNC_INTERVAL = 5000;
 

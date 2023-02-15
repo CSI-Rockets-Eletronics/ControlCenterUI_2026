@@ -176,7 +176,12 @@ export default createMachine(
                             always: { target: "notReady", cond: "notReadyToFire" },
                             on: { LAUNCH_MODE_COMMAND_CENTER_EXECUTE_FIRE: "executing" },
                           },
-                          executing: { on: { LAUNCH_MODE_COMMAND_CENTER_STOP_FIRE: "stopped" } },
+                          executing: {
+                            on: {
+                              LAUNCH_MODE_COMMAND_CENTER_STOP_FIRE: "stopped",
+                              GO_TO_RECOVERY_MODE: "#launch.recovery",
+                            },
+                          },
                           stopped: {
                             always: { target: "notReady", cond: "notReadyToFire" },
                             on: { LAUNCH_MODE_COMMAND_CENTER_EXECUTE_FIRE: "executing" },

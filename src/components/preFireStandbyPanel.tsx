@@ -25,9 +25,9 @@ export default memo(function PreFireStandbyPanel() {
       {standbyActive && <PreFillChecklist />}
       <StandbyStateSelection />
 
-      <button disabled={!canGoToLaunchMode} onClick={goToLaunchMode}>
-        GO TO LAUNCH MODE
-      </button>
+      {canGoToLaunchMode && (
+        <button onClick={goToLaunchMode}>GO TO LAUNCH MODE</button>
+      )}
     </div>
   );
 });

@@ -19,7 +19,7 @@ const COMMANDS = [
   "STANDBY_STATE_ACTIVATE_FILL",
   "STANDBY_STATE_ACTIVATE_PURGE",
   "STANDBY_STATE_ACTIVATE_PULSE",
-  // standby go to launch mode
+  // standby mode to launch mode
   "GO_TO_LAUNCH_MODE",
   // launch mode command center
   "LAUNCH_MODE_COMMAND_CENTER_EXECUTE_KEEP",
@@ -33,6 +33,8 @@ const COMMANDS = [
   "LAUNCH_MODE_ABORT_CONTROL_STOP_ARM",
   "LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ABORT",
   "LAUNCH_MODE_ABORT_CONTROL_STOP_ABORT",
+  // launch mode to recovery mode
+  "GO_TO_RECOVERY_MODE",
   // recovery visual contact confirmation
   "CONFIRM_VISUAL_CONTACT",
   // recovery range permit
