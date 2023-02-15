@@ -42,6 +42,7 @@
       "error",
       { "fixStyle": "inline-type-imports" }
     ],
+    "import/no-default-export": "error",
     "react/prop-types": "off",
     "react-perf/jsx-no-new-object-as-prop": [
       "error",

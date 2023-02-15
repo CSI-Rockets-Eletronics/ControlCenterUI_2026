@@ -42,7 +42,7 @@ const Entry = memo(function Entry({
   );
 });
 
-export default memo(function StandbyStateSelection() {
+export const StandbyStateSelection = memo(function StandbyStateSelection() {
   const standbyActive = useLaunchMachineSelector((state) =>
     state.matches("preFire.operationState.standby.standby")
   );

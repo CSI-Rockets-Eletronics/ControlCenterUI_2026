@@ -1,11 +1,11 @@
 import { memo, useCallback } from "react";
 
 import { useCommandSender } from "./commandSenderProvider";
-import LaunchAbortControl from "./launchAbortControl";
-import LaunchCommandCenter from "./launchCommandCenter";
+import { LaunchAbortControl } from "./launchAbortControl";
+import { LaunchCommandCenter } from "./launchCommandCenter";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
-export default memo(function PreFireLaunchPanel() {
+export const PreFireLaunchPanel = memo(function PreFireLaunchPanel() {
   const canGoToRecoveryMode = useLaunchMachineSelector((state) =>
     state.can("GO_TO_RECOVERY_MODE")
   );

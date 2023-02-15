@@ -1,5 +1,5 @@
 import { memo } from "react";
 
-export default memo(function RecoveryPanel() {
+export const RecoveryPanel = memo(function RecoveryPanel() {
   return <div></div>;
 });

@@ -24,7 +24,7 @@ const rangePermitIsComplete = (state: State<unknown, { type: "" }>) =>
 
 type Events = { type: Command } | { type: "RESET" } | { type: "REPORT_INCONSISTENT_BASELINE" };
 
-export default createMachine(
+export const launchMachine = createMachine(
   {
     tsTypes: {} as import("./launchMachine.typegen").Typegen0,
     predictableActionArguments: true,

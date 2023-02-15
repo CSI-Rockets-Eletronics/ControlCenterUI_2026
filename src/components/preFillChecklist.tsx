@@ -29,7 +29,7 @@ const Entry = memo(function Entry({
   );
 });
 
-export default memo(function PreFillChecklist() {
+export const PreFillChecklist = memo(function PreFillChecklist() {
   const fillRelayYes = useLaunchMachineSelector((state) =>
     state.matches(
       "preFire.operationState.standby.standby.preFillChecklist.fillRelay.yes"

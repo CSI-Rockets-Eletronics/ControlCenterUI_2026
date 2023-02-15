@@ -5,7 +5,7 @@ export interface Message {
   data: unknown;
 }
 
-export default class Api {
+export class Api {
   constructor(
     private readonly stationId: string,
     private readonly sessionId: string

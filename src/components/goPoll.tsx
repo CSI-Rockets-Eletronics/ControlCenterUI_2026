@@ -29,7 +29,7 @@ const Entry = memo(function Entry({
   );
 });
 
-export default memo(function GoPoll() {
+export const GoPoll = memo(function GoPoll() {
   const safetyOfficer1Yes = useLaunchMachineSelector((state) =>
     state.matches("preFire.goPoll.safetyOfficer1.yes")
   );

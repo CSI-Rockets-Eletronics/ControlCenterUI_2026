@@ -10,7 +10,7 @@ import {
 import { type StateFrom } from "xstate";
 
 import { type Command } from "@/lib/command";
-import commandSenderMachine from "@/machines/commandSenderMachine";
+import { commandSenderMachine } from "@/machines/commandSenderMachine";
 
 import { useLaunchMachineActorRef } from "./launchMachineProvider";
 
@@ -27,7 +27,7 @@ interface Props {
   children: ReactNode;
 }
 
-export default function CommandSenderProvider({ children }: Props) {
+export function CommandSenderProvider({ children }: Props) {
   const launchActorRef = useLaunchMachineActorRef();
 
   const [state, send] = useMachine(commandSenderMachine);

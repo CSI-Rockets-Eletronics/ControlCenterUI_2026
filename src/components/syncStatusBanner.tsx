@@ -3,7 +3,7 @@ import { memo } from "react";
 import { useCommandSender } from "./commandSenderProvider";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
-export default memo(function SyncStatusBanner() {
+export const SyncStatusBanner = memo(function SyncStatusBanner() {
   const { state, retryBlockingSync } = useCommandSender();
 
   const inconsistentBaseline = useLaunchMachineSelector((state) =>

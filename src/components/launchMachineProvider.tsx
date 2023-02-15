@@ -1,8 +1,10 @@
 import { createActorContext } from "@xstate/react";
 
-import launchMachine from "@/machines/launchMachine";
+import { launchMachine } from "@/machines/launchMachine";
 
 export const LaunchMachineContext = createActorContext(launchMachine);
+
+export const LaunchMachineProvider = LaunchMachineContext.Provider;
 
 export const useLaunchMachineSelector = LaunchMachineContext.useSelector;
 
@@ -11,5 +13,3 @@ export const useLaunchMachineSelector = LaunchMachineContext.useSelector;
  * `useCommandSender()`.
  */
 export const useLaunchMachineActorRef = LaunchMachineContext.useActorRef;
-
-export default LaunchMachineContext.Provider;

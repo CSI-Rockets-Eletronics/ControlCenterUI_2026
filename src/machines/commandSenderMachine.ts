@@ -1,6 +1,6 @@
 import { assign, createMachine } from "xstate";
 
-import Api from "@/lib/api";
+import { Api } from "@/lib/api";
 import { Command, isValidCommand } from "@/lib/command";
 
 const TARGET = "launch_commands_test_4";
@@ -18,7 +18,7 @@ type Events =
       command: Command;
     };
 
-export default createMachine(
+export const commandSenderMachine = createMachine(
   {
     tsTypes: {} as import("./commandSenderMachine.typegen").Typegen0,
     predictableActionArguments: true,

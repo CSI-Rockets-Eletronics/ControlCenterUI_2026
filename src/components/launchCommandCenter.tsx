@@ -1,11 +1,12 @@
 import { memo } from "react";
 
-import LaunchControlEntry, {
+import {
+  LaunchControlEntry,
   type LaunchControlEntryState,
 } from "./launchControlEntry";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
-export default memo(function LaunchCommandCenter() {
+export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
   const keepState: LaunchControlEntryState = useLaunchMachineSelector((state) =>
     state.matches("preFire.operationState.launch.commandCenter.keep.executing")
       ? "executing"

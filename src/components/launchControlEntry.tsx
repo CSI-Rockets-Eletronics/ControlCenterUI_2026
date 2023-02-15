@@ -19,7 +19,7 @@ interface Props {
   stopCommand: Command;
 }
 
-export default memo(function LaunchControlEntry({
+export const LaunchControlEntry = memo(function LaunchControlEntry({
   label,
   state,
   executeCommand,

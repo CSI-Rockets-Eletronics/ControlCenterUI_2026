@@ -1,11 +1,11 @@
 import { memo } from "react";
 
 import { useLaunchMachineSelector } from "./launchMachineProvider";
-import PreFirePanel from "./preFirePanel";
-import RecoveryPanel from "./recoveryPanel";
-import SyncStatusBanner from "./syncStatusBanner";
+import { PreFirePanel } from "./preFirePanel";
+import { RecoveryPanel } from "./recoveryPanel";
+import { SyncStatusBanner } from "./syncStatusBanner";
 
-export default memo(function ControlCenter() {
+export const ControlCenter = memo(function ControlCenter() {
   const isStandby = useLaunchMachineSelector((state) =>
     state.matches("preFire.operationState.standby")
   );

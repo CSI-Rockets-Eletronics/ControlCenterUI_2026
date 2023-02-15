@@ -2,10 +2,10 @@ import { memo, useCallback } from "react";
 
 import { useCommandSender } from "./commandSenderProvider";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
-import PreFillChecklist from "./preFillChecklist";
-import StandbyStateSelection from "./standbyStateSelection";
+import { PreFillChecklist } from "./preFillChecklist";
+import { StandbyStateSelection } from "./standbyStateSelection";
 
-export default memo(function PreFireStandbyPanel() {
+export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
   const standbyActive = useLaunchMachineSelector((state) =>
     state.matches("preFire.operationState.standby.standby")
   );
