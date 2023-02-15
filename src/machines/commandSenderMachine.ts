@@ -115,7 +115,13 @@ export const commandSenderMachine = createMachine(
     services: {
       fetchBaselineCommands: async () => {
         const messages = await tempGlobalApi.listMessages({ target: TARGET });
-        return messages.map((message) => message.data).filter(isValidCommand);
+        const allCommands = messages.map((message) => message.data);
+        const validCommands = allCommands.filter(isValidCommand);
+        const invalidCommands = allCommands.filter((command) => !isValidCommand(command));
+        if (invalidCommands.length > 0) {
+          console.warn("Invalid commands found in message history", invalidCommands);
+        }
+        return validCommands;
       },
       sendCommand: async (context) => {
         const commandToSend = context.sendQueue[0];
