@@ -1,14 +1,11 @@
 import { assign, createMachine } from "xstate";
 
-import { Api } from "@/lib/api";
+import { tempGlobalApi } from "@/lib/api";
 import { Command, isValidCommand } from "@/lib/command";
 
-const TARGET = "launch_commands_test_4";
+const TARGET = "launch_commands_test_5";
 
 const SILENT_RESYNC_INTERVAL = 5000;
-
-// TODO chage ids
-const api = new Api("cl9vt57vf0000qw4nmwr6glcm", "cl9vtcmg30009p94ngwhb92jx");
 
 type Events =
   | { type: "RETRY_BLOCKING_SYNC" }
@@ -117,12 +114,16 @@ export const commandSenderMachine = createMachine(
     },
     services: {
       fetchBaselineCommands: async () => {
-        const messages = await api.listMessages(TARGET);
+        const messages = await tempGlobalApi.listMessages({ target: TARGET });
         return messages.map((message) => message.data).filter(isValidCommand);
       },
       sendCommand: async (context) => {
         const commandToSend = context.sendQueue[0];
-        const res = await api.createMessage(TARGET, commandToSend, context.lastCommandReceivedAt);
+        const res = await tempGlobalApi.createMessage({
+          target: TARGET,
+          data: commandToSend,
+          assertLastMessageReceivedAt: context.lastCommandReceivedAt,
+        });
         return res;
       },
     },
