@@ -89,7 +89,7 @@ export const PreFillChecklist = memo(function PreFillChecklist() {
   );
 
   return (
-    <Panel>
+    <Panel className="h-full">
       <p className="text-lg text-gray-text">Pre-Fill Checklist</p>
       <div className="flex flex-col mt-4 gap-3">
         <Entry

@@ -20,9 +20,9 @@ export const CheckboxEntry = memo(function CheckboxEntry({
     <label
       className={twMerge(
         "flex items-center border rounded-lg cursor-pointer text-gray-text bg-gray-el-bg border-gray-border hover:bg-gray-el-bg-hover active:bg-gray-el-bg-active",
+        disabled && "opacity-50 pointer-events-none",
         size === "lg" && "p-4 gap-6 text-base",
-        size === "sm" && "px-3 py-2 gap-5 text-sm",
-        disabled && "opacity-50 pointer-events-none"
+        size === "sm" && "px-3 py-2 gap-5 text-sm"
       )}
     >
       <input

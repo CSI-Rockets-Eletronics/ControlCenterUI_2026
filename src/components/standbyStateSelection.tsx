@@ -4,6 +4,7 @@ import { type Command } from "@/lib/command";
 
 import { useCommandSender } from "./commandSenderProvider";
 import { Panel } from "./design/panel";
+import { StatusButton } from "./design/statusButton";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
 const Entry = memo(function Entry({
@@ -17,29 +18,22 @@ const Entry = memo(function Entry({
 }) {
   const { sendCommand } = useCommandSender();
 
-  const canSend = useLaunchMachineSelector((state) =>
-    state.can(activateCommand)
+  const disabled = useLaunchMachineSelector(
+    (state) => !state.can(activateCommand)
   );
 
-  const disabled = !active && !canSend;
-
-  const handleChange = useCallback(() => {
+  const handleClick = useCallback(() => {
     sendCommand(activateCommand);
-    console.log(activateCommand);
   }, [activateCommand, sendCommand]);
 
   return (
-    <div>
-      <label>
-        {label}:{" "}
-        <input
-          type="radio"
-          checked={active}
-          disabled={disabled}
-          onChange={handleChange}
-        />
-      </label>
-    </div>
+    <StatusButton
+      status={active ? "green" : "none"}
+      disabled={disabled}
+      onClick={handleClick}
+    >
+      {label}
+    </StatusButton>
   );
 });
 
@@ -60,9 +54,8 @@ export const StandbyStateSelection = memo(function StandbyStateSelection() {
     state.matches("preFire.operationState.standby.pulse")
   );
 
-  // show a radio button for each state
   return (
-    <Panel>
+    <Panel className="flex flex-col h-full gap-4">
       <p className="text-lg text-gray-text">State Selection</p>
       <Entry
         label="STANDBY"
