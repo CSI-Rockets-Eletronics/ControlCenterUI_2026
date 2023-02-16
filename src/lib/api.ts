@@ -89,3 +89,6 @@ export const tempGlobalApi = new Api(
   "cl9vt57vf0000qw4nmwr6glcm",
   "cl9vtcmg30009p94ngwhb92jx"
 );
+
+// @ts-expect-error for testing only
+window.api = tempGlobalApi; // TODO remove
