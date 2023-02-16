@@ -1,6 +1,7 @@
 import { memo, useCallback } from "react";
 
 import { useCommandSender } from "./commandSenderProvider";
+import { Panel } from "./design/panel";
 import { LaunchAbortControl } from "./launchAbortControl";
 import { LaunchCommandCenter } from "./launchCommandCenter";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
@@ -17,7 +18,7 @@ export const PreFireLaunchPanel = memo(function PreFireLaunchPanel() {
   }, [sendCommand]);
 
   return (
-    <div>
+    <Panel>
       <LaunchCommandCenter />
       <LaunchAbortControl />
 
@@ -27,6 +28,6 @@ export const PreFireLaunchPanel = memo(function PreFireLaunchPanel() {
           <button onClick={goToRecoveryMode}>GO TO RECOVERY MODE</button>
         </div>
       )}
-    </div>
+    </Panel>
   );
 });

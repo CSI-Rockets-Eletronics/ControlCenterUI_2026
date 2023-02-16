@@ -20,13 +20,13 @@ const radixColorOptions = {
     "el-bg": 3,
     "el-bg-hover": 4,
     "el-bg-active": 5,
-    "border-light": 6,
+    "border-dim": 6,
     border: 7,
     "border-hover": 8,
     solid: 9,
     "solid-hover": 10,
     "solid-active": 11,
-    "text-light": 11,
+    "text-dim": 11,
     text: 12,
   },
 };
@@ -57,9 +57,9 @@ module.exports = {
       sans: ["B612", "sans-serif"],
     },
     fontSize: {
-      sm: fontSize["3xl"],
-      base: fontSize["4xl"],
-      lg: fontSize["5xl"],
+      sm: fontSize["2xl"],
+      base: fontSize["3xl"],
+      lg: fontSize["4xl"],
     },
     colors: {
       ...Object.fromEntries(

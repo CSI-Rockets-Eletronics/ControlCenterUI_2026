@@ -1,8 +1,10 @@
 import { memo, useCallback } from "react";
+import { twMerge } from "tailwind-merge";
 
 import { type Command } from "@/lib/command";
 
 import { useCommandSender } from "./commandSenderProvider";
+import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
 const Entry = memo(function Entry({
@@ -21,10 +23,34 @@ const Entry = memo(function Entry({
   }, [sendCommand, toggleCommand]);
 
   return (
-    <div>
-      <label>
-        {label}: <input type="checkbox" checked={yes} onChange={handleChange} />
-      </label>
+    <label className="flex items-center p-4 border rounded-lg cursor-pointer text-gray-text gap-6 bg-gray-el-bg border-gray-border hover:bg-gray-el-bg-hover active:bg-gray-el-bg-active">
+      <input
+        type="checkbox"
+        className="w-8 h-8 rounded-full appearance-none checked:bg-green-solid bg-red-solid shrink-0"
+        checked={yes}
+        onChange={handleChange}
+      />
+      {label}
+    </label>
+  );
+});
+
+const ProgressBar = memo(function ProgressBar({
+  progress,
+}: {
+  progress: number;
+}) {
+  const isComplete = progress >= 1;
+
+  return (
+    <div className="h-8 overflow-hidden rounded-lg bg-gray-fallback-7">
+      <div
+        style={{ width: `${progress * 100}%` }}
+        className={twMerge(
+          "h-full",
+          isComplete ? "bg-green-solid" : "bg-red-solid"
+        )}
+      />
     </div>
   );
 });
@@ -57,8 +83,8 @@ export const GoPoll = memo(function GoPoll() {
   const total = yesArray.length;
 
   return (
-    <div>
-      <p>Go/No Go Poll</p>
+    <Panel className="flex flex-col gap-4">
+      <p className="text-lg text-gray-text">Go/No Go Poll</p>
       <Entry
         label="SAFETY OFFICER 1"
         yes={safetyOfficer1Yes}
@@ -84,9 +110,11 @@ export const GoPoll = memo(function GoPoll() {
         yes={elecLeadYes}
         toggleCommand="GO_POLL_TOGGLE_ELEC_LEAD"
       />
-      <p>
+      <div className="flex-1" />
+      <p className="text-gray-text">
         {count}/{total} Go
       </p>
-    </div>
+      <ProgressBar progress={count / total} />
+    </Panel>
   );
 });

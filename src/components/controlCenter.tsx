@@ -4,40 +4,21 @@ import { useLaunchMachineSelector } from "./launchMachineProvider";
 import { PreFirePanel } from "./preFirePanel";
 import { RecoveryPanel } from "./recoveryPanel";
 import { SyncStatusBanner } from "./syncStatusBanner";
+import { TopStatusPanel } from "./topStatusPanel";
 
 export const ControlCenter = memo(function ControlCenter() {
-  const isStandby = useLaunchMachineSelector((state) =>
-    state.matches("preFire.operationState.standby")
-  );
-  const isLaunch = useLaunchMachineSelector((state) =>
-    state.matches("preFire.operationState.launch")
-  );
-  const isRecovery = useLaunchMachineSelector((state) =>
-    state.matches("recovery")
+  const isPreFire = useLaunchMachineSelector(
+    (state) =>
+      state.matches("preFire.operationState.standby") ||
+      state.matches("preFire.operationState.launch")
   );
 
-  const currentState = isStandby
-    ? "STANDBY"
-    : isLaunch
-    ? "LAUNCH"
-    : isRecovery
-    ? "RECOVERY"
-    : "UNKNOWN";
-
-  const isPreFire = isStandby || isLaunch;
-
-  const mainPanel = isPreFire ? (
-    <PreFirePanel isLaunch={isLaunch} />
-  ) : (
-    <RecoveryPanel />
-  );
+  const mainPanel = isPreFire ? <PreFirePanel /> : <RecoveryPanel />;
 
   return (
-    <div className="flex flex-col h-full">
-      <div>
-        <p>Current State: {currentState}</p>
-      </div>
-      <div className="grow">{mainPanel}</div>
+    <div className="h-full p-4 grid grid-rows-[auto,1fr] gap-4">
+      <TopStatusPanel />
+      {mainPanel}
       <SyncStatusBanner />
     </div>
   );

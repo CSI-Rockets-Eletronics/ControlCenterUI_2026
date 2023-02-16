@@ -1,6 +1,7 @@
 import { memo, useCallback } from "react";
 
 import { useCommandSender } from "./commandSenderProvider";
+import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 import { PreFillChecklist } from "./preFillChecklist";
 import { StandbyStateSelection } from "./standbyStateSelection";
@@ -21,13 +22,13 @@ export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
   }, [sendCommand]);
 
   return (
-    <div>
+    <Panel>
       {standbyActive && <PreFillChecklist />}
       <StandbyStateSelection />
 
       {canGoToLaunchMode && (
         <button onClick={goToLaunchMode}>GO TO LAUNCH MODE</button>
       )}
-    </div>
+    </Panel>
   );
 });
