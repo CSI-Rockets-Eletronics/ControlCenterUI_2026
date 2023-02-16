@@ -1,5 +1,7 @@
-import { memo } from "react";
+import { memo, useCallback } from "react";
 
+import { useCommandSender } from "./commandSenderProvider";
+import { Button } from "./design/button";
 import { Panel } from "./design/panel";
 import {
   LaunchControlEntry,
@@ -40,6 +42,16 @@ export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
       : "not-started"
   );
 
+  const { sendCommand } = useCommandSender();
+
+  const canGoToRecoveryMode = useLaunchMachineSelector((state) =>
+    state.can("GO_TO_RECOVERY_MODE")
+  );
+
+  const goToRecoveryMode = useCallback(() => {
+    sendCommand("GO_TO_RECOVERY_MODE");
+  }, [sendCommand]);
+
   return (
     <Panel className="flex flex-col gap-3">
       <p className="text-lg text-gray-text">Command Center</p>
@@ -61,6 +73,17 @@ export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
         executeCommand="LAUNCH_MODE_COMMAND_CENTER_EXECUTE_FIRE"
         stopCommand="LAUNCH_MODE_COMMAND_CENTER_STOP_FIRE"
       />
+
+      {canGoToRecoveryMode && (
+        <div className="flex items-center mt-4 gap-4">
+          <p className="flex-1 text-lg font-bold text-green-text-dim">
+            LIFT OFF!!!
+          </p>
+          <Button color="green" onClick={goToRecoveryMode}>
+            GO TO RECOVERY MODE
+          </Button>
+        </div>
+      )}
     </Panel>
   );
 });
