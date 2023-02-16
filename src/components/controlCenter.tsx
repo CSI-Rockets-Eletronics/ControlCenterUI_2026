@@ -3,7 +3,6 @@ import { memo } from "react";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 import { PreFirePanel } from "./preFirePanel";
 import { RecoveryPanel } from "./recoveryPanel";
-import { SyncStatusBanner } from "./syncStatusBanner";
 import { TopStatusPanel } from "./topStatusPanel";
 
 export const ControlCenter = memo(function ControlCenter() {
@@ -19,9 +18,6 @@ export const ControlCenter = memo(function ControlCenter() {
     <div className="h-full p-4 grid grid-rows-[auto,1fr] gap-4">
       <TopStatusPanel />
       {mainPanel}
-
-      {/* TODO move */}
-      <SyncStatusBanner />
     </div>
   );
 });

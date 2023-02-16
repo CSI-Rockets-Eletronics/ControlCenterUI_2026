@@ -28,7 +28,7 @@ const Entry = memo(function Entry({
 
   return (
     <StatusButton
-      status={active ? "green" : "none"}
+      color={active ? "green" : "none"}
       disabled={disabled}
       onClick={handleClick}
     >

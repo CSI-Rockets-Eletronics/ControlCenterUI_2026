@@ -2,14 +2,14 @@ import { memo } from "react";
 import { twMerge } from "tailwind-merge";
 
 interface Props {
-  status: "none" | "green" | "red";
+  color: "none" | "green" | "red";
   disabled?: boolean;
   onClick?: () => void;
   children?: string;
 }
 
 export const StatusButton = memo(function StatusButton({
-  status,
+  color,
   disabled = false,
   onClick,
   children,
@@ -20,9 +20,9 @@ export const StatusButton = memo(function StatusButton({
       className={twMerge(
         "block p-2 rounded-lg border-2 bg-gray-el-bg hover:bg-gray-el-bg-hover active:bg-gray-el-bg-active disabled:opacity-50",
         disabled && "opacity-50 pointer-events-none",
-        status === "none" && "text-gray-text",
-        status === "green" && "text-green-solid",
-        status === "red" && "text-red-solid"
+        color === "none" && "text-gray-text",
+        color === "green" && "text-green-solid",
+        color === "red" && "text-red-solid"
       )}
       disabled={disabled}
       onClick={onClick}
