@@ -4,11 +4,11 @@ const radixColors = require("@radix-ui/colors");
 const radixColorOptions = {
   // semantic colors
   colorMappings: {
-    gray: "sand",
-    red: "tomato",
-    orange: "orange",
-    yellow: "yellow",
-    green: "grass",
+    gray: "sandDark",
+    red: "tomatoDark",
+    orange: "orangeDark",
+    yellow: "yellowDark",
+    green: "grassDark",
   },
   stepMappings: {
     // background
@@ -55,7 +55,6 @@ module.exports = {
       sans: ["B612", "sans-serif"],
     },
     colors: {
-      white: "#ffffff",
       ...Object.fromEntries(
         Object.entries(radixColorOptions.colorMappings).map(
           ([name, radixName]) => [name, toTailwindColor(radixColors[radixName])]
