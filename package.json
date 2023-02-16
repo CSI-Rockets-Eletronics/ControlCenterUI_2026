@@ -26,6 +26,7 @@
     "xstate": "^4.35.4"
   },
   "devDependencies": {
+    "@radix-ui/colors": "^0.1.8",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
     "@typescript-eslint/eslint-plugin": "^5.50.0",

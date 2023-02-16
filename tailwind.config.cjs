@@ -1,18 +1,66 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
+const radixColors = require("@radix-ui/colors");
+
+const radixColorOptions = {
+  // semantic colors
+  colorMappings: {
+    gray: "sand",
+    red: "tomato",
+    orange: "orange",
+    yellow: "yellow",
+    green: "grass",
+  },
+  stepMappings: {
+    // background
+    "bg-1": 1,
+    "bg-2": 2,
+    // element background
+    "el-bg": 3,
+    "el-bg-hover": 4,
+    "el-bg-active": 5,
+    "border-light": 6,
+    border: 7,
+    "border-hover": 8,
+    solid: 9,
+    "solid-hover": 10,
+    "solid-active": 11,
+    "text-light": 11,
+    text: 12,
+  },
+};
+
+function toTailwindColor(radixColor) {
+  const numberSteps = Object.fromEntries(
+    Object.entries(radixColor).map(([k, v]) => [k.replace(/[^\d]+/, ""), v])
+  );
+
+  const steps = {};
+  // prefer semantic colors
+  for (const [k, v] of Object.entries(radixColorOptions.stepMappings)) {
+    steps[k] = numberSteps[v];
+  }
+  // discourage the use of fallback colors
+  for (const [k, v] of Object.entries(numberSteps)) {
+    steps[`fallback-${k}`] = v;
+  }
+  return steps;
+}
+
 /** @type {import('tailwindcss').Config} */
 // eslint-disable-next-line no-undef
 module.exports = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
+    fontFamily: {
+      sans: ["B612", "sans-serif"],
+    },
     colors: {
-      transparent: "transparent",
-      current: "currentColor",
       white: "#ffffff",
-      black: "#000000",
-      gray: "#c1b6b6",
-      red: "#ff0000",
-      orange: "#ff5c00",
-      yellow: "#ffe600",
-      green: "#00ac1c",
+      ...Object.fromEntries(
+        Object.entries(radixColorOptions.colorMappings).map(
+          ([name, radixName]) => [name, toTailwindColor(radixColors[radixName])]
+        )
+      ),
     },
     extend: {},
   },
