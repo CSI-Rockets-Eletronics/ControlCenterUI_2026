@@ -19,6 +19,8 @@ export const ControlCenter = memo(function ControlCenter() {
     <div className="h-full p-4 grid grid-rows-[auto,1fr] gap-4">
       <TopStatusPanel />
       {mainPanel}
+
+      {/* TODO move */}
       <SyncStatusBanner />
     </div>
   );

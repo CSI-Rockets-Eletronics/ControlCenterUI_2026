@@ -4,6 +4,7 @@ import { twMerge } from "tailwind-merge";
 import { type Command } from "@/lib/command";
 
 import { useCommandSender } from "./commandSenderProvider";
+import { CheckboxEntry } from "./design/checkboxEntry";
 import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
@@ -23,15 +24,12 @@ const Entry = memo(function Entry({
   }, [sendCommand, toggleCommand]);
 
   return (
-    <label className="flex items-center p-4 border rounded-lg cursor-pointer text-gray-text gap-6 bg-gray-el-bg border-gray-border hover:bg-gray-el-bg-hover active:bg-gray-el-bg-active">
-      <input
-        type="checkbox"
-        className="w-8 h-8 rounded-full appearance-none checked:bg-green-solid bg-red-solid shrink-0"
-        checked={yes}
-        onChange={handleChange}
-      />
-      {label}
-    </label>
+    <CheckboxEntry
+      size="lg"
+      label={label}
+      checked={yes}
+      onChange={handleChange}
+    />
   );
 });
 

@@ -3,6 +3,7 @@ import { memo, useCallback } from "react";
 import { type Command } from "@/lib/command";
 
 import { useCommandSender } from "./commandSenderProvider";
+import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
 const Entry = memo(function Entry({
@@ -61,8 +62,8 @@ export const StandbyStateSelection = memo(function StandbyStateSelection() {
 
   // show a radio button for each state
   return (
-    <div>
-      <p>State Selection</p>
+    <Panel>
+      <p className="text-lg text-gray-text">State Selection</p>
       <Entry
         label="STANDBY"
         active={standbyActive}
@@ -88,6 +89,6 @@ export const StandbyStateSelection = memo(function StandbyStateSelection() {
         active={pulseActive}
         activateCommand="STANDBY_STATE_ACTIVATE_PULSE"
       />
-    </div>
+    </Panel>
   );
 });

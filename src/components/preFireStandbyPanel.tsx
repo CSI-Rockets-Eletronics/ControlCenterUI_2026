@@ -22,11 +22,11 @@ export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
   }, [sendCommand]);
 
   return (
-    <Panel>
-      {standbyActive && <PreFillChecklist />}
+    <Panel className="grid grid-cols-[2fr,1fr] gap-4">
+      <PreFillChecklist />
       <StandbyStateSelection />
 
-      {canGoToLaunchMode && (
+      {canGoToLaunchMode && ( // TODO move
         <button onClick={goToLaunchMode}>GO TO LAUNCH MODE</button>
       )}
     </Panel>
