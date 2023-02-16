@@ -1,5 +1,6 @@
 import { memo } from "react";
 
+import { Panel } from "./design/panel";
 import {
   LaunchControlEntry,
   type LaunchControlEntryState,
@@ -29,8 +30,8 @@ export const LaunchAbortControl = memo(function LaunchAbortControl() {
   );
 
   return (
-    <div>
-      <p>Abort Control</p>
+    <Panel className="flex flex-col gap-3">
+      <p className="text-lg text-gray-text">Abort Control</p>
       <LaunchControlEntry
         label="ARM"
         state={armState}
@@ -43,6 +44,6 @@ export const LaunchAbortControl = memo(function LaunchAbortControl() {
         executeCommand="LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ABORT"
         stopCommand="LAUNCH_MODE_ABORT_CONTROL_STOP_ABORT"
       />
-    </div>
+    </Panel>
   );
 });

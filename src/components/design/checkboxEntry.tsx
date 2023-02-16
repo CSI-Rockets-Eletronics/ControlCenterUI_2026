@@ -19,7 +19,7 @@ export const CheckboxEntry = memo(function CheckboxEntry({
   return (
     <label
       className={twMerge(
-        "flex items-center border rounded-lg cursor-pointer text-gray-text bg-gray-el-bg border-gray-border hover:bg-gray-el-bg-hover active:bg-gray-el-bg-active",
+        "flex items-center rounded-lg cursor-pointer text-gray-text bg-gray-el-bg border border-gray-border hover:bg-gray-el-bg-hover active:bg-gray-el-bg-active",
         disabled && "opacity-50 pointer-events-none",
         size === "lg" && "p-4 gap-6 text-base",
         size === "sm" && "px-3 py-2 gap-5 text-sm"
@@ -28,7 +28,7 @@ export const CheckboxEntry = memo(function CheckboxEntry({
       <input
         type="checkbox"
         className={twMerge(
-          "rounded-full appearance-none checked:bg-green-solid bg-red-solid shrink-0",
+          "shrink-0 rounded-full appearance-none bg-red-solid checked:bg-green-solid",
           size === "lg" && "w-8 h-8",
           size === "sm" && "w-6 h-6"
         )}

@@ -4,6 +4,7 @@ import { twMerge } from "tailwind-merge";
 import { type Command } from "@/lib/command";
 
 import { useCommandSender } from "./commandSenderProvider";
+import { StatusButton } from "./design/statusButton";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
 export type LaunchControlEntryState =
@@ -45,22 +46,26 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
   }
 
   return (
-    <div>
-      <p
+    <div className="flex items-center p-4 border rounded-lg gap-4 bg-gray-el-bg border-gray-border">
+      <div
         className={twMerge(
-          state === "not-started" && "text-gray",
-          state === "executing" && "text-green",
-          state === "stopped" && "text-red"
+          "shrink-0 w-8 h-8 mr-2 rounded-full appearance-none",
+          state === "not-started" && "bg-gray-solid",
+          state === "executing" && "bg-green-solid",
+          state === "stopped" && "bg-red-solid"
         )}
+      />
+      <p className="flex-1 text-gray-text">{label}</p>
+      <StatusButton
+        color="green"
+        disabled={!canExecute}
+        onClick={handleExecute}
       >
-        {label}
-      </p>
-      <button className="block" disabled={!canExecute} onClick={handleExecute}>
         EXECUTE
-      </button>
-      <button className="block" disabled={!canStop} onClick={handleStop}>
+      </StatusButton>
+      <StatusButton color="red" disabled={!canStop} onClick={handleStop}>
         STOP
-      </button>
+      </StatusButton>
     </div>
   );
 });

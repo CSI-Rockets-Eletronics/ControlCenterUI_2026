@@ -1,5 +1,6 @@
 import { memo } from "react";
 
+import { Panel } from "./design/panel";
 import {
   LaunchControlEntry,
   type LaunchControlEntryState,
@@ -40,8 +41,8 @@ export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
   );
 
   return (
-    <div>
-      <p>Command Center</p>
+    <Panel className="flex flex-col gap-3">
+      <p className="text-lg text-gray-text">Command Center</p>
       <LaunchControlEntry
         label="KEEP"
         state={keepState}
@@ -60,6 +61,6 @@ export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
         executeCommand="LAUNCH_MODE_COMMAND_CENTER_EXECUTE_FIRE"
         stopCommand="LAUNCH_MODE_COMMAND_CENTER_STOP_FIRE"
       />
-    </div>
+    </Panel>
   );
 });
