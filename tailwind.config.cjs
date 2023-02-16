@@ -1,4 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
+const { fontSize } = require("tailwindcss/defaultTheme");
+// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
 const radixColors = require("@radix-ui/colors");
 
 const radixColorOptions = {
@@ -53,6 +55,11 @@ module.exports = {
   theme: {
     fontFamily: {
       sans: ["B612", "sans-serif"],
+    },
+    fontSize: {
+      sm: fontSize["3xl"],
+      base: fontSize["4xl"],
+      lg: fontSize["5xl"],
     },
     colors: {
       ...Object.fromEntries(
