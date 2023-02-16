@@ -5,6 +5,11 @@ export interface Message {
   data: unknown;
 }
 
+export interface Record {
+  timestamp: number;
+  data: unknown;
+}
+
 export class Api {
   constructor(
     private readonly stationId: string,
@@ -62,7 +67,7 @@ export class Api {
     rangeStart?: number | null;
     rangeEnd?: number | null;
     take?: number | null;
-  }): Promise<unknown[]> {
+  }): Promise<Record[]> {
     const res = await fetch(`${ORIGIN}/record/list`, {
       method: "POST",
       headers: {
@@ -81,6 +86,49 @@ export class Api {
 
     const { records } = await res.json();
     return records;
+  }
+
+  async createRecord(options: {
+    source: string;
+    timestamp: number;
+    data: unknown;
+  }): Promise<void> {
+    const res = await fetch(`${ORIGIN}/record`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        stationId: this.stationId,
+        sessionId: this.sessionId,
+        ...options,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to create record");
+    }
+  }
+
+  async batchCreateRecords(options: {
+    source: string;
+    records: Record[];
+  }): Promise<void> {
+    const res = await fetch(`${ORIGIN}/record/batch`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        stationId: this.stationId,
+        sessionId: this.sessionId,
+        ...options,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to create record");
+    }
   }
 }
 
