@@ -1,5 +1,7 @@
-import { memo } from "react";
+import { memo, useCallback } from "react";
 
+import { useCommandSender } from "./commandSenderProvider";
+import { Button } from "./design/button";
 import { Panel } from "./design/panel";
 import {
   LaunchControlEntry,
@@ -29,6 +31,16 @@ export const LaunchAbortControl = memo(function LaunchAbortControl() {
         : "not-started"
   );
 
+  const { sendCommand } = useCommandSender();
+
+  const canReturnToStandbyMode = useLaunchMachineSelector((state) =>
+    state.can("RETURN_TO_STANDBY_MODE")
+  );
+
+  const returnToStandbyMode = useCallback(() => {
+    sendCommand("RETURN_TO_STANDBY_MODE");
+  }, [sendCommand]);
+
   return (
     <Panel className="flex flex-col gap-3">
       <p className="text-lg text-gray-text">Abort Control</p>
@@ -44,6 +56,14 @@ export const LaunchAbortControl = memo(function LaunchAbortControl() {
         executeCommand="LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ABORT"
         stopCommand="LAUNCH_MODE_ABORT_CONTROL_STOP_ABORT"
       />
+
+      {canReturnToStandbyMode && (
+        <div className="flex justify-end mt-4">
+          <Button color="green" onClick={returnToStandbyMode}>
+            RETURN TO STANDBY MODE
+          </Button>
+        </div>
+      )}
     </Panel>
   );
 });

@@ -33,6 +33,8 @@ const COMMANDS = [
   "LAUNCH_MODE_ABORT_CONTROL_STOP_ARM",
   "LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ABORT",
   "LAUNCH_MODE_ABORT_CONTROL_STOP_ABORT",
+  // launch mode to standby mode
+  "RETURN_TO_STANDBY_MODE",
   // launch mode to recovery mode
   "GO_TO_RECOVERY_MODE",
   // recovery visual contact confirmation

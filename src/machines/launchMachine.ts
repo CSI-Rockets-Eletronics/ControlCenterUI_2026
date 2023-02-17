@@ -205,7 +205,12 @@ export const launchMachine = createMachine(
                         initial: "notStarted",
                         states: {
                           notStarted: { on: { LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ABORT: "executing" } },
-                          executing: { on: { LAUNCH_MODE_ABORT_CONTROL_STOP_ABORT: "stopped" } },
+                          executing: {
+                            on: {
+                              LAUNCH_MODE_ABORT_CONTROL_STOP_ABORT: "stopped",
+                              RETURN_TO_STANDBY_MODE: "#launch.preFire.operationState.standby",
+                            },
+                          },
                           stopped: { on: { LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ABORT: "executing" } },
                         },
                       },

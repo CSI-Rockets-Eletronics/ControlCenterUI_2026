@@ -13,7 +13,13 @@ export const SyncStatusPanel = memo(function SyncStatusPanel() {
   );
 
   if (inconsistentBaseline) {
-    return <p>Error, history of sent commands is illegal!!!</p>;
+    return (
+      <Panel color="red" className="flex items-center">
+        <p className="text-gray-text">
+          Error, history of sent commands is illegal!!!
+        </p>
+      </Panel>
+    );
   }
 
   if (state.matches("blockedUntilSynced")) {
