@@ -1,4 +1,4 @@
-name: Build Static Site
+name: Build Static Site and Release to Public Repo
 
 on:
   push:
