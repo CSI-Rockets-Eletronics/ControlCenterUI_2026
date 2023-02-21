@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:rockets-ui": "tsc && vite build --outDir dist-rockets-ui --base /base-rockets-ui/",
     "preview": "vite preview",
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",

@@ -18,7 +18,9 @@ jobs:
           cache: "yarn"
       - run: yarn install --frozen-lockfile
       - run: yarn build
+      - run: yarn build:rockets-ui
       - run: zip -r dist.zip dist
+      - run: zip -r dist-rockets-ui.zip dist-rockets-ui
 
       - uses: Hs1r1us/Release-AIO@v2.0.0
         env:
@@ -26,4 +28,4 @@ jobs:
         with:
           tag_name: ${{ github.run_number }}
           repo: CSI-Rockets-Eletronics/ControlCenterUI-Release
-          asset_files: ./dist.zip
+          asset_files: ./dist.zip ./dist-rockets-ui.zip
