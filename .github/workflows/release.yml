@@ -19,7 +19,11 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn build
       - run: zip -r dist.zip dist
-      - uses: softprops/action-gh-release@v1
+
+      - uses: Hs1r1us/Release-AIO@v2.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.run_number }}
-          files: dist.zip
+          repo: CSI-Rockets-Eletronics/ControlCenterUI-Release
+          asset_files: ./dist.zip
