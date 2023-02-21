@@ -21,5 +21,5 @@ jobs:
       - run: zip -r dist.zip dist
       - uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.sha }}
+          tag_name: ${{ github.run_number }}
           files: dist.zip
