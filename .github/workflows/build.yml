@@ -18,6 +18,8 @@ jobs:
           cache: "yarn"
       - run: yarn install --frozen-lockfile
       - run: yarn build
+      - run: zip -r dist.zip dist
       - uses: softprops/action-gh-release@v1
         with:
-          files: dist
+          tag_name: ${{ github.run_id }}
+          files: dist.zip
