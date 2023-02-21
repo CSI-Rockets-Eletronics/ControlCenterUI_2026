@@ -17,9 +17,8 @@ jobs:
           node-version: 18
           cache: "yarn"
       - run: yarn install --frozen-lockfile
-      - run: yarn tsc
-      # - run: yarn build
-      # - uses: actions/upload-artifact@v3
-      #   with:
-      #     name: dist
-      #     path: dist
+      - run: yarn build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist
