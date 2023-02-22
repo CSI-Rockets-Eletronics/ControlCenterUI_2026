@@ -3,7 +3,7 @@ import { assign, createMachine } from "xstate";
 import { tempGlobalApi } from "@/lib/api";
 import { Command, isValidCommand } from "@/lib/command";
 
-const TARGET = `launch_commands_${new URLSearchParams(window.location.search).get("target") || "0"}`;
+const TARGET = `launch_commands_test_${new URLSearchParams(window.location.search).get("target") || "0"}`;
 
 const SILENT_RESYNC_INTERVAL = 5000;
 
