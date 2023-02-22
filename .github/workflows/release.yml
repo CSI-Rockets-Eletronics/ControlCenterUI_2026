@@ -19,13 +19,11 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn build
       - run: yarn build:rockets-ui
-      - run: zip -r dist.zip dist
-      - run: zip -r dist-rockets-ui.zip dist-rockets-ui
       - uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.run_number }}
           repository: CSI-Rockets-Eletronics/ControlCenterUI-Release
           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           files: |
-            dist.zip
-            dist-rockets-ui.zip
+            dist
+            dist-rockets-ui
