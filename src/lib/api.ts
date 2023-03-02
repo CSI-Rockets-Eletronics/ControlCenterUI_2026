@@ -90,7 +90,7 @@ export class Api {
 
   async createRecord(options: {
     source: string;
-    timestamp: number;
+    timestamp?: number | null;
     data: unknown;
   }): Promise<void> {
     const res = await fetch(`${ORIGIN}/record`, {
