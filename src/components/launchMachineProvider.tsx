@@ -7,18 +7,13 @@ import { createLaunchMachine } from "@/machines/launchMachine";
 const Context = createActorContext(createLaunchMachine(new Api("")));
 
 export function LaunchMachineProvider({
-  stationId,
-  sessionId,
+  api,
   children,
 }: {
-  stationId: string;
-  sessionId?: string;
+  api: Api;
   children: ReactNode;
 }) {
-  const machine = useMemo(() => {
-    const api = new Api(stationId, sessionId);
-    return createLaunchMachine(api);
-  }, [stationId, sessionId]);
+  const machine = useMemo(() => createLaunchMachine(api), [api]);
 
   return <Context.Provider machine={machine}>{children}</Context.Provider>;
 }

@@ -77,6 +77,40 @@ export class Api {
     return messages;
   }
 
+  async getNextMessage<Schema extends z.Schema = z.ZodUnknown>(
+    options: {
+      target: string;
+    },
+    schema?: Schema
+  ): Promise<Message<z.infer<Schema>> | null> {
+    const res = await fetch(`${ORIGIN}/message/next`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        stationId: this.stationId,
+        sessionId: this.sessionId,
+        ...options,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to get next message");
+    }
+
+    const { data } = await res.json();
+
+    if (data == null) {
+      return null;
+    }
+
+    return {
+      consumed: true,
+      data: schema ? schema.parse(data) : data,
+    };
+  }
+
   async listRecords<Schema extends z.Schema = z.ZodUnknown>(
     options: {
       source: string;
@@ -97,10 +131,6 @@ export class Api {
         ...options,
       }),
     });
-
-    if (!res.ok) {
-      throw new Error("Failed to list records");
-    }
 
     const { records } = await res.json();
 

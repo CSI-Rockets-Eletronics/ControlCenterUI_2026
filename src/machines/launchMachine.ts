@@ -309,7 +309,7 @@ export function createLaunchMachine(api: Api) {
         mutateStationOpState: async (_, event) => {
           const message = {
             target: SET_STATION_OP_STATE_TARGET,
-            data: event.value,
+            data: event.value satisfies StationOpState,
           };
           await api.createMessage(message);
 
