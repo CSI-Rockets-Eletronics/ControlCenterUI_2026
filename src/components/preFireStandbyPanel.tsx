@@ -1,26 +1,24 @@
 import { memo, useCallback } from "react";
 
-import { useCommandSender } from "./commandSenderProvider";
 import { Button } from "./design/button";
 import { Panel } from "./design/panel";
-import { useLaunchMachineSelector } from "./launchMachineProvider";
+import {
+  useLaunchMachineActorRef,
+  useLaunchMachineSelector,
+} from "./launchMachineProvider";
 import { PreFillChecklist } from "./preFillChecklist";
 import { StandbyStateSelection } from "./standbyStateSelection";
 
 export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
-  const standbyActive = useLaunchMachineSelector((state) =>
-    state.matches("preFire.operationState.standby.standby")
+  const launchActorRef = useLaunchMachineActorRef();
+
+  const goToLaunchModeDisabled = useLaunchMachineSelector(
+    (state) => !state.can({ type: "UPDATE_ACTIVE_PANEL", value: "launch" })
   );
 
-  const canGoToLaunchMode = useLaunchMachineSelector((state) =>
-    state.can("GO_TO_LAUNCH_MODE")
-  );
-
-  const { sendCommand } = useCommandSender();
-
-  const goToLaunchMode = useCallback(() => {
-    sendCommand("GO_TO_LAUNCH_MODE");
-  }, [sendCommand]);
+  const handleGoToLaunchMode = useCallback(() => {
+    launchActorRef.send({ type: "UPDATE_ACTIVE_PANEL", value: "launch" });
+  }, [launchActorRef]);
 
   return (
     <Panel className="grid grid-rows-[1fr,auto] grid-cols-[2fr,1fr] gap-4">
@@ -41,8 +39,8 @@ export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
         </Button>
         <Button
           color="green"
-          disabled={!canGoToLaunchMode}
-          onClick={goToLaunchMode}
+          disabled={goToLaunchModeDisabled}
+          onClick={handleGoToLaunchMode}
         >
           GO TO LAUNCH MODE
         </Button>

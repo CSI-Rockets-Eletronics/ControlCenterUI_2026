@@ -1,314 +1,332 @@
-import { createMachine, State } from "xstate";
+import { assign, createMachine } from "xstate";
 
-import { Command } from "@/lib/command";
+import { Api, Record as ApiRecord } from "@/lib/api";
+import {
+  ActivePanel,
+  initialLaunchState,
+  LAUNCH_STATE_SOURCE,
+  LaunchState,
+  launchStateSchema,
+} from "@/lib/launchState";
+import {
+  SET_STATION_OP_STATE_TARGET,
+  STATION_FIRE_OP_STATE,
+  STATION_STATE_SOURCE,
+  StationOpState,
+  StationState,
+  stationStateSchema,
+} from "@/lib/stationInterface";
 
-const preFillChecklistIsComplete = (state: State<unknown, { type: "" }>) =>
-  ["fillRelay", "abortRelay", "fireRelay", "fillSolenoid", "abortSolenoid", "wetGround", "openTank"].every((item) =>
-    state.matches(`preFire.operationState.standby.standby.preFillChecklist.${item}.yes`)
-  );
+const LAUNCH_STATE_FETCH_INTERVAL = 1000;
+const STATION_STATE_FETCH_INTERVAL = 1000;
 
-const readyToFire = (state: State<unknown, { type: "" }>) => {
-  const gollPollIsComplete = ["safetyOfficer1", "safetyOfficer2", "adviser", "propLead", "elecLead"].every((item) =>
-    state.matches(`preFire.goPoll.${item}.yes`)
-  );
-  const allArmed = ["commandCenter.arm", "abortControl.arm"].every((item) =>
-    state.matches(`preFire.operationState.launch.${item}.executing`)
-  );
-  return gollPollIsComplete && allArmed;
-};
+const STATION_RECORDS_RETENTION_MS = 10 * 1000;
 
-const rangePermitIsComplete = (state: State<unknown, { type: "" }>) =>
-  ["safetyOfficer1", "safetyOfficer2", "adviser"].every((item) =>
-    state.matches(`recovery.landed.rangePermit.${item}.yes`)
-  );
+function checklistIsComplete(checklist: Record<string, boolean>) {
+  return Object.values(checklist).every(Boolean);
+}
 
-type Events = { type: Command } | { type: "RESET" } | { type: "REPORT_INCONSISTENT_BASELINE" };
+function armStatusIsComplete(armStatus: Record<string, boolean>) {
+  return Object.values(armStatus).every(Boolean);
+}
 
-export const launchMachine = createMachine(
-  {
-    tsTypes: {} as import("./launchMachine.typegen").Typegen0,
-    predictableActionArguments: true,
-    schema: {
-      events: {} as Events,
-    },
-    id: "launch",
-    on: {
-      RESET: "resetMachine",
-      REPORT_INCONSISTENT_BASELINE: "inconsistentBaseline",
-    },
-    initial: "resetMachine",
-    states: {
-      resetMachine: {
-        always: "preFire",
-      },
-      inconsistentBaseline: {
-        type: "final",
-      },
-      preFire: {
-        type: "parallel",
-        states: {
-          operationState: {
-            initial: "standby",
-            states: {
-              standby: {
-                on: {
-                  GO_TO_LAUNCH_MODE: "launch",
-                  STANDBY_STATE_ACTIVATE_STANDBY: ".standby",
-                  STANDBY_STATE_ACTIVATE_KEEP: ".keep",
-                  STANDBY_STATE_ACTIVATE_FILL: ".fill",
-                  STANDBY_STATE_ACTIVATE_PURGE: ".purge",
-                  STANDBY_STATE_ACTIVATE_PULSE: ".pulse",
-                },
-                initial: "standby",
-                states: {
-                  standby: {
-                    type: "parallel",
-                    on: { STANDBY_STATE_ACTIVATE_STANDBY: undefined },
-                    states: {
-                      preFillChecklist: {
-                        type: "parallel",
-                        states: {
-                          fillRelay: {
-                            initial: "no",
-                            states: {
-                              no: { on: { PRE_FILL_CHECKLIST_TOGGLE_FILL_RELAY: "yes" } },
-                              yes: { on: { PRE_FILL_CHECKLIST_TOGGLE_FILL_RELAY: "no" } },
-                            },
-                          },
-                          abortRelay: {
-                            initial: "no",
-                            states: {
-                              no: { on: { PRE_FILL_CHECKLIST_TOGGLE_ABORT_RELAY: "yes" } },
-                              yes: { on: { PRE_FILL_CHECKLIST_TOGGLE_ABORT_RELAY: "no" } },
-                            },
-                          },
-                          fireRelay: {
-                            initial: "no",
-                            states: {
-                              no: { on: { PRE_FILL_CHECKLIST_TOGGLE_FIRE_RELAY: "yes" } },
-                              yes: { on: { PRE_FILL_CHECKLIST_TOGGLE_FIRE_RELAY: "no" } },
-                            },
-                          },
-                          fillSolenoid: {
-                            initial: "no",
-                            states: {
-                              no: { on: { PRE_FILL_CHECKLIST_TOGGLE_FILL_SOLENOID: "yes" } },
-                              yes: { on: { PRE_FILL_CHECKLIST_TOGGLE_FILL_SOLENOID: "no" } },
-                            },
-                          },
-                          abortSolenoid: {
-                            initial: "no",
-                            states: {
-                              no: { on: { PRE_FILL_CHECKLIST_TOGGLE_ABORT_SOLENOID: "yes" } },
-                              yes: { on: { PRE_FILL_CHECKLIST_TOGGLE_ABORT_SOLENOID: "no" } },
-                            },
-                          },
-                          wetGround: {
-                            initial: "no",
-                            states: {
-                              no: { on: { PRE_FILL_CHECKLIST_TOGGLE_WET_GROUND: "yes" } },
-                              yes: { on: { PRE_FILL_CHECKLIST_TOGGLE_WET_GROUND: "no" } },
-                            },
-                          },
-                          openTank: {
-                            initial: "no",
-                            states: {
-                              no: { on: { PRE_FILL_CHECKLIST_TOGGLE_OPEN_TANK: "yes" } },
-                              yes: { on: { PRE_FILL_CHECKLIST_TOGGLE_OPEN_TANK: "no" } },
-                            },
-                          },
-                        },
-                      },
-                      preFillChecklistComplete: {
-                        initial: "no",
-                        states: {
-                          no: {
-                            always: { target: "yes", cond: "preFillChecklistIsComplete" },
-                            on: {
-                              GO_TO_LAUNCH_MODE: undefined,
-                              STANDBY_STATE_ACTIVATE_STANDBY: undefined,
-                              STANDBY_STATE_ACTIVATE_KEEP: undefined,
-                              STANDBY_STATE_ACTIVATE_FILL: undefined,
-                              STANDBY_STATE_ACTIVATE_PURGE: undefined,
-                              STANDBY_STATE_ACTIVATE_PULSE: undefined,
-                            },
-                          },
-                          yes: {
-                            always: { target: "no", cond: "preFillChecklistIsNotComplete" },
-                          },
-                        },
-                      },
-                    },
-                  },
-                  keep: { on: { STANDBY_STATE_ACTIVATE_KEEP: undefined } },
-                  fill: { on: { STANDBY_STATE_ACTIVATE_FILL: undefined } },
-                  purge: { on: { STANDBY_STATE_ACTIVATE_PURGE: undefined } },
-                  pulse: { on: { STANDBY_STATE_ACTIVATE_PULSE: undefined } },
-                },
-              },
-              launch: {
-                type: "parallel",
-                states: {
-                  commandCenter: {
-                    type: "parallel",
-                    states: {
-                      keep: {
-                        initial: "notStarted",
-                        states: {
-                          notStarted: { on: { LAUNCH_MODE_COMMAND_CENTER_EXECUTE_KEEP: "executing" } },
-                          executing: { on: { LAUNCH_MODE_COMMAND_CENTER_STOP_KEEP: "stopped" } },
-                          stopped: { on: { LAUNCH_MODE_COMMAND_CENTER_EXECUTE_KEEP: "executing" } },
-                        },
-                      },
-                      arm: {
-                        initial: "notStarted",
-                        states: {
-                          notStarted: { on: { LAUNCH_MODE_COMMAND_CENTER_EXECUTE_ARM: "executing" } },
-                          executing: { on: { LAUNCH_MODE_COMMAND_CENTER_STOP_ARM: "stopped" } },
-                          stopped: { on: { LAUNCH_MODE_COMMAND_CENTER_EXECUTE_ARM: "executing" } },
-                        },
-                      },
-                      fire: {
-                        initial: "notReady",
-                        states: {
-                          notReady: { always: { target: "notStarted", cond: "readyToFire" } },
-                          notStarted: {
-                            always: { target: "notReady", cond: "notReadyToFire" },
-                            on: { LAUNCH_MODE_COMMAND_CENTER_EXECUTE_FIRE: "executing" },
-                          },
-                          executing: {
-                            on: {
-                              LAUNCH_MODE_COMMAND_CENTER_STOP_FIRE: "stopped",
-                              GO_TO_RECOVERY_MODE: "#launch.recovery",
-                            },
-                          },
-                          stopped: {
-                            always: { target: "notReady", cond: "notReadyToFire" },
-                            on: { LAUNCH_MODE_COMMAND_CENTER_EXECUTE_FIRE: "executing" },
-                          },
-                        },
-                      },
-                    },
-                  },
-                  abortControl: {
-                    type: "parallel",
-                    states: {
-                      arm: {
-                        initial: "notStarted",
-                        states: {
-                          notStarted: { on: { LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ARM: "executing" } },
-                          executing: { on: { LAUNCH_MODE_ABORT_CONTROL_STOP_ARM: "stopped" } },
-                          stopped: { on: { LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ARM: "executing" } },
-                        },
-                      },
-                      abort: {
-                        initial: "notStarted",
-                        states: {
-                          notStarted: { on: { LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ABORT: "executing" } },
-                          executing: {
-                            on: {
-                              LAUNCH_MODE_ABORT_CONTROL_STOP_ABORT: "stopped",
-                              RETURN_TO_STANDBY_MODE: "#launch.preFire.operationState.standby",
-                            },
-                          },
-                          stopped: { on: { LAUNCH_MODE_ABORT_CONTROL_EXECUTE_ABORT: "executing" } },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          goPoll: {
-            type: "parallel",
-            states: {
-              safetyOfficer1: {
-                initial: "no",
-                states: {
-                  no: { on: { GO_POLL_TOGGLE_SAFETY_OFFICER_1: "yes" } },
-                  yes: { on: { GO_POLL_TOGGLE_SAFETY_OFFICER_1: "no" } },
-                },
-              },
-              safetyOfficer2: {
-                initial: "no",
-                states: {
-                  no: { on: { GO_POLL_TOGGLE_SAFETY_OFFICER_2: "yes" } },
-                  yes: { on: { GO_POLL_TOGGLE_SAFETY_OFFICER_2: "no" } },
-                },
-              },
-              adviser: {
-                initial: "no",
-                states: {
-                  no: { on: { GO_POLL_TOGGLE_ADVISER: "yes" } },
-                  yes: { on: { GO_POLL_TOGGLE_ADVISER: "no" } },
-                },
-              },
-              propLead: {
-                initial: "no",
-                states: {
-                  no: { on: { GO_POLL_TOGGLE_PROP_LEAD: "yes" } },
-                  yes: { on: { GO_POLL_TOGGLE_PROP_LEAD: "no" } },
-                },
-              },
-              elecLead: {
-                initial: "no",
-                states: {
-                  no: { on: { GO_POLL_TOGGLE_ELEC_LEAD: "yes" } },
-                  yes: { on: { GO_POLL_TOGGLE_ELEC_LEAD: "no" } },
-                },
-              },
-            },
-          },
+export type LaunchMachineEvent =
+  | { type: "DISMISS_NETWORK_ERROR" }
+  | {
+      type: "UPDATE_ACTIVE_PANEL";
+      value: ActivePanel;
+    }
+  | {
+      type: "UPDATE_PRE_FILL_CHECKLIST";
+      data: Partial<LaunchState["preFillChecklist"]>;
+    }
+  | {
+      type: "UPDATE_GO_POLL";
+      data: Partial<LaunchState["goPoll"]>;
+    }
+  | {
+      type: "UPDATE_ARM_STATUS";
+      data: Partial<LaunchState["armStatus"]>;
+    }
+  | {
+      type: "UPDATE_RANGE_PERMIT";
+      data: Partial<LaunchState["rangePermit"]>;
+    }
+  | {
+      type: "UPDATE_VISUAL_CONTACT_CONFIRMED";
+      value: boolean;
+    }
+  | {
+      type: "MUTATE_STATION_OP_STATE";
+      value: StationOpState;
+    };
+
+export function createLaunchMachine(api: Api) {
+  return createMachine(
+    {
+      tsTypes: {} as import("./launchMachine.typegen").Typegen0,
+      predictableActionArguments: true,
+      schema: {
+        events: {} as LaunchMachineEvent,
+        context: {} as {
+          launchState: LaunchState;
+          pendingLaunchState: LaunchState | null;
+          stationState: StationState | null;
+          stationRecords: ApiRecord<StationState>[];
+        },
+        services: {} as {
+          fetchLaunchState: { data: LaunchState };
+          mutateLaunchState: { data: LaunchState };
+          fetchStationRecord: { data: ApiRecord<StationState> | null };
+          mutateStationOpState: { data: void };
         },
       },
-      recovery: {
-        initial: "pendingVisualContact",
-        states: {
-          pendingVisualContact: { on: { CONFIRM_VISUAL_CONTACT: "inFlight" } },
-          inFlight: {},
-          landed: {
-            type: "parallel",
-            states: {
-              rangePermit: {
-                type: "parallel",
-                states: {
-                  safetyOfficer1: {
-                    initial: "no",
-                    states: {
-                      no: { on: { RANGE_PERMIT_TOGGLE_SAFETY_OFFICER_1: "yes" } },
-                      yes: { on: { RANGE_PERMIT_TOGGLE_SAFETY_OFFICER_1: "no" } },
+      id: "launch",
+      context: {
+        launchState: initialLaunchState,
+        pendingLaunchState: null,
+        stationState: null,
+        stationRecords: [],
+      },
+      initial: "live",
+      states: {
+        live: {
+          type: "parallel",
+          states: {
+            launchState: {
+              initial: "fetching",
+              states: {
+                fetching: {
+                  invoke: {
+                    src: "fetchLaunchState",
+                    onDone: {
+                      target: "idle",
+                      actions: "setLaunchState",
+                    },
+                    onError: "#launch.networkError",
+                  },
+                },
+                idle: {
+                  always: { cond: "hasPendingLaunchState", target: "mutating" },
+                  on: {
+                    UPDATE_ACTIVE_PANEL: { actions: "updateActivePanel" },
+                    UPDATE_PRE_FILL_CHECKLIST: { actions: "updatePreFillChecklist" },
+                    UPDATE_GO_POLL: { actions: "updateGoPoll" },
+                    UPDATE_ARM_STATUS: { actions: "updateArmStatus" },
+                    UPDATE_RANGE_PERMIT: { actions: "updateRangePermit" },
+                    UPDATE_VISUAL_CONTACT_CONFIRMED: { actions: "updateVisualContactConfirmed" },
+                  },
+                  initial: "waitingToRefetch",
+                  states: {
+                    waitingToRefetch: {
+                      after: { [LAUNCH_STATE_FETCH_INTERVAL]: "refetching" },
+                    },
+                    refetching: {
+                      invoke: {
+                        src: "fetchLaunchState",
+                        onDone: {
+                          target: "waitingToRefetch",
+                          actions: "setLaunchState",
+                        },
+                        onError: "#launch.networkError",
+                      },
                     },
                   },
-                  safetyOfficer2: {
-                    initial: "no",
-                    states: {
-                      no: { on: { RANGE_PERMIT_TOGGLE_SAFETY_OFFICER_2: "yes" } },
-                      yes: { on: { RANGE_PERMIT_TOGGLE_SAFETY_OFFICER_2: "no" } },
+                },
+                mutating: {
+                  invoke: {
+                    src: "mutateLaunchState",
+                    onDone: {
+                      target: "idle",
+                      actions: "setLaunchState",
+                    },
+                    onError: "#launch.networkError",
+                  },
+                  exit: "clearPendingLaunchState",
+                },
+              },
+            },
+            stationState: {
+              initial: "fetching",
+              states: {
+                fetching: {
+                  invoke: {
+                    src: "fetchStationRecord",
+                    onDone: {
+                      target: "idle",
+                      actions: "setStationState",
+                    },
+                    onError: "#launch.networkError",
+                  },
+                },
+                idle: {
+                  on: {
+                    MUTATE_STATION_OP_STATE: {
+                      target: "mutatingOpState",
+                      cond: "canMutateOpState",
                     },
                   },
-                  adviser: {
-                    initial: "no",
-                    states: {
-                      no: { on: { RANGE_PERMIT_TOGGLE_ADVISER: "yes" } },
-                      yes: { on: { RANGE_PERMIT_TOGGLE_ADVISER: "no" } },
+                  initial: "waitingToRefetch",
+                  states: {
+                    waitingToRefetch: {
+                      after: { [STATION_STATE_FETCH_INTERVAL]: "refetching" },
                     },
+                    refetching: {
+                      invoke: {
+                        src: "fetchStationRecord",
+                        onDone: {
+                          target: "waitingToRefetch",
+                          actions: "setStationState",
+                        },
+                        onError: "#launch.networkError",
+                      },
+                    },
+                  },
+                },
+                mutatingOpState: {
+                  invoke: {
+                    src: "mutateStationOpState",
+                    onDone: "idle.refetching",
+                    onError: "#launch.networkError",
                   },
                 },
               },
             },
           },
         },
+        networkError: {
+          entry: "logNetworkError",
+          on: { DISMISS_NETWORK_ERROR: "live" },
+        },
       },
     },
-  },
-  {
-    guards: {
-      preFillChecklistIsComplete: (_, __, { state }) => preFillChecklistIsComplete(state),
-      preFillChecklistIsNotComplete: (_, __, { state }) => !preFillChecklistIsComplete(state),
-      readyToFire: (_, __, { state }) => readyToFire(state),
-      notReadyToFire: (_, __, { state }) => !readyToFire(state),
-      // rangePermitIsComplete: (_, __, { state }) => rangePermitIsComplete(state),
-    },
-  }
-);
+    {
+      actions: {
+        clearPendingLaunchState: assign({
+          pendingLaunchState: (_) => null,
+        }),
+        setLaunchState: assign({
+          launchState: (_, event) => event.data,
+        }),
+        updateActivePanel: assign({
+          pendingLaunchState: (context, event) => ({
+            ...context.launchState,
+            activePanel: event.value,
+          }),
+        }),
+        updatePreFillChecklist: assign({
+          pendingLaunchState: (context, event) => ({
+            ...context.launchState,
+            preFillChecklist: { ...context.launchState.preFillChecklist, ...event.data },
+          }),
+        }),
+        updateGoPoll: assign({
+          pendingLaunchState: (context, event) => ({
+            ...context.launchState,
+            goPoll: { ...context.launchState.goPoll, ...event.data },
+          }),
+        }),
+        updateArmStatus: assign({
+          pendingLaunchState: (context, event) => ({
+            ...context.launchState,
+            armStatus: { ...context.launchState.armStatus, ...event.data },
+          }),
+        }),
+        updateRangePermit: assign({
+          pendingLaunchState: (context, event) => ({
+            ...context.launchState,
+            rangePermit: { ...context.launchState.rangePermit, ...event.data },
+          }),
+        }),
+        updateVisualContactConfirmed: assign({
+          pendingLaunchState: (context, event) => ({
+            ...context.launchState,
+            visualContactConfirmed: event.value,
+          }),
+        }),
+        setStationState: assign((context, event) => {
+          const newRecord = event.data;
+          if (!newRecord) {
+            return {};
+          }
+          return {
+            stationState: newRecord.data,
+            stationRecords: [
+              ...context.stationRecords.filter(
+                // timestamps are in microseconds
+                (record) => record.timestamp > newRecord.timestamp - STATION_RECORDS_RETENTION_MS * 1000
+              ),
+              newRecord,
+            ],
+          };
+        }),
+        logNetworkError: (_, event) => {
+          console.error("Launch machine network error", event);
+        },
+      },
+      services: {
+        fetchLaunchState: async () => {
+          const records = await api.listRecords(
+            {
+              source: LAUNCH_STATE_SOURCE,
+              take: 1,
+            },
+            launchStateSchema
+          );
+          if (records.length === 0) {
+            return initialLaunchState;
+          }
+          return records[0].data;
+        },
+        mutateLaunchState: async (context) => {
+          // sanity check
+          if (!context.pendingLaunchState) {
+            throw new Error("No pending launch state");
+          }
+          await api.createRecord({
+            source: LAUNCH_STATE_SOURCE,
+            data: context.pendingLaunchState,
+          });
+          return context.pendingLaunchState;
+        },
+        fetchStationRecord: async (context) => {
+          const latestRecord = context.stationRecords[0];
+          const rangeStart = latestRecord ? latestRecord.timestamp + 1 : undefined;
+
+          const records = await api.listRecords(
+            {
+              source: STATION_STATE_SOURCE,
+              rangeStart,
+              take: 1,
+            },
+            stationStateSchema
+          );
+          if (records.length === 0) {
+            return null;
+          }
+          return records[0];
+        },
+        mutateStationOpState: async (_, event) => {
+          await api.createMessage({
+            target: SET_STATION_OP_STATE_TARGET,
+            data: event.value,
+          });
+        },
+      },
+      guards: {
+        hasPendingLaunchState: (context) => !!context.pendingLaunchState,
+        canMutateOpState: (context, event) => {
+          if (event.value === STATION_FIRE_OP_STATE) {
+            return (
+              checklistIsComplete(context.launchState.preFillChecklist) &&
+              checklistIsComplete(context.launchState.goPoll) &&
+              armStatusIsComplete(context.launchState.armStatus)
+            );
+          } else {
+            return true;
+          }
+        },
+      },
+    }
+  );
+}

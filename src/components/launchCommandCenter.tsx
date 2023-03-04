@@ -1,89 +1,69 @@
 import { memo, useCallback } from "react";
 
-import { useCommandSender } from "./commandSenderProvider";
 import { Button } from "./design/button";
 import { Panel } from "./design/panel";
+import { LaunchControlEntry } from "./launchControlEntry";
 import {
-  LaunchControlEntry,
-  type LaunchControlEntryState,
-} from "./launchControlEntry";
-import { useLaunchMachineSelector } from "./launchMachineProvider";
+  useLaunchMachineActorRef,
+  useLaunchMachineSelector,
+} from "./launchMachineProvider";
 
 export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
-  const keepState: LaunchControlEntryState = useLaunchMachineSelector((state) =>
-    state.matches("preFire.operationState.launch.commandCenter.keep.executing")
-      ? "executing"
-      : state.matches(
-          "preFire.operationState.launch.commandCenter.keep.stopped"
-        )
-      ? "stopped"
-      : "not-started"
+  const launchActorRef = useLaunchMachineActorRef();
+
+  const canFire = useLaunchMachineSelector((state) =>
+    state.can({
+      type: "MUTATE_STATION_OP_STATE",
+      value: "fire",
+    })
   );
 
-  const armState: LaunchControlEntryState = useLaunchMachineSelector((state) =>
-    state.matches("preFire.operationState.launch.commandCenter.arm.executing")
-      ? "executing"
-      : state.matches("preFire.operationState.launch.commandCenter.arm.stopped")
-      ? "stopped"
-      : "not-started"
+  const goToRecoveryModeDisabled = useLaunchMachineSelector(
+    (state) =>
+      !state.can({
+        type: "UPDATE_ACTIVE_PANEL",
+        value: "recovery",
+      })
   );
 
-  const fireState: LaunchControlEntryState = useLaunchMachineSelector((state) =>
-    state.matches("preFire.operationState.launch.commandCenter.fire.notReady")
-      ? "not-ready"
-      : state.matches(
-          "preFire.operationState.launch.commandCenter.fire.executing"
-        )
-      ? "executing"
-      : state.matches(
-          "preFire.operationState.launch.commandCenter.fire.stopped"
-        )
-      ? "stopped"
-      : "not-started"
-  );
-
-  const { sendCommand } = useCommandSender();
-
-  const canGoToRecoveryMode = useLaunchMachineSelector((state) =>
-    state.can("GO_TO_RECOVERY_MODE")
-  );
-
-  const goToRecoveryMode = useCallback(() => {
-    sendCommand("GO_TO_RECOVERY_MODE");
-  }, [sendCommand]);
+  const handleGoToRecoveryMode = useCallback(() => {
+    launchActorRef.send({
+      type: "UPDATE_ACTIVE_PANEL",
+      value: "recovery",
+    });
+  }, [launchActorRef]);
 
   return (
     <Panel className="flex flex-col gap-3">
       <p className="text-lg text-gray-text">Command Center</p>
       <LaunchControlEntry
         label="KEEP"
-        state={keepState}
-        executeCommand="LAUNCH_MODE_COMMAND_CENTER_EXECUTE_KEEP"
-        stopCommand="LAUNCH_MODE_COMMAND_CENTER_STOP_KEEP"
+        type="opState"
+        executeOpState="keep"
+        stopOpState="standby" // TODO standby for stop?
       />
-      <LaunchControlEntry
-        label="ARM"
-        state={armState}
-        executeCommand="LAUNCH_MODE_COMMAND_CENTER_EXECUTE_ARM"
-        stopCommand="LAUNCH_MODE_COMMAND_CENTER_STOP_ARM"
-      />
-      <LaunchControlEntry
-        label="FIRE"
-        state={fireState}
-        executeCommand="LAUNCH_MODE_COMMAND_CENTER_EXECUTE_FIRE"
-        stopCommand="LAUNCH_MODE_COMMAND_CENTER_STOP_FIRE"
-      />
-
-      {canGoToRecoveryMode && (
-        <div className="flex items-center mt-4 gap-4">
-          <p className="flex-1 text-lg font-bold text-green-text-dim">
-            LIFT OFF!!!
-          </p>
-          <Button color="green" onClick={goToRecoveryMode}>
-            GO TO RECOVERY MODE
-          </Button>
-        </div>
+      <LaunchControlEntry label="ARM" type="arm" field="commandCenter" />
+      {canFire && (
+        <LaunchControlEntry
+          label="FIRE"
+          type="opState"
+          executeOpState="fire"
+          stopOpState="standby" // TODO standby for stop?
+        />
       )}
+
+      <div className="flex items-center mt-4 gap-4">
+        <p className="flex-1 text-lg font-bold text-green-text-dim">
+          LIFT OFF!!!
+        </p>
+        <Button
+          color="green"
+          disabled={goToRecoveryModeDisabled}
+          onClick={handleGoToRecoveryMode}
+        >
+          GO TO RECOVERY MODE
+        </Button>
+      </div>
     </Panel>
   );
 });

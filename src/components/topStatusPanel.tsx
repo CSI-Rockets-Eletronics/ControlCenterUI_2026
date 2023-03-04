@@ -5,23 +5,15 @@ import { useLaunchMachineSelector } from "./launchMachineProvider";
 import { SyncStatusPanel } from "./syncStatusPanel";
 
 export const TopStatusPanel = memo(function TopStatusPanel() {
-  const isStandby = useLaunchMachineSelector((state) =>
-    state.matches("preFire.operationState.standby")
-  );
-  const isLaunch = useLaunchMachineSelector((state) =>
-    state.matches("preFire.operationState.launch")
-  );
-  const isRecovery = useLaunchMachineSelector((state) =>
-    state.matches("recovery")
+  const activePanel = useLaunchMachineSelector(
+    (state) => state.context.launchState.activePanel
   );
 
-  const currentState = isStandby
-    ? "STANDBY"
-    : isLaunch
-    ? "LAUNCH"
-    : isRecovery
-    ? "RECOVERY"
-    : "UNKNOWN";
+  const currentState = {
+    standby: "STANDBY",
+    launch: "LAUNCH",
+    recovery: "RECOVERY",
+  }[activePanel];
 
   return (
     <div className="grid grid-cols-[1fr,auto] space-x-4">

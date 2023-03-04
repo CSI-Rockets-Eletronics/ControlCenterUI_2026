@@ -12,6 +12,7 @@ export const stationOpStateSchema = z.enum([
   "purge",
   "pulse",
   STATION_FIRE_OP_STATE,
+  "abort",
 ]);
 
 export type StationOpState = z.infer<typeof stationOpStateSchema>;

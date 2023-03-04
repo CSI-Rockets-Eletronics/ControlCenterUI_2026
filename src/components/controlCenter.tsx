@@ -6,13 +6,11 @@ import { RecoveryPanel } from "./recoveryPanel";
 import { TopStatusPanel } from "./topStatusPanel";
 
 export const ControlCenter = memo(function ControlCenter() {
-  const isPreFire = useLaunchMachineSelector(
-    (state) =>
-      state.matches("preFire.operationState.standby") ||
-      state.matches("preFire.operationState.launch")
+  const isRecovery = useLaunchMachineSelector(
+    (state) => state.context.launchState.activePanel === "recovery"
   );
 
-  const mainPanel = isPreFire ? <PreFirePanel /> : <RecoveryPanel />;
+  const mainPanel = isRecovery ? <RecoveryPanel /> : <PreFirePanel />;
 
   return (
     <div className="h-full p-4 overflow-auto grid grid-rows-[auto,1fr] gap-4">

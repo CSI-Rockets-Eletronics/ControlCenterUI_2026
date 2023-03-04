@@ -1,28 +1,30 @@
-import { memo } from "react";
+import { memo, useCallback } from "react";
 
-import { useCommandSender } from "./commandSenderProvider";
 import { Button } from "./design/button";
 import { Panel } from "./design/panel";
-import { useLaunchMachineSelector } from "./launchMachineProvider";
+import {
+  useLaunchMachineActorRef,
+  useLaunchMachineSelector,
+} from "./launchMachineProvider";
 
 export const SyncStatusPanel = memo(function SyncStatusPanel() {
-  const { state, retryBlockingSync } = useCommandSender();
+  const launchActorRef = useLaunchMachineActorRef();
 
-  const inconsistentBaseline = useLaunchMachineSelector((state) =>
-    state.matches("inconsistentBaseline")
+  const fetching = useLaunchMachineSelector(
+    (state) =>
+      state.matches("live.launchState.fetching") ||
+      state.matches("live.stationState.fetching")
   );
 
-  if (inconsistentBaseline) {
-    return (
-      <Panel color="red" className="flex items-center">
-        <p className="text-gray-text">
-          Error, history of sent commands is illegal!!!
-        </p>
-      </Panel>
-    );
-  }
+  const networkError = useLaunchMachineSelector((state) =>
+    state.matches("networkError")
+  );
 
-  if (state.matches("blockedUntilSynced")) {
+  const dismissNetworkError = useCallback(() => {
+    launchActorRef.send("DISMISS_NETWORK_ERROR");
+  }, [launchActorRef]);
+
+  if (fetching) {
     return (
       <Panel color="red" className="flex items-center">
         <p className="text-gray-text">Syncing, please wait...</p>
@@ -30,11 +32,11 @@ export const SyncStatusPanel = memo(function SyncStatusPanel() {
     );
   }
 
-  if (state.matches("syncError")) {
+  if (networkError) {
     return (
       <Panel color="red" className="flex items-center gap-4">
         <p className="text-gray-text">Sync Error!</p>
-        <Button onClick={retryBlockingSync} color="red">
+        <Button onClick={dismissNetworkError} color="red">
           Retry
         </Button>
       </Panel>

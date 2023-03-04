@@ -1,15 +1,14 @@
 import { createActorContext } from "@xstate/react";
 
-import { launchMachine } from "@/machines/launchMachine";
+import { tempGlobalApi } from "@/lib/api";
+import { createLaunchMachine } from "@/machines/launchMachine";
 
-export const LaunchMachineContext = createActorContext(launchMachine);
+export const LaunchMachineContext = createActorContext(
+  createLaunchMachine(tempGlobalApi)
+);
 
 export const LaunchMachineProvider = LaunchMachineContext.Provider;
 
 export const useLaunchMachineSelector = LaunchMachineContext.useSelector;
 
-/**
- * Do not call `.send()` on the actor returned by this hook. Instead, rely on
- * `useCommandSender()`.
- */
 export const useLaunchMachineActorRef = LaunchMachineContext.useActorRef;

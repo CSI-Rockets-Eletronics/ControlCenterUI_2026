@@ -1,30 +1,43 @@
 import { memo, useCallback } from "react";
 
-import { type Command } from "@/lib/command";
+import { type StationOpState } from "@/lib/stationInterface";
 
-import { useCommandSender } from "./commandSenderProvider";
 import { Panel } from "./design/panel";
 import { StatusButton } from "./design/statusButton";
-import { useLaunchMachineSelector } from "./launchMachineProvider";
+import {
+  useLaunchMachineActorRef,
+  useLaunchMachineSelector,
+} from "./launchMachineProvider";
 
 const Entry = memo(function Entry({
   label,
-  active,
-  activateCommand,
+  opState,
 }: {
   label: string;
-  active: boolean;
-  activateCommand: Command;
+  opState: StationOpState;
 }) {
-  const { sendCommand } = useCommandSender();
+  const launchActorRef = useLaunchMachineActorRef();
+
+  const curOpState = useLaunchMachineSelector(
+    (state) => state.context.stationState?.opState
+  );
+
+  const active = curOpState === opState;
 
   const disabled = useLaunchMachineSelector(
-    (state) => !state.can(activateCommand)
+    (state) =>
+      !state.can({
+        type: "MUTATE_STATION_OP_STATE",
+        value: opState,
+      })
   );
 
   const handleClick = useCallback(() => {
-    sendCommand(activateCommand);
-  }, [activateCommand, sendCommand]);
+    launchActorRef.send({
+      type: "MUTATE_STATION_OP_STATE",
+      value: opState,
+    });
+  }, [launchActorRef, opState]);
 
   return (
     <StatusButton
@@ -38,50 +51,14 @@ const Entry = memo(function Entry({
 });
 
 export const StandbyStateSelection = memo(function StandbyStateSelection() {
-  const standbyActive = useLaunchMachineSelector((state) =>
-    state.matches("preFire.operationState.standby.standby")
-  );
-  const keepActive = useLaunchMachineSelector((state) =>
-    state.matches("preFire.operationState.standby.keep")
-  );
-  const fillActive = useLaunchMachineSelector((state) =>
-    state.matches("preFire.operationState.standby.fill")
-  );
-  const purgeActive = useLaunchMachineSelector((state) =>
-    state.matches("preFire.operationState.standby.purge")
-  );
-  const pulseActive = useLaunchMachineSelector((state) =>
-    state.matches("preFire.operationState.standby.pulse")
-  );
-
   return (
     <Panel className="flex flex-col h-full gap-4">
       <p className="text-lg text-gray-text">State Selection</p>
-      <Entry
-        label="STANDBY"
-        active={standbyActive}
-        activateCommand="STANDBY_STATE_ACTIVATE_STANDBY"
-      />
-      <Entry
-        label="KEEP"
-        active={keepActive}
-        activateCommand="STANDBY_STATE_ACTIVATE_KEEP"
-      />
-      <Entry
-        label="FILL"
-        active={fillActive}
-        activateCommand="STANDBY_STATE_ACTIVATE_FILL"
-      />
-      <Entry
-        label="PURGE"
-        active={purgeActive}
-        activateCommand="STANDBY_STATE_ACTIVATE_PURGE"
-      />
-      <Entry
-        label="PULSE"
-        active={pulseActive}
-        activateCommand="STANDBY_STATE_ACTIVATE_PULSE"
-      />
+      <Entry label="STANDBY" opState="standby" />
+      <Entry label="KEEP" opState="keep" />
+      <Entry label="FILL" opState="fill" />
+      <Entry label="PURGE" opState="purge" />
+      <Entry label="PULSE" opState="pulse" />
     </Panel>
   );
 });

@@ -1,11 +1,15 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { twMerge } from "tailwind-merge";
 
-import { type Command } from "@/lib/command";
+import { type LaunchState } from "@/lib/launchState";
+import { type StationOpState } from "@/lib/stationInterface";
+import { type LaunchMachineEvent } from "@/machines/launchMachine";
 
-import { useCommandSender } from "./commandSenderProvider";
 import { StatusButton } from "./design/statusButton";
-import { useLaunchMachineSelector } from "./launchMachineProvider";
+import {
+  useLaunchMachineActorRef,
+  useLaunchMachineSelector,
+} from "./launchMachineProvider";
 
 export type LaunchControlEntryState =
   | "not-ready"
@@ -13,57 +17,94 @@ export type LaunchControlEntryState =
   | "executing"
   | "stopped";
 
-interface Props {
+type Props = {
   label: string;
-  state: LaunchControlEntryState;
-  executeCommand: Command;
-  stopCommand: Command;
-}
+  isAbort?: boolean;
+} & (
+  | {
+      type: "opState";
+      executeOpState: StationOpState;
+      stopOpState: StationOpState | null;
+      field?: undefined;
+    }
+  | {
+      type: "arm";
+      executeOpState?: undefined;
+      stopOpState?: undefined;
+      field: keyof LaunchState["armStatus"];
+    }
+);
 
 export const LaunchControlEntry = memo(function LaunchControlEntry({
   label,
-  state,
-  executeCommand,
-  stopCommand,
+  isAbort = false,
+  ...rest
 }: Props) {
-  const { sendCommand } = useCommandSender();
+  const launchActorRef = useLaunchMachineActorRef();
 
-  const canExecute = useLaunchMachineSelector((state) =>
-    state.can(executeCommand)
+  const executeEvent = useMemo<LaunchMachineEvent>(
+    () =>
+      rest.type === "opState"
+        ? { type: "MUTATE_STATION_OP_STATE", value: rest.executeOpState }
+        : { type: "UPDATE_ARM_STATUS", data: { [rest.field]: true } },
+    [rest.executeOpState, rest.field, rest.type]
   );
-  const canStop = useLaunchMachineSelector((state) => state.can(stopCommand));
+
+  const stopEvent = useMemo<LaunchMachineEvent | null>(
+    () =>
+      rest.type === "opState"
+        ? rest.stopOpState != null
+          ? { type: "MUTATE_STATION_OP_STATE", value: rest.stopOpState }
+          : null
+        : { type: "UPDATE_ARM_STATUS", data: { [rest.field]: false } },
+    [rest.stopOpState, rest.field, rest.type]
+  );
+
+  const executeDisabled = useLaunchMachineSelector(
+    (state) => !state.can(executeEvent)
+  );
+
+  const stopDisabled = useLaunchMachineSelector(
+    (state) => !stopEvent || !state.can(stopEvent)
+  );
+
+  const isExecuting = useLaunchMachineSelector((state) =>
+    rest.type === "opState"
+      ? state.context.stationState?.opState === rest.executeOpState
+      : state.context.launchState.armStatus[rest.field]
+  );
 
   const handleExecute = useCallback(() => {
-    sendCommand(executeCommand);
-  }, [executeCommand, sendCommand]);
+    launchActorRef.send(executeEvent);
+  }, [executeEvent, launchActorRef]);
 
   const handleStop = useCallback(() => {
-    sendCommand(stopCommand);
-  }, [stopCommand, sendCommand]);
-
-  if (state === "not-ready") {
-    return null;
-  }
+    if (stopEvent) {
+      launchActorRef.send(stopEvent);
+    }
+  }, [launchActorRef, stopEvent]);
 
   return (
     <div className="flex items-center p-4 border rounded-lg gap-4 bg-gray-el-bg border-gray-border">
       <div
         className={twMerge(
           "shrink-0 w-8 h-8 mr-2 rounded-full appearance-none",
-          state === "not-started" && "bg-gray-solid",
-          state === "executing" && "bg-green-solid",
-          state === "stopped" && "bg-red-solid"
+          isExecuting
+            ? isAbort
+              ? "bg-red-solid"
+              : "bg-green-solid"
+            : "bg-gray-solid"
         )}
       />
       <p className="flex-1 text-gray-text">{label}</p>
       <StatusButton
         color="green"
-        disabled={!canExecute}
+        disabled={executeDisabled}
         onClick={handleExecute}
       >
         EXECUTE
       </StatusButton>
-      <StatusButton color="red" disabled={!canStop} onClick={handleStop}>
+      <StatusButton color="red" disabled={stopDisabled} onClick={handleStop}>
         STOP
       </StatusButton>
     </div>

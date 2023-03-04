@@ -1,33 +1,49 @@
 import { memo, useCallback } from "react";
 import { twMerge } from "tailwind-merge";
 
-import { type Command } from "@/lib/command";
+import { type LaunchState } from "@/lib/launchState";
 
-import { useCommandSender } from "./commandSenderProvider";
 import { CheckboxEntry } from "./design/checkboxEntry";
 import { Panel } from "./design/panel";
-import { useLaunchMachineSelector } from "./launchMachineProvider";
+import {
+  useLaunchMachineActorRef,
+  useLaunchMachineSelector,
+} from "./launchMachineProvider";
 
 const Entry = memo(function Entry({
   label,
-  yes,
-  toggleCommand,
+  field,
 }: {
   label: string;
-  yes: boolean;
-  toggleCommand: Command;
+  field: keyof LaunchState["goPoll"];
 }) {
-  const { sendCommand } = useCommandSender();
+  const launchActorRef = useLaunchMachineActorRef();
+
+  const checked = useLaunchMachineSelector(
+    (state) => state.context.launchState.goPoll[field]
+  );
+
+  const disabled = useLaunchMachineSelector(
+    (state) =>
+      !state.can({
+        type: "UPDATE_GO_POLL",
+        data: { [field]: !checked },
+      })
+  );
 
   const handleChange = useCallback(() => {
-    sendCommand(toggleCommand);
-  }, [sendCommand, toggleCommand]);
+    launchActorRef.send({
+      type: "UPDATE_GO_POLL",
+      data: { [field]: !checked },
+    });
+  }, [checked, field, launchActorRef]);
 
   return (
     <CheckboxEntry
       size="lg"
       label={label}
-      checked={yes}
+      checked={checked}
+      disabled={disabled}
       onChange={handleChange}
     />
   );
@@ -54,60 +70,22 @@ const ProgressBar = memo(function ProgressBar({
 });
 
 export const GoPoll = memo(function GoPoll() {
-  const safetyOfficer1Yes = useLaunchMachineSelector((state) =>
-    state.matches("preFire.goPoll.safetyOfficer1.yes")
+  const count = useLaunchMachineSelector(
+    (state) =>
+      Object.values(state.context.launchState.goPoll).filter(Boolean).length
   );
-  const safetyOfficer2Yes = useLaunchMachineSelector((state) =>
-    state.matches("preFire.goPoll.safetyOfficer2.yes")
+  const total = useLaunchMachineSelector(
+    (state) => Object.keys(state.context.launchState.goPoll).length
   );
-  const adviserYes = useLaunchMachineSelector((state) =>
-    state.matches("preFire.goPoll.adviser.yes")
-  );
-  const propLeadYes = useLaunchMachineSelector((state) =>
-    state.matches("preFire.goPoll.propLead.yes")
-  );
-  const elecLeadYes = useLaunchMachineSelector((state) =>
-    state.matches("preFire.goPoll.elecLead.yes")
-  );
-
-  const yesArray = [
-    safetyOfficer1Yes,
-    safetyOfficer2Yes,
-    adviserYes,
-    propLeadYes,
-    elecLeadYes,
-  ];
-  const count = yesArray.filter((yes) => yes).length;
-  const total = yesArray.length;
 
   return (
     <Panel className="flex flex-col gap-4">
       <p className="text-lg text-gray-text">Go/No Go Poll</p>
-      <Entry
-        label="SAFETY OFFICER 1"
-        yes={safetyOfficer1Yes}
-        toggleCommand="GO_POLL_TOGGLE_SAFETY_OFFICER_1"
-      />
-      <Entry
-        label="SAFETY OFFICER 2"
-        yes={safetyOfficer2Yes}
-        toggleCommand="GO_POLL_TOGGLE_SAFETY_OFFICER_2"
-      />
-      <Entry
-        label="ADVISER"
-        yes={adviserYes}
-        toggleCommand="GO_POLL_TOGGLE_ADVISER"
-      />
-      <Entry
-        label="PROP LEAD"
-        yes={propLeadYes}
-        toggleCommand="GO_POLL_TOGGLE_PROP_LEAD"
-      />
-      <Entry
-        label="ELEC LEAD"
-        yes={elecLeadYes}
-        toggleCommand="GO_POLL_TOGGLE_ELEC_LEAD"
-      />
+      <Entry label="SAFETY OFFICER 1" field="safetyOfficer1" />
+      <Entry label="SAFETY OFFICER 2" field="safetyOfficer2" />
+      <Entry label="ADVISER" field="adviser" />
+      <Entry label="PROP LEAD" field="propLead" />
+      <Entry label="ELEC LEAD" field="elecLead" />
       <div className="flex-1" />
       <p className="text-gray-text">
         {count}/{total} Go
