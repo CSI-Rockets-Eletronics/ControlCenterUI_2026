@@ -15,7 +15,7 @@ export interface Record<Data = unknown> {
 export class Api {
   constructor(
     private readonly stationId: string,
-    private readonly sessionId: string
+    private readonly sessionId?: string
   ) {}
 
   async createMessage(options: {
@@ -159,10 +159,7 @@ export class Api {
 }
 
 // TODO do not hardcode these
-export const tempGlobalApi = new Api(
-  "cl9vt57vf0000qw4nmwr6glcm",
-  "cl9vtcmg30009p94ngwhb92jx"
-);
+export const tempGlobalApi = new Api("cl9vt57vf0000qw4nmwr6glcm");
 
 // @ts-expect-error for testing only
 window.api = tempGlobalApi; // TODO remove
