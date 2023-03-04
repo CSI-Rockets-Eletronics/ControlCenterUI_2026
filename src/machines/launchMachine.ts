@@ -319,6 +319,10 @@ export function createLaunchMachine(api: Api) {
       guards: {
         hasPendingLaunchState: (context) => !!context.pendingLaunchState,
         canMutateOpState: (context, event) => {
+          if (event.value === context.stationState?.opState) {
+            return false;
+          }
+
           if (event.value === STATION_FIRE_OP_STATE) {
             return (
               checklistIsComplete(context.launchState.preFillChecklist) &&
