@@ -10,20 +10,25 @@ import {
 
 import { Root } from "./routes/root";
 
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+  [
+    {
+      path: "/",
+      loader: () => redirect("/cl9vt57vf0000qw4nmwr6glcm"),
+    },
+    {
+      path: "/:stationId",
+      element: <Root />,
+    },
+    {
+      path: "/:stationId/:sessionId",
+      element: <Root />,
+    },
+  ],
   {
-    path: "/",
-    loader: () => redirect("/cl9vt57vf0000qw4nmwr6glcm"),
-  },
-  {
-    path: "/:stationId",
-    element: <Root />,
-  },
-  {
-    path: "/:stationId/:sessionId",
-    element: <Root />,
-  },
-]);
+    basename: import.meta.env.BASE_URL,
+  }
+);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
