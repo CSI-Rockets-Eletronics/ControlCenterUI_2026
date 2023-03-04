@@ -1,14 +1,28 @@
 import { createActorContext } from "@xstate/react";
+import { type ReactNode, useMemo } from "react";
 
-import { tempGlobalApi } from "@/lib/api";
+import { Api } from "@/lib/api";
 import { createLaunchMachine } from "@/machines/launchMachine";
 
-export const LaunchMachineContext = createActorContext(
-  createLaunchMachine(tempGlobalApi)
-);
+const Context = createActorContext(createLaunchMachine(new Api("")));
 
-export const LaunchMachineProvider = LaunchMachineContext.Provider;
+export function LaunchMachineProvider({
+  stationId,
+  sessionId,
+  children,
+}: {
+  stationId: string;
+  sessionId?: string;
+  children: ReactNode;
+}) {
+  const machine = useMemo(() => {
+    const api = new Api(stationId, sessionId);
+    return createLaunchMachine(api);
+  }, [stationId, sessionId]);
 
-export const useLaunchMachineSelector = LaunchMachineContext.useSelector;
+  return <Context.Provider machine={machine}>{children}</Context.Provider>;
+}
 
-export const useLaunchMachineActorRef = LaunchMachineContext.useActorRef;
+export const useLaunchMachineSelector = Context.useSelector;
+
+export const useLaunchMachineActorRef = Context.useActorRef;

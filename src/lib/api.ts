@@ -157,9 +157,3 @@ export class Api {
     }
   }
 }
-
-// TODO do not hardcode these
-export const tempGlobalApi = new Api("cl9vt57vf0000qw4nmwr6glcm");
-
-// @ts-expect-error for testing only
-window.api = tempGlobalApi; // TODO remove
