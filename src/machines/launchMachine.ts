@@ -112,7 +112,7 @@ export function createLaunchMachine(api: Api) {
                     UPDATE_ACTIVE_PANEL: { actions: "updateActivePanel" },
                     UPDATE_PRE_FILL_CHECKLIST: { actions: "updatePreFillChecklist" },
                     UPDATE_GO_POLL: { actions: "updateGoPoll" },
-                    UPDATE_ARM_STATUS: { actions: "updateArmStatus" },
+                    UPDATE_ARM_STATUS: { actions: "updateArmStatus", cond: "canUpdateArmStatus" },
                     UPDATE_RANGE_PERMIT: { actions: "updateRangePermit" },
                     UPDATE_VISUAL_CONTACT_CONFIRMED: { actions: "updateVisualContactConfirmed" },
                   },
@@ -318,6 +318,14 @@ export function createLaunchMachine(api: Api) {
       },
       guards: {
         hasPendingLaunchState: (context) => !!context.pendingLaunchState,
+        canUpdateArmStatus: (context, event) => {
+          const oldArmStatus = context.launchState.armStatus;
+          const newArmStatus = { ...oldArmStatus, ...event.data };
+          return (
+            newArmStatus.commandCenter !== oldArmStatus.commandCenter ||
+            newArmStatus.abortControl !== oldArmStatus.abortControl
+          );
+        },
         canMutateOpState: (context, event) => {
           if (event.value === context.stationState?.opState) {
             return false;
