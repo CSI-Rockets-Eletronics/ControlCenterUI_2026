@@ -24,7 +24,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^1.9.1",
-    "xstate": "^4.35.4"
+    "xstate": "^4.35.4",
+    "zod": "^3.20.6"
   },
   "devDependencies": {
     "@radix-ui/colors": "^0.1.8",

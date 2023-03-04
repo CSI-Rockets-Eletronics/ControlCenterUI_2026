@@ -1,13 +1,15 @@
+import { type z } from "zod";
+
 const ORIGIN = "https://csiwiki.me.columbia.edu/rocketsdata";
 
-export interface Message {
+export interface Message<Data = unknown> {
   consumed: boolean;
-  data: unknown;
+  data: Data;
 }
 
-export interface Record {
+export interface Record<Data = unknown> {
   timestamp: number;
-  data: unknown;
+  data: Data;
 }
 
 export class Api {
@@ -41,7 +43,12 @@ export class Api {
     return { receivedAt };
   }
 
-  async listMessages(options: { target: string }): Promise<Message[]> {
+  async listMessages<Schema extends z.Schema = z.ZodUnknown>(
+    options: {
+      target: string;
+    },
+    schema?: Schema
+  ): Promise<Message<z.infer<Schema>>[]> {
     const res = await fetch(`${ORIGIN}/message/list`, {
       method: "POST",
       headers: {
@@ -59,15 +66,26 @@ export class Api {
     }
 
     const { messages } = await res.json();
+
+    if (schema) {
+      return messages.map((message: Message) => ({
+        ...message,
+        data: schema.parse(message.data),
+      }));
+    }
+
     return messages;
   }
 
-  async listRecords(options: {
-    source: string;
-    rangeStart?: number | null;
-    rangeEnd?: number | null;
-    take?: number | null;
-  }): Promise<Record[]> {
+  async listRecords<Schema extends z.Schema = z.ZodUnknown>(
+    options: {
+      source: string;
+      rangeStart?: number | null;
+      rangeEnd?: number | null;
+      take?: number | null;
+    },
+    schema?: Schema
+  ): Promise<Record<z.infer<Schema>>[]> {
     const res = await fetch(`${ORIGIN}/record/list`, {
       method: "POST",
       headers: {
@@ -85,6 +103,14 @@ export class Api {
     }
 
     const { records } = await res.json();
+
+    if (schema) {
+      return records.map((record: Record) => ({
+        ...record,
+        data: schema.parse(record.data),
+      }));
+    }
+
     return records;
   }
 
