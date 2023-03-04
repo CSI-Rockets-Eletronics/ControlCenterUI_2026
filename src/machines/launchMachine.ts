@@ -327,7 +327,8 @@ export function createLaunchMachine(api: Api) {
             return (
               checklistIsComplete(context.launchState.preFillChecklist) &&
               checklistIsComplete(context.launchState.goPoll) &&
-              armStatusIsComplete(context.launchState.armStatus)
+              armStatusIsComplete(context.launchState.armStatus) &&
+              context.stationState?.opState === "keep"
             );
           } else {
             return true;
