@@ -20,6 +20,10 @@ export const SyncStatusPanel = memo(function SyncStatusPanel() {
     state.matches("networkError")
   );
 
+  const dismissNetworkErrorDisabled = useLaunchMachineSelector(
+    (state) => !state.can("DISMISS_NETWORK_ERROR")
+  );
+
   const dismissNetworkError = useCallback(() => {
     launchActorRef.send("DISMISS_NETWORK_ERROR");
   }, [launchActorRef]);
@@ -36,7 +40,11 @@ export const SyncStatusPanel = memo(function SyncStatusPanel() {
     return (
       <Panel color="red" className="flex items-center gap-4">
         <p className="text-gray-text">Sync Error!</p>
-        <Button onClick={dismissNetworkError} color="red">
+        <Button
+          color="red"
+          disabled={dismissNetworkErrorDisabled}
+          onClick={dismissNetworkError}
+        >
           Retry
         </Button>
       </Panel>

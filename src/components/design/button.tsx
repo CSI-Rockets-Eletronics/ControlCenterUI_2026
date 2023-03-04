@@ -3,14 +3,14 @@ import { twMerge } from "tailwind-merge";
 
 interface Props {
   color: "gray" | "green" | "red";
-  disabled?: boolean;
+  disabled: boolean;
   onClick?: () => void;
   children?: string;
 }
 
 export const Button = memo(function Button({
   color,
-  disabled = false,
+  disabled,
   onClick,
   children,
 }: Props) {
