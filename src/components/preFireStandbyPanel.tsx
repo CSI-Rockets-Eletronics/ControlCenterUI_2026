@@ -16,8 +16,16 @@ export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
     (state) => !state.can({ type: "UPDATE_ACTIVE_PANEL", value: "launch" })
   );
 
+  const abortDisabled = useLaunchMachineSelector(
+    (state) => !state.can({ type: "MUTATE_STATION_OP_STATE", value: "abort" })
+  );
+
   const handleGoToLaunchMode = useCallback(() => {
     launchActorRef.send({ type: "UPDATE_ACTIVE_PANEL", value: "launch" });
+  }, [launchActorRef]);
+
+  const handleAbort = useCallback(() => {
+    launchActorRef.send({ type: "MUTATE_STATION_OP_STATE", value: "abort" });
   }, [launchActorRef]);
 
   return (
@@ -30,11 +38,7 @@ export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
       </div>
 
       <div className="flex justify-between row-start-2 row-span-1 col-start-1 col-span-2 gap-4">
-        <Button
-          color="red"
-          disabled
-          // TODO implement abort
-        >
+        <Button color="red" disabled={abortDisabled} onClick={handleAbort}>
           ABORT
         </Button>
         <Button
