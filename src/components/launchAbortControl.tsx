@@ -19,10 +19,25 @@ export const LaunchAbortControl = memo(function LaunchAbortControl() {
       })
   );
 
+  const goToRecoveryModeDisabled = useLaunchMachineSelector(
+    (state) =>
+      !state.can({
+        type: "UPDATE_ACTIVE_PANEL",
+        value: "recovery",
+      })
+  );
+
   const handleGoToStandbyMode = useCallback(() => {
     launchActorRef.send({
       type: "UPDATE_ACTIVE_PANEL",
       value: "standby",
+    });
+  }, [launchActorRef]);
+
+  const handleGoToRecoveryMode = useCallback(() => {
+    launchActorRef.send({
+      type: "UPDATE_ACTIVE_PANEL",
+      value: "recovery",
     });
   }, [launchActorRef]);
 
@@ -38,13 +53,20 @@ export const LaunchAbortControl = memo(function LaunchAbortControl() {
         stopOpState={null}
       />
 
-      <div className="flex justify-end mt-4">
+      <div className="flex justify-between mt-4 gap-4">
         <Button
           color="green"
           disabled={goToStandbyModeDisabled}
           onClick={handleGoToStandbyMode}
         >
           RETURN TO STANDBY MODE
+        </Button>
+        <Button
+          color="green"
+          disabled={goToRecoveryModeDisabled}
+          onClick={handleGoToRecoveryMode}
+        >
+          GO TO RECOVERY MODE
         </Button>
       </div>
     </Panel>

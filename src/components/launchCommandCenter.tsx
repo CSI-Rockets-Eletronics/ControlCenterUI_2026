@@ -1,16 +1,10 @@
-import { memo, useCallback } from "react";
+import { memo } from "react";
 
-import { Button } from "./design/button";
 import { Panel } from "./design/panel";
 import { LaunchControlEntry } from "./launchControlEntry";
-import {
-  useLaunchMachineActorRef,
-  useLaunchMachineSelector,
-} from "./launchMachineProvider";
+import { useLaunchMachineSelector } from "./launchMachineProvider";
 
 export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
-  const launchActorRef = useLaunchMachineActorRef();
-
   const fireDisabled = useLaunchMachineSelector(
     (state) =>
       !state.can({
@@ -19,20 +13,9 @@ export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
       })
   );
 
-  const goToRecoveryModeDisabled = useLaunchMachineSelector(
-    (state) =>
-      !state.can({
-        type: "UPDATE_ACTIVE_PANEL",
-        value: "recovery",
-      })
+  const isFired = useLaunchMachineSelector(
+    (state) => state.context.stationState?.opState === "fire"
   );
-
-  const handleGoToRecoveryMode = useCallback(() => {
-    launchActorRef.send({
-      type: "UPDATE_ACTIVE_PANEL",
-      value: "recovery",
-    });
-  }, [launchActorRef]);
 
   return (
     <Panel className="flex flex-col gap-3">
@@ -52,18 +35,11 @@ export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
         stopOpState="standby" // TODO standby for stop?
       />
 
-      <div className="flex items-center mt-4 gap-4">
-        <p className="flex-1 text-lg font-bold text-green-text-dim">
+      {isFired && (
+        <p className="mt-4 text-lg font-bold text-center text-green-text-dim">
           LIFT OFF!!!
         </p>
-        <Button
-          color="green"
-          disabled={goToRecoveryModeDisabled}
-          onClick={handleGoToRecoveryMode}
-        >
-          GO TO RECOVERY MODE
-        </Button>
-      </div>
+      )}
     </Panel>
   );
 });
