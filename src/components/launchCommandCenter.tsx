@@ -11,11 +11,12 @@ import {
 export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
   const launchActorRef = useLaunchMachineActorRef();
 
-  const canFire = useLaunchMachineSelector((state) =>
-    state.can({
-      type: "MUTATE_STATION_OP_STATE",
-      value: "fire",
-    })
+  const fireDisabled = useLaunchMachineSelector(
+    (state) =>
+      !state.can({
+        type: "MUTATE_STATION_OP_STATE",
+        value: "fire",
+      })
   );
 
   const goToRecoveryModeDisabled = useLaunchMachineSelector(
@@ -43,14 +44,13 @@ export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
         stopOpState="standby" // TODO standby for stop?
       />
       <LaunchControlEntry label="ARM" type="arm" field="commandCenter" />
-      {canFire && (
-        <LaunchControlEntry
-          label="FIRE"
-          type="opState"
-          executeOpState="fire"
-          stopOpState="standby" // TODO standby for stop?
-        />
-      )}
+      <LaunchControlEntry
+        label="FIRE"
+        disabled={fireDisabled}
+        type="opState"
+        executeOpState="fire"
+        stopOpState="standby" // TODO standby for stop?
+      />
 
       <div className="flex items-center mt-4 gap-4">
         <p className="flex-1 text-lg font-bold text-green-text-dim">

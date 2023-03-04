@@ -20,6 +20,7 @@ export type LaunchControlEntryState =
 type Props = {
   label: string;
   isAbort?: boolean;
+  disabled?: boolean;
 } & (
   | {
       type: "opState";
@@ -38,6 +39,7 @@ type Props = {
 export const LaunchControlEntry = memo(function LaunchControlEntry({
   label,
   isAbort = false,
+  disabled = false,
   ...rest
 }: Props) {
   const launchActorRef = useLaunchMachineActorRef();
@@ -85,7 +87,12 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
   }, [launchActorRef, stopEvent]);
 
   return (
-    <div className="flex items-center p-4 border rounded-lg gap-4 bg-gray-el-bg border-gray-border">
+    <div
+      className={twMerge(
+        "flex items-center p-4 border rounded-lg gap-4 bg-gray-el-bg border-gray-border",
+        disabled && "opacity-50 pointer-events-none"
+      )}
+    >
       <div
         className={twMerge(
           "shrink-0 w-8 h-8 mr-2 rounded-full appearance-none",
@@ -99,12 +106,16 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
       <p className="flex-1 text-gray-text">{label}</p>
       <StatusButton
         color="green"
-        disabled={executeDisabled}
+        disabled={!disabled && executeDisabled}
         onClick={handleExecute}
       >
         EXECUTE
       </StatusButton>
-      <StatusButton color="red" disabled={stopDisabled} onClick={handleStop}>
+      <StatusButton
+        color="red"
+        disabled={!disabled && stopDisabled}
+        onClick={handleStop}
+      >
         STOP
       </StatusButton>
     </div>
