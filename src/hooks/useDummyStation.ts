@@ -60,8 +60,6 @@ class DummyStation {
         fillTank: randBool(),
         igniters: randBool(),
         mechPower: randBool(),
-      },
-      tank: {
         combustionPressure: randRange(0, 100),
         oxidizerTankTemp: randRange(0, 100),
       },
