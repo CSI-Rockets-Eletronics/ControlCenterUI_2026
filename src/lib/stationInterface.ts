@@ -25,10 +25,10 @@ export const stationRelaysSchema = z.object({
 });
 
 export const stationStatusSchema = z.object({
-  battery: z.boolean(),
-  fillTank: z.boolean(),
-  igniters: z.boolean(),
-  mechPower: z.boolean(),
+  batteryConnected: z.boolean(),
+  fillTankOpen: z.boolean(),
+  ignitersConnected: z.boolean(),
+  mechPowerOn: z.boolean(),
   combustionPressure: z.number(),
   oxidizerTankTemp: z.number(),
 });
