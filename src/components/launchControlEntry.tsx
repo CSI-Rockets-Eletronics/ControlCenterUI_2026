@@ -67,7 +67,7 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
   );
 
   const stopDisabled = useLaunchMachineSelector(
-    (state) => !stopEvent || !state.can(stopEvent)
+    (state) => state.can(executeEvent) || !stopEvent || !state.can(stopEvent)
   );
 
   const isExecuting = useLaunchMachineSelector((state) =>
