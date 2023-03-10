@@ -18,7 +18,7 @@ export const StatusButton = memo(function StatusButton({
     <button
       type="button"
       className={twMerge(
-        "block px-4 py-2 rounded-lg border-2 bg-gray-el-bg hover:bg-gray-el-bg-hover active:bg-gray-el-bg-active disabled:opacity-50",
+        "block px-4 py-1.5 rounded-lg border-2 bg-gray-el-bg hover:bg-gray-el-bg-hover active:bg-gray-el-bg-active disabled:opacity-50",
         disabled && "opacity-50 pointer-events-none",
         color === "none" && "text-gray-text",
         color === "green" && "text-green-solid",

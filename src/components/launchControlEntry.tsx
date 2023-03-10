@@ -89,7 +89,7 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
   return (
     <div
       className={twMerge(
-        "flex items-center p-4 border rounded-lg gap-4 bg-gray-el-bg border-gray-border",
+        "flex items-center px-4 py-3 border rounded-lg gap-4 bg-gray-el-bg border-gray-border",
         disabled && "opacity-50 pointer-events-none"
       )}
     >
