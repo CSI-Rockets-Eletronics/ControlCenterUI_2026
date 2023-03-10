@@ -40,8 +40,36 @@ class DummyStation {
       this.opState = message.data;
     }
 
+    const randBool = () => Math.random() > 0.5;
+
+    const randRange = (min: number, max: number) =>
+      min + (max - min) * Math.random();
+
     const state: StationState = {
       opState: this.opState,
+      relays: {
+        fill: randBool(),
+        vent: randBool(),
+        pyroValve: randBool(),
+        pyroCutter: randBool(),
+        igniter: randBool(),
+        extra: randBool(),
+      },
+      status: {
+        battery: randBool(),
+        fillTank: randBool(),
+        igniters: randBool(),
+        mechPower: randBool(),
+      },
+      tank: {
+        combustionPressure: randRange(0, 100),
+        oxidizerTankTemp: randRange(0, 100),
+      },
+      gps: {
+        lat: randRange(0, 10_000),
+        long: randRange(0, 10_000),
+        alt: randRange(0, 10_000),
+      },
     };
 
     this.api.createRecord({
