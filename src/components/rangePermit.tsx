@@ -15,25 +15,25 @@ const Entry = memo(function Entry({
   field,
 }: {
   label: string;
-  field: keyof LaunchState["goPoll"];
+  field: keyof LaunchState["rangePermit"];
 }) {
   const launchActorRef = useLaunchMachineActorRef();
 
   const checked = useLaunchMachineSelector(
-    (state) => state.context.launchState.goPoll[field]
+    (state) => state.context.launchState.rangePermit[field]
   );
 
   const disabled = useLaunchMachineSelector(
     (state) =>
       !state.can({
-        type: "UPDATE_GO_POLL",
+        type: "UPDATE_RANGE_PERMIT",
         data: { [field]: !checked },
       })
   );
 
   const handleChange = useCallback(() => {
     launchActorRef.send({
-      type: "UPDATE_GO_POLL",
+      type: "UPDATE_RANGE_PERMIT",
       data: { [field]: !checked },
     });
   }, [checked, field, launchActorRef]);
@@ -49,26 +49,25 @@ const Entry = memo(function Entry({
   );
 });
 
-export const GoPoll = memo(function GoPoll() {
+export const RangePermit = memo(function RangePermit() {
   const count = useLaunchMachineSelector(
     (state) =>
-      Object.values(state.context.launchState.goPoll).filter(Boolean).length
+      Object.values(state.context.launchState.rangePermit).filter(Boolean)
+        .length
   );
   const total = useLaunchMachineSelector(
-    (state) => Object.keys(state.context.launchState.goPoll).length
+    (state) => Object.keys(state.context.launchState.rangePermit).length
   );
 
   return (
     <Panel className="flex flex-col gap-4">
-      <p className="text-lg text-gray-text">Go/No Go Poll</p>
+      <p className="text-lg text-gray-text">Range Permit</p>
       <Entry label="SAFETY OFFICER 1" field="safetyOfficer1" />
       <Entry label="SAFETY OFFICER 2" field="safetyOfficer2" />
       <Entry label="ADVISER" field="adviser" />
-      <Entry label="PROP LEAD" field="propLead" />
-      <Entry label="ELEC LEAD" field="elecLead" />
       <div className="flex-1" />
       <p className="text-gray-text">
-        {count}/{total} Go
+        {count}/{total} Clear
       </p>
       <ProgressBar progress={count / total} />
     </Panel>

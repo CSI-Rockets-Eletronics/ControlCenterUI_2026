@@ -63,9 +63,7 @@ export const LaunchAbortControl = memo(function LaunchAbortControl() {
         </Button>
         <Button
           color="green"
-          // TODO: enable this button when the recovery mode is implemented
-          // disabled={goToRecoveryModeDisabled}
-          disabled
+          disabled={goToRecoveryModeDisabled}
           onClick={handleGoToRecoveryMode}
         >
           GO TO RECOVERY MODE
