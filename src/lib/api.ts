@@ -21,7 +21,6 @@ export class Api {
   async createMessage(options: {
     target: string;
     data: unknown;
-    assertLastMessageReceivedAt?: number | null;
   }): Promise<{ receivedAt: number }> {
     const res = await fetch(`${ORIGIN}/message`, {
       method: "POST",
