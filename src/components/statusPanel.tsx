@@ -33,6 +33,20 @@ const OxidizerTankTempDisplay = memo(function OxidizerTankTempDisplay() {
   );
 });
 
+const AltitudeDisplay = memo(function OxidizerTankTempDisplay() {
+  const altitude = useLaunchMachineSelector((state) =>
+    Math.round(state.context.stationState?.gps.alt ?? 0)
+  );
+
+  return (
+    <StatusDisplay
+      label="Altitude (ft)"
+      color="green"
+      value={String(altitude)}
+    />
+  );
+});
+
 export const StatusPanel = memo(function StatusPanel() {
   const status = useLaunchMachineSelector((state) => {
     const status = state.context.stationState?.status;
@@ -43,6 +57,10 @@ export const StatusPanel = memo(function StatusPanel() {
       mechPowerOn: !!status?.mechPowerOn,
     };
   }, shallowEqual);
+
+  const isRecovery = useLaunchMachineSelector(
+    (state) => state.context.launchState.activePanel === "recovery"
+  );
 
   return (
     <Panel className="flex flex-col gap-4">
@@ -68,8 +86,14 @@ export const StatusPanel = memo(function StatusPanel() {
         value={status.mechPowerOn ? "On" : "Off"}
       />
 
-      <CombustionPressureDisplay />
-      <OxidizerTankTempDisplay />
+      {isRecovery ? (
+        <AltitudeDisplay />
+      ) : (
+        <>
+          <CombustionPressureDisplay />
+          <OxidizerTankTempDisplay />
+        </>
+      )}
     </Panel>
   );
 });
