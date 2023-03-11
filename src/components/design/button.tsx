@@ -21,9 +21,9 @@ export const Button = memo(function Button({
         "block px-6 py-4 rounded-lg text-gray-text font-bold disabled:opacity-50",
         disabled && "opacity-50 pointer-events-none",
         color === "gray" &&
-          "bg-gray-solid hover:bg-gray-solid-hover active:bg-gray-solid-active",
+          "bg-gray-fallback-8 hover:bg-gray-fallback-9 active:bg-gray-fallback-10",
         color === "green" &&
-          "bg-green-solid hover:bg-green-solid-hover active:bg-green-solid-active",
+          "bg-green-fallback-8 hover:bg-green-fallback-9 active:bg-green-fallback-10",
         color === "red" &&
           "bg-red-solid hover:bg-red-solid-hover active:bg-red-solid-active"
       )}
