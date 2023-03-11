@@ -2,6 +2,12 @@ import { type z } from "zod";
 
 const ORIGIN = "https://csiwiki.me.columbia.edu/rocketsdata";
 
+export interface Session {
+  id: string;
+  createdAt: number;
+  name: string;
+}
+
 export interface Message<Data = unknown> {
   consumed: boolean;
   data: Data;
@@ -17,6 +23,26 @@ export class Api {
     private readonly stationId: string,
     private readonly sessionId?: string
   ) {}
+
+  async createSession(options: { name: string }): Promise<Session> {
+    const res = await fetch(`${ORIGIN}/session`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        stationId: this.stationId,
+        ...options,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to create session");
+    }
+
+    const session = await res.json();
+    return session;
+  }
 
   async createMessage(options: {
     target: string;
