@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { type Api } from "@/lib/api";
 import {
@@ -77,7 +78,24 @@ class DummyStation {
   }
 }
 
-export function useDummyStation(api: Api, enabled: boolean) {
+export function useDummyStation(api: Api) {
+  const [searchParams] = useSearchParams();
+
+  const enabled = searchParams.has("dummy");
+  const newSessionName = searchParams.get("session");
+
+  const lastCreatedSessionName = useRef<string | null>(null);
+
+  useEffect(() => {
+    // hack to prevent React's 2x effect call
+    if (newSessionName === lastCreatedSessionName.current) return;
+    lastCreatedSessionName.current = newSessionName;
+
+    if (newSessionName != null) {
+      void api.createSession({ name: newSessionName });
+    }
+  }, [api, newSessionName]);
+
   useEffect(() => {
     if (!enabled) return;
 

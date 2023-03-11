@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import { ControlCenter } from "@/components/controlCenter";
 import { LaunchMachineProvider } from "@/components/launchMachineProvider";
@@ -22,10 +22,7 @@ export const Root = memo(function Root() {
     [stationId, sessionId]
   );
 
-  const [searchParams] = useSearchParams();
-
-  const dummyStationEnabled = searchParams.has("dummy");
-  useDummyStation(api, dummyStationEnabled);
+  useDummyStation(api);
 
   return (
     <LaunchMachineProvider api={api}>
