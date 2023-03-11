@@ -5,6 +5,34 @@ import { Panel } from "./design/panel";
 import { StatusDisplay } from "./design/statusDisplay";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
+const CombustionPressureDisplay = memo(function TankPressureDisplay() {
+  const combustionPressure = useLaunchMachineSelector((state) =>
+    Math.round(state.context.stationState?.status.combustionPressure ?? 0)
+  );
+
+  return (
+    <StatusDisplay
+      label="Combustion Chamber Pressure (PSI)"
+      color="green"
+      value={String(combustionPressure)}
+    />
+  );
+});
+
+const OxidizerTankTempDisplay = memo(function OxidizerTankTempDisplay() {
+  const oxidizerTankTemp = useLaunchMachineSelector((state) =>
+    Math.round(state.context.stationState?.status.oxidizerTankTemp ?? 0)
+  );
+
+  return (
+    <StatusDisplay
+      label="Oxidizer Tank Temp (F)"
+      color="green"
+      value={String(oxidizerTankTemp)}
+    />
+  );
+});
+
 export const StatusPanel = memo(function StatusPanel() {
   const status = useLaunchMachineSelector((state) => {
     const status = state.context.stationState?.status;
@@ -39,6 +67,9 @@ export const StatusPanel = memo(function StatusPanel() {
         color={status.mechPowerOn ? "yellow" : "green"}
         value={status.mechPowerOn ? "On" : "Off"}
       />
+
+      <CombustionPressureDisplay />
+      <OxidizerTankTempDisplay />
     </Panel>
   );
 });
