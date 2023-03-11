@@ -2,11 +2,15 @@ import { memo } from "react";
 
 import { RangePermit } from "./rangePermit";
 import { StatusPanel } from "./statusPanel";
+import { WeatherPanel } from "./weatherPanel";
 
 export const RecoveryPanel = memo(function RecoveryPanel() {
   return (
     <div className="grid grid-cols-[1fr,2fr,1fr] gap-4">
-      <RangePermit />
+      <div className="grid grid-rows-[auto,auto] gap-4">
+        <RangePermit />
+        <WeatherPanel />
+      </div>
       <div />
       <StatusPanel />
     </div>
