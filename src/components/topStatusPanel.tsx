@@ -1,8 +1,28 @@
+import { shallowEqual } from "@xstate/react";
 import { memo } from "react";
 
+import { BooleanDisplay } from "./design/booleanDisplay";
 import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 import { SyncStatusPanel } from "./syncStatusPanel";
+
+const RelaysGroup = memo(function RelaysGroup() {
+  const relays = useLaunchMachineSelector(
+    (state) => state.context.stationState?.relays,
+    shallowEqual
+  );
+
+  return (
+    <div className="flex items-center gap-4">
+      <BooleanDisplay label="Fill" value={!!relays?.fill} />
+      <BooleanDisplay label="Vent" value={!!relays?.vent} />
+      <BooleanDisplay label="Pyro Valve" value={!!relays?.pyroValve} />
+      <BooleanDisplay label="Pyro Cutter" value={!!relays?.pyroCutter} />
+      <BooleanDisplay label="Igniter" value={!!relays?.igniter} />
+      <BooleanDisplay label="Extra" value={!!relays?.extra} />
+    </div>
+  );
+});
 
 export const TopStatusPanel = memo(function TopStatusPanel() {
   const activePanel = useLaunchMachineSelector(
@@ -17,8 +37,9 @@ export const TopStatusPanel = memo(function TopStatusPanel() {
 
   return (
     <div className="grid grid-cols-[1fr,auto] space-x-4">
-      <Panel className="flex items-center">
+      <Panel className="flex items-center justify-between gap-4">
         <p className="text-lg text-gray-text">Current State: {currentState}</p>
+        <RelaysGroup />
       </Panel>
       <SyncStatusPanel />
     </div>
