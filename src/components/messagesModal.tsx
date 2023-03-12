@@ -1,6 +1,6 @@
 import { memo, useEffect } from "react";
 
-import { MessagesPanel } from "./messagesPanel";
+import { SentMessagesPanel } from "./sentMessagesPanel";
 
 interface Props {
   onClose: () => void;
@@ -28,7 +28,7 @@ export const MessagesModal = memo(function MessagesModal({ onClose }: Props) {
         onClick={onClose}
       />
       <div className="relative w-full h-full max-w-2xl grid grid-rows-[minmax(0,1fr),auto]">
-        <MessagesPanel />
+        <SentMessagesPanel />
         <div />
       </div>
     </div>

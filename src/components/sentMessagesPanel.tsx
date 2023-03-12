@@ -3,7 +3,7 @@ import { memo, useEffect, useRef } from "react";
 import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
-export const MessagesPanel = memo(function MessagesPanel() {
+export const SentMessagesPanel = memo(function SentMessagesPanel() {
   const sentMessages = useLaunchMachineSelector(
     (state) => state.context.sentMessages
   );
