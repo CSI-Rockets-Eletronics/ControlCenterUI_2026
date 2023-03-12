@@ -66,7 +66,7 @@ class DummyStation {
       },
       gps: {
         lat: randRange(0, 90),
-        long: randRange(0, 90),
+        long: randRange(-90, 0),
         alt: randRange(0, 10_000),
       },
     };

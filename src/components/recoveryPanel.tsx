@@ -45,7 +45,7 @@ const GoToLaunchModePanel = memo(function GoToLaunchModePanel() {
 export const RecoveryPanel = memo(function RecoveryPanel() {
   return (
     <div className="grid grid-cols-[1fr,2fr,1fr] gap-4">
-      <div className="grid grid-rows-[auto,auto] gap-4">
+      <div className="grid grid-rows-[1fr,auto] gap-4">
         <RangePermit />
         <WeatherPanel />
       </div>

@@ -97,7 +97,7 @@ export const MapPanel = memo(function MapPanel() {
           {localAnchor && (
             <Overlay anchor={localAnchor}>
               <div className="pointer-events-none -translate-x-1/2 -translate-y-[54px]">
-                ⚒️
+                🦁
               </div>
             </Overlay>
           )}
