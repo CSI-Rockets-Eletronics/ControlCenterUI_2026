@@ -13,3 +13,12 @@
     @apply h-full;
   }
 }
+
+@layer utilities {
+  .scrollable {
+    @apply scrollbar-thin;
+    @apply scrollbar-thumb-gray-solid;
+    @apply hover:scrollbar-thumb-gray-solid-hover;
+    @apply scrollbar-thumb-rounded-full;
+  }
+}

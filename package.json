@@ -25,6 +25,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.8.2",
     "tailwind-merge": "^1.9.1",
+    "tailwind-scrollbar": "^2.1.0",
     "xstate": "^4.35.4",
     "zod": "^3.20.6"
   },

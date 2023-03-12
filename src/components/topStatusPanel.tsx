@@ -2,6 +2,7 @@ import { shallowEqual } from "@xstate/react";
 import { memo } from "react";
 
 import { BooleanDisplay } from "./design/booleanDisplay";
+import { Button } from "./design/button";
 import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 import { SyncStatusPanel } from "./syncStatusPanel";
@@ -24,7 +25,13 @@ const RelaysGroup = memo(function RelaysGroup() {
   );
 });
 
-export const TopStatusPanel = memo(function TopStatusPanel() {
+interface Props {
+  openMessagesModal: () => void;
+}
+
+export const TopStatusPanel = memo(function TopStatusPanel({
+  openMessagesModal,
+}: Props) {
   const activePanel = useLaunchMachineSelector(
     (state) => state.context.launchState.activePanel
   );
@@ -40,6 +47,9 @@ export const TopStatusPanel = memo(function TopStatusPanel() {
       <Panel className="flex items-center justify-between gap-4">
         <p className="text-lg text-gray-text">Current State: {currentState}</p>
         <RelaysGroup />
+        <Button color="gray" disabled={false} onClick={openMessagesModal}>
+          🪵
+        </Button>
       </Panel>
       <SyncStatusPanel />
     </div>

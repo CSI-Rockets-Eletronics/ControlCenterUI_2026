@@ -30,6 +30,12 @@ function armStatusIsComplete(armStatus: Record<string, boolean>) {
   return Object.values(armStatus).every(Boolean);
 }
 
+export interface SentMessage {
+  timestamp: Date;
+  target: string;
+  data: unknown;
+}
+
 export type LaunchMachineEvent =
   | { type: "DISMISS_NETWORK_ERROR" }
   | {
@@ -73,12 +79,13 @@ export function createLaunchMachine(api: Api) {
           pendingLaunchState: LaunchState | null;
           stationState: StationState | null;
           stationRecords: ApiRecord<StationState>[];
+          sentMessages: SentMessage[];
         },
         services: {} as {
           fetchLaunchState: { data: LaunchState };
           mutateLaunchState: { data: LaunchState };
           fetchStationRecord: { data: ApiRecord<StationState> | null };
-          mutateStationOpState: { data: void };
+          mutateStationOpState: { data: SentMessage };
         },
       },
       id: "launch",
@@ -87,6 +94,7 @@ export function createLaunchMachine(api: Api) {
         pendingLaunchState: null,
         stationState: null,
         stationRecords: [],
+        sentMessages: [],
       },
       initial: "live",
       states: {
@@ -186,7 +194,10 @@ export function createLaunchMachine(api: Api) {
                 mutatingOpState: {
                   invoke: {
                     src: "mutateStationOpState",
-                    onDone: "idle.refetching",
+                    onDone: {
+                      target: "idle.refetching",
+                      actions: "addSentMessage",
+                    },
                     onError: "#launch.networkError",
                   },
                 },
@@ -263,6 +274,11 @@ export function createLaunchMachine(api: Api) {
         logNetworkError: (_, event) => {
           console.error("Launch machine network error", event);
         },
+        addSentMessage: assign((context, event) => {
+          return {
+            sentMessages: [...context.sentMessages, event.data],
+          };
+        }),
       },
       services: {
         fetchLaunchState: async () => {
@@ -314,6 +330,8 @@ export function createLaunchMachine(api: Api) {
           await api.createMessage(message);
 
           console.log("Sent message", message);
+
+          return { ...message, timestamp: new Date() };
         },
       },
       guards: {

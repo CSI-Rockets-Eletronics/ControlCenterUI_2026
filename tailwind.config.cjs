@@ -1,6 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
+/* eslint-disable @typescript-eslint/no-var-requires, no-undef */
+
 const { fontSize } = require("tailwindcss/defaultTheme");
-// eslint-disable-next-line @typescript-eslint/no-var-requires, no-undef
 const radixColors = require("@radix-ui/colors");
 
 const radixColorOptions = {
@@ -49,7 +49,6 @@ function toTailwindColor(radixColor) {
 }
 
 /** @type {import('tailwindcss').Config} */
-// eslint-disable-next-line no-undef
 module.exports = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
@@ -70,5 +69,5 @@ module.exports = {
     },
     extend: {},
   },
-  plugins: [],
+  plugins: [require("tailwind-scrollbar")({ nocompatible: true })],
 };
