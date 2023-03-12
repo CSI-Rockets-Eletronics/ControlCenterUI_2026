@@ -14,6 +14,8 @@ import {
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
 
+const PRESET_TARGETS = ["SET_STATION_OP_STATE"];
+
 function validateTarget(target: string) {
   return (
     target.length > 0 &&
@@ -36,6 +38,8 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
   const [data, setData] = useState("");
 
   const targetIsValid = validateTarget(target);
+  const targetMatchesPreset = PRESET_TARGETS.includes(target);
+
   const dataIsValid = validateData(data);
 
   const handleTargetChange = useCallback(
@@ -86,8 +90,10 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
               "block w-full px-3 py-2 mt-2 text-sm border-2 outline-none rounded-md focus:ring ring-yellow-border-hover",
               target.length === 0 && "bg-gray-el-bg border-gray-border",
               target.length > 0 &&
-                (targetIsValid
+                (targetMatchesPreset
                   ? "bg-green-el-bg border-green-border"
+                  : targetIsValid
+                  ? "bg-yellow-el-bg border-yellow-border"
                   : "bg-red-el-bg border-red-border")
             )}
             type="text"
@@ -100,7 +106,7 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
           Data:
           <textarea
             className={twMerge(
-              "block w-full px-3 py-2 mt-2 text-sm border-2 outline-none h-48 rounded-md focus:ring ring-yellow-border-hover scrollable",
+              "block w-full px-3 py-2 mt-2 text-sm border-2 outline-none h-32 rounded-md focus:ring ring-yellow-border-hover scrollable",
               data.length === 0 && "bg-gray-el-bg border-gray-border",
               data.length > 0 &&
                 (dataIsValid
