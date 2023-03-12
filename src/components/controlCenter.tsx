@@ -29,7 +29,7 @@ export const ControlCenter = memo(function ControlCenter() {
         <TopStatusPanel openMessagesModal={openMessagesModal} />
         {mainPanel}
       </div>
-      {messagesModalOpen && <MessagesModal onClose={closeMessagesModal} />}
+      <MessagesModal open={messagesModalOpen} onClose={closeMessagesModal} />
     </>
   );
 });

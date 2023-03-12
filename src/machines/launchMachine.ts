@@ -65,6 +65,11 @@ export type LaunchMachineEvent =
   | {
       type: "MUTATE_STATION_OP_STATE";
       value: StationOpState;
+    }
+  | {
+      type: "SEND_MANUAL_MESSAGE";
+      target: string;
+      data: unknown;
     };
 
 export function createLaunchMachine(api: Api) {
@@ -86,6 +91,7 @@ export function createLaunchMachine(api: Api) {
           mutateLaunchState: { data: LaunchState };
           fetchStationRecord: { data: ApiRecord<StationState> | null };
           mutateStationOpState: { data: SentMessage };
+          sendManualMessage: { data: SentMessage };
         },
       },
       id: "launch",
@@ -173,6 +179,9 @@ export function createLaunchMachine(api: Api) {
                       target: "mutatingOpState",
                       cond: "canMutateOpState",
                     },
+                    SEND_MANUAL_MESSAGE: {
+                      target: "sendingManualMessage",
+                    },
                   },
                   initial: "waitingToRefetch",
                   states: {
@@ -194,6 +203,16 @@ export function createLaunchMachine(api: Api) {
                 mutatingOpState: {
                   invoke: {
                     src: "mutateStationOpState",
+                    onDone: {
+                      target: "idle.refetching",
+                      actions: "addSentMessage",
+                    },
+                    onError: "#launch.networkError",
+                  },
+                },
+                sendingManualMessage: {
+                  invoke: {
+                    src: "sendManualMessage",
                     onDone: {
                       target: "idle.refetching",
                       actions: "addSentMessage",
@@ -328,9 +347,16 @@ export function createLaunchMachine(api: Api) {
             data: event.value satisfies StationOpState,
           };
           await api.createMessage(message);
-
           console.log("Sent message", message);
-
+          return { ...message, timestamp: new Date() };
+        },
+        sendManualMessage: async (_, event) => {
+          const message = {
+            target: event.target,
+            data: event.data,
+          };
+          await api.createMessage(message);
+          console.log("Sent message", message);
           return { ...message, timestamp: new Date() };
         },
       },
