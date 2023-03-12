@@ -65,8 +65,8 @@ class DummyStation {
         oxidizerTankTemp: randRange(0, 100),
       },
       gps: {
-        lat: randRange(0, 10_000),
-        long: randRange(0, 10_000),
+        lat: randRange(0, 90),
+        long: randRange(0, 90),
         alt: randRange(0, 10_000),
       },
     };
