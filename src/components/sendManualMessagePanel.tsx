@@ -1,4 +1,10 @@
-import { type ChangeEvent, memo, useCallback, useState } from "react";
+import {
+  type ChangeEvent,
+  type FormEvent,
+  memo,
+  useCallback,
+  useState,
+} from "react";
 import { twMerge } from "tailwind-merge";
 
 import { Button } from "./design/button";
@@ -56,55 +62,64 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
     })
   );
 
-  const sendMessage = useCallback(() => {
-    launchActorRef.send({
-      type: "SEND_MANUAL_MESSAGE",
-      target,
-      data: JSON.parse(data),
-    });
-    setData("");
-  }, [data, launchActorRef, target]);
+  const handleSubmit = useCallback(
+    (event: FormEvent) => {
+      event.preventDefault();
+      launchActorRef.send({
+        type: "SEND_MANUAL_MESSAGE",
+        target,
+        data: JSON.parse(data),
+      });
+      setData("");
+    },
+    [data, launchActorRef, target]
+  );
 
   return (
     <Panel className="flex flex-col gap-4">
       <p className="text-lg text-gray-text">Send Manual Message</p>
-      <label className="text-gray-text">
-        Target:
-        <input
-          className={twMerge(
-            "block w-full p-2 mt-2 text-sm border-2 outline-none rounded-md focus:ring ring-yellow-border-hover",
-            target.length === 0 && "bg-gray-el-bg border-gray-border",
-            target.length > 0 &&
-              (targetIsValid
-                ? "bg-green-el-bg border-green-border"
-                : "bg-red-el-bg border-red-border")
-          )}
-          value={target}
-          onChange={handleTargetChange}
-        />
-      </label>
-      <label className="text-gray-text">
-        Data:
-        <textarea
-          className={twMerge(
-            "block w-full p-2 mt-2 text-sm border-2 outline-none h-48 rounded-md focus:ring ring-yellow-border-hover",
-            data.length === 0 && "bg-gray-el-bg border-gray-border",
-            data.length > 0 &&
-              (dataIsValid
-                ? "bg-green-el-bg border-green-border"
-                : "bg-red-el-bg border-red-border")
-          )}
-          value={data}
-          onChange={handleDataChange}
-        />
-      </label>
-      <Button
-        color="green"
-        disabled={!canSendManualMessage || !targetIsValid || !dataIsValid}
-        onClick={sendMessage}
-      >
-        SEND
-      </Button>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <label className="text-gray-text">
+          Target:
+          <input
+            className={twMerge(
+              "block w-full px-3 py-2 mt-2 text-sm border-2 outline-none rounded-md focus:ring ring-yellow-border-hover",
+              target.length === 0 && "bg-gray-el-bg border-gray-border",
+              target.length > 0 &&
+                (targetIsValid
+                  ? "bg-green-el-bg border-green-border"
+                  : "bg-red-el-bg border-red-border")
+            )}
+            type="text"
+            spellCheck={false}
+            value={target}
+            onChange={handleTargetChange}
+          />
+        </label>
+        <label className="text-gray-text">
+          Data:
+          <textarea
+            className={twMerge(
+              "block w-full px-3 py-2 mt-2 text-sm border-2 outline-none h-48 rounded-md focus:ring ring-yellow-border-hover scrollable",
+              data.length === 0 && "bg-gray-el-bg border-gray-border",
+              data.length > 0 &&
+                (dataIsValid
+                  ? "bg-green-el-bg border-green-border"
+                  : "bg-red-el-bg border-red-border")
+            )}
+            spellCheck={false}
+            value={data}
+            onChange={handleDataChange}
+          />
+        </label>
+        <Button
+          type="submit"
+          color="green"
+          disabled={!canSendManualMessage || !targetIsValid || !dataIsValid}
+        >
+          SEND
+        </Button>
+      </form>
     </Panel>
   );
 });

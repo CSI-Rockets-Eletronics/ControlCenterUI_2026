@@ -2,6 +2,7 @@ import { memo } from "react";
 import { twMerge } from "tailwind-merge";
 
 interface Props {
+  type?: "button" | "submit";
   color: "gray" | "green" | "red";
   disabled: boolean;
   onClick?: () => void;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export const Button = memo(function Button({
+  type = "button",
   color,
   disabled,
   onClick,
@@ -16,7 +18,7 @@ export const Button = memo(function Button({
 }: Props) {
   return (
     <button
-      type="button"
+      type={type}
       className={twMerge(
         "block px-6 py-4 rounded-lg text-gray-text font-bold disabled:opacity-50",
         disabled && "opacity-50 pointer-events-none",

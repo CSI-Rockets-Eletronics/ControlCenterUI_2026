@@ -28,7 +28,7 @@ export const SentMessagesPanel = memo(function SentMessagesPanel() {
             key={index}
             className="p-2 border border-gray-border rounded-md bg-gray-el-bg"
           >
-            <pre className="text-sm text-gray-text">
+            <pre className="text-sm break-words whitespace-pre-wrap text-gray-text">
               {JSON.stringify(message, null, 2)}
             </pre>
           </div>
