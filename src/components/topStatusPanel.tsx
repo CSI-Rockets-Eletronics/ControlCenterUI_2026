@@ -48,7 +48,7 @@ export const TopStatusPanel = memo(function TopStatusPanel({
         <p className="text-lg text-gray-text">Current State: {currentState}</p>
         <RelaysGroup />
         <Button color="gray" disabled={false} onClick={openMessagesModal}>
-          🪵
+          ⌨️
         </Button>
       </Panel>
       <SyncStatusPanel />
