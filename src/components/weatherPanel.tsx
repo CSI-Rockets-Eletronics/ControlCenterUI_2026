@@ -34,8 +34,7 @@ export const WeatherPanel = memo(function WeatherPanel() {
   }, []);
 
   return (
-    <Panel className="flex flex-col gap-3">
-      <p className="text-lg text-gray-text">Weather</p>
+    <Panel>
       <div className="overflow-hidden grow rounded-md" ref={parentRef} />
       <style>
         {`
