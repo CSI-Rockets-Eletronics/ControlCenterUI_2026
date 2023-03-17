@@ -10,13 +10,8 @@ export const CautionPanel = memo(function CautionPanel() {
   );
 
   const isHazardous = useLaunchMachineSelector((state) => {
-    const goPollCompleted = Object.values(
-      state.context.launchState.goPoll
-    ).every(Boolean);
-    const isOpStateAbort = state.context.stationState?.opState === "abort";
-    const isOpStateStandby = state.context.stationState?.opState === "standby";
-
-    return goPollCompleted && !isOpStateAbort && !isOpStateStandby;
+    const opState = state.context.stationState?.opState;
+    return opState != null && opState !== "standby" && opState !== "abort";
   });
 
   const readyToFire = useLaunchMachineSelector((state) =>
