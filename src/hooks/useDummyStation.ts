@@ -8,6 +8,7 @@ import {
   type StationOpState,
   stationOpStateSchema,
   type StationState,
+  stationStateSchema,
 } from "@/lib/stationInterface";
 
 const TICK_INTERVAL = 1000;
@@ -16,9 +17,13 @@ class DummyStation {
   private readonly intervalId: number;
   private destroyed = false;
 
-  private opState: StationOpState = "standby";
+  private opState: StationOpState | null = null;
 
   constructor(private readonly api: Api) {
+    this.initOpState().catch((error) => {
+      console.error("Failed to init dummy station opState", error);
+    });
+
     this.intervalId = setInterval(() => this.tick(), TICK_INTERVAL);
   }
 
@@ -27,7 +32,27 @@ class DummyStation {
     this.destroyed = true;
   }
 
+  private async initOpState() {
+    const records = await this.api.listRecords(
+      {
+        source: SET_STATION_OP_STATE_TARGET,
+        take: 1,
+      },
+      stationStateSchema
+    );
+
+    if (this.destroyed) return;
+
+    if (records.length > 0) {
+      this.opState = records[0].data.opState;
+    } else {
+      this.opState = "standby";
+    }
+  }
+
   private async tick() {
+    if (this.opState == null) return;
+
     const message = await this.api.getNextMessage(
       {
         target: SET_STATION_OP_STATE_TARGET,
