@@ -56,9 +56,9 @@ module.exports = {
       sans: ["B612", "sans-serif"],
     },
     fontSize: {
-      sm: fontSize["2xl"],
-      base: fontSize["3xl"],
-      lg: fontSize["4xl"],
+      sm: fontSize["xl"],
+      base: fontSize["2xl"],
+      lg: fontSize["3xl"],
     },
     colors: {
       ...Object.fromEntries(
