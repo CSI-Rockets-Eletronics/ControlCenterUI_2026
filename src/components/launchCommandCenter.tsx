@@ -13,10 +13,6 @@ export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
       })
   );
 
-  const isFired = useLaunchMachineSelector(
-    (state) => state.context.stationState?.opState === "fire"
-  );
-
   return (
     <Panel className="flex flex-col gap-3">
       <p className="text-lg text-gray-text">Command Center</p>
@@ -34,12 +30,6 @@ export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
         executeOpState="fire"
         stopOpState="standby" // TODO standby for stop?
       />
-
-      {isFired && (
-        <p className="mt-4 text-lg font-bold text-center text-green-text-dim">
-          LIFT OFF!!!
-        </p>
-      )}
     </Panel>
   );
 });

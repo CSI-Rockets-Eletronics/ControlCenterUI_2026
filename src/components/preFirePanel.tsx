@@ -1,5 +1,6 @@
 import { memo } from "react";
 
+import { CautionPanel } from "./cautionPanel";
 import { GoPoll } from "./goPoll";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 import { PreFireLaunchPanel } from "./preFireLaunchPanel";
@@ -13,7 +14,10 @@ export const PreFirePanel = memo(function PreFirePanel() {
 
   return (
     <div className="grid grid-cols-[1fr,2fr,1fr] gap-4">
-      <GoPoll />
+      <div className="grid grid-rows-[auto,1fr] gap-4">
+        <CautionPanel />
+        <GoPoll />
+      </div>
       {isLaunch ? <PreFireLaunchPanel /> : <PreFireStandbyPanel />}
       <StatusPanel />
     </div>
