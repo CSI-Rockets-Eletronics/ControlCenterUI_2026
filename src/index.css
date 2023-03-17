@@ -5,6 +5,7 @@
 @layer base {
   body {
     @apply h-full;
+    @apply overflow-hidden;
     @apply bg-gray-bg-1;
     @apply text-base;
   }
