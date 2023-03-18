@@ -54,6 +54,7 @@ module.exports = {
   theme: {
     fontFamily: {
       sans: ["'B612'", "sans-serif"],
+      mono: ["'B612 Mono'", "monospace"],
     },
     fontSize: {
       sm: fontSize["xl"],

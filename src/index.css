@@ -39,3 +39,11 @@
   font-display: swap;
   src: url(/fonts/B612-Bold.ttf);
 }
+
+@font-face {
+  font-family: "B612 Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/B612Mono-Regular.ttf);
+}
