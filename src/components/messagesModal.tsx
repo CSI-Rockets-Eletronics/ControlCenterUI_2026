@@ -28,19 +28,16 @@ export const MessagesModal = memo(function MessagesModal({
   }, [onClose]);
 
   return (
-    <div
-      className={twMerge(
-        "absolute inset-0 flex items-center justify-center p-8",
-        !open && "hidden"
-      )}
-    >
+    <div className={twMerge("absolute inset-0", !open && "hidden")}>
       <div
-        className="absolute inset-0 opacity-95 bg-gray-bg-1"
+        className="absolute inset-0 bg-gray-bg-1 opacity-95"
         onClick={onClose}
       />
-      <div className="relative w-full h-full max-w-2xl grid grid-rows-[minmax(0,1fr),auto] gap-4">
-        <SentMessagesPanel />
-        <SendManualMessagePanel />
+      <div className="absolute inset-0 flex justify-center p-8 pointer-events-none scrollable">
+        <div className="w-full max-w-2xl min-h-full pointer-events-auto h-fit grid grid-rows-[1fr,auto] gap-4">
+          <SentMessagesPanel />
+          <SendManualMessagePanel />
+        </div>
       </div>
     </div>
   );
