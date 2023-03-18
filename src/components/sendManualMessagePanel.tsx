@@ -87,7 +87,7 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
           Target:
           <input
             className={twMerge(
-              "block w-full px-3 py-2 mt-2 text-sm border-2 outline-none rounded-md focus:ring ring-yellow-border-hover",
+              "font-mono block w-full px-3 py-2 mt-2 text-sm border-2 outline-none rounded-md focus:ring ring-yellow-border-hover",
               target.length === 0 && "bg-gray-el-bg border-gray-border",
               target.length > 0 &&
                 (targetMatchesPreset
@@ -106,7 +106,7 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
           Data:
           <textarea
             className={twMerge(
-              "block w-full px-3 py-2 mt-2 text-sm border-2 outline-none h-32 rounded-md focus:ring ring-yellow-border-hover scrollable",
+              "font-mono block w-full px-3 py-2 mt-2 text-sm border-2 outline-none h-32 rounded-md focus:ring ring-yellow-border-hover scrollable",
               data.length === 0 && "bg-gray-el-bg border-gray-border",
               data.length > 0 &&
                 (dataIsValid
