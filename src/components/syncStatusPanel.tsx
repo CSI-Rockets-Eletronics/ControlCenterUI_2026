@@ -38,7 +38,7 @@ export const SyncStatusPanel = memo(function SyncStatusPanel() {
 
   if (networkError) {
     return (
-      <Panel color="red" className="flex items-center gap-4">
+      <Panel color="red" className="flex items-center justify-between gap-4">
         <p className="text-gray-text">Sync Error!</p>
         <Button
           color="red"

@@ -43,7 +43,7 @@ export const TopStatusPanel = memo(function TopStatusPanel({
   }[activePanel];
 
   return (
-    <div className="grid grid-cols-[1fr,auto] space-x-4">
+    <div className="grid grid-rows-[auto,auto] md:grid-rows-none md:grid-cols-[1fr,auto] space-y-4 md:space-y-0 md:space-x-4">
       <Panel className="flex flex-col items-stretch md:items-center md:flex-row gap-4 md:gap-6">
         <p className="text-lg text-gray-text grow">
           Current State: {currentState}
