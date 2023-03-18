@@ -14,7 +14,7 @@ const RelaysGroup = memo(function RelaysGroup() {
   );
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex flex-wrap items-center gap-4">
       <BooleanDisplay label="Fill" value={!!relays?.fill} />
       <BooleanDisplay label="Vent" value={!!relays?.vent} />
       <BooleanDisplay label="Pyro Valve" value={!!relays?.pyroValve} />
@@ -44,8 +44,10 @@ export const TopStatusPanel = memo(function TopStatusPanel({
 
   return (
     <div className="grid grid-cols-[1fr,auto] space-x-4">
-      <Panel className="flex items-center justify-between gap-4">
-        <p className="text-lg text-gray-text">Current State: {currentState}</p>
+      <Panel className="flex flex-col items-stretch md:items-center md:flex-row gap-4 md:gap-6">
+        <p className="text-lg text-gray-text grow">
+          Current State: {currentState}
+        </p>
         <RelaysGroup />
         <Button color="gray" disabled={false} onClick={openMessagesModal}>
           ⌨️

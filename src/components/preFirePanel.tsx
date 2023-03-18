@@ -13,7 +13,7 @@ export const PreFirePanel = memo(function PreFirePanel() {
   );
 
   return (
-    <div className="grid grid-cols-[1fr,2fr,1fr] gap-4">
+    <div className="grid grid-rows-[auto,auto,auto] md:grid-rows-none md:grid-cols-[1fr,2fr,1fr] gap-4">
       <div className="grid grid-rows-[auto,1fr] gap-4">
         <CautionPanel />
         <GoPoll />

@@ -35,7 +35,7 @@ export const WeatherPanel = memo(function WeatherPanel() {
 
   return (
     <Panel>
-      <div className="overflow-hidden grow rounded-md" ref={parentRef} />
+      <div className="overflow-hidden rounded-md" ref={parentRef} />
       <style>
         {`
           #ww_6c99c8c4ca696 .ww_source {

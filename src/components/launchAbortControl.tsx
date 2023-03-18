@@ -53,7 +53,7 @@ export const LaunchAbortControl = memo(function LaunchAbortControl() {
         stopOpState={null}
       />
 
-      <div className="flex justify-between mt-4 gap-4">
+      <div className="flex flex-col justify-between mt-4 md:flex-row gap-4">
         <Button
           color="green"
           disabled={goToStandbyModeDisabled}

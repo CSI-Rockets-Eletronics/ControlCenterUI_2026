@@ -89,35 +89,39 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
   return (
     <div
       className={twMerge(
-        "flex items-center px-4 py-3 border rounded-lg gap-4 bg-gray-el-bg border-gray-border",
+        "flex flex-col md:flex-row items-center px-4 py-3 border rounded-lg gap-4 bg-gray-el-bg border-gray-border",
         disabled && "opacity-50 pointer-events-none"
       )}
     >
-      <div
-        className={twMerge(
-          "shrink-0 w-8 h-8 mr-2 rounded-full appearance-none",
-          isExecuting
-            ? isAbort
-              ? "bg-red-solid"
-              : "bg-green-solid"
-            : "bg-gray-solid"
-        )}
-      />
-      <p className="flex-1 text-gray-text">{label}</p>
-      <StatusButton
-        color="green"
-        disabled={!disabled && executeDisabled}
-        onClick={handleExecute}
-      >
-        EXECUTE
-      </StatusButton>
-      <StatusButton
-        color="red"
-        disabled={!disabled && stopDisabled}
-        onClick={handleStop}
-      >
-        STOP
-      </StatusButton>
+      <div className="flex items-center self-stretch md:self-center gap-4 grow">
+        <div
+          className={twMerge(
+            "shrink-0 w-8 h-8 mr-2 rounded-full appearance-none",
+            isExecuting
+              ? isAbort
+                ? "bg-red-solid"
+                : "bg-green-solid"
+              : "bg-gray-solid"
+          )}
+        />
+        <p className="grow text-gray-text">{label}</p>
+      </div>
+      <div className="flex items-center gap-4">
+        <StatusButton
+          color="green"
+          disabled={!disabled && executeDisabled}
+          onClick={handleExecute}
+        >
+          EXECUTE
+        </StatusButton>
+        <StatusButton
+          color="red"
+          disabled={!disabled && stopDisabled}
+          onClick={handleStop}
+        >
+          STOP
+        </StatusButton>
+      </div>
     </div>
   );
 });

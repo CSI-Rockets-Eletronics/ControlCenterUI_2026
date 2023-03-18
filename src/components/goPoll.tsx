@@ -66,7 +66,7 @@ export const GoPoll = memo(function GoPoll() {
       <Entry label="ADVISER" field="adviser" />
       <Entry label="PROP LEAD" field="propLead" />
       <Entry label="ELEC LEAD" field="elecLead" />
-      <div className="flex-1" />
+      <div className="flex-1 -mt-4" />
       <p className="text-gray-text">
         {count}/{total} Go
       </p>

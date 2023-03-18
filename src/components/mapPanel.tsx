@@ -77,7 +77,7 @@ export const MapPanel = memo(function MapPanel() {
   return (
     <Panel className="flex flex-col gap-4">
       <p className="text-lg text-gray-text">Map</p>
-      <div className="overflow-hidden grow rounded-md">
+      <div className="overflow-hidden grow rounded-md h-[400px]">
         <Map
           center={center}
           zoom={zoom}

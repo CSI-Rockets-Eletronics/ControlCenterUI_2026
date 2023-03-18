@@ -65,7 +65,7 @@ export const RangePermit = memo(function RangePermit() {
       <Entry label="SAFETY OFFICER 1" field="safetyOfficer1" />
       <Entry label="SAFETY OFFICER 2" field="safetyOfficer2" />
       <Entry label="ADVISER" field="adviser" />
-      <div className="flex-1" />
+      <div className="flex-1 -mt-4" />
       <p className="text-gray-text">
         {count}/{total} Clear
       </p>
