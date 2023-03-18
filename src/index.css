@@ -23,3 +23,19 @@
     @apply scrollbar-thumb-rounded-full;
   }
 }
+
+@font-face {
+  font-family: "B612";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/B612-Regular.ttf);
+}
+
+@font-face {
+  font-family: "B612";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/fonts/B612-Bold.ttf);
+}

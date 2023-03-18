@@ -53,7 +53,7 @@ module.exports = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     fontFamily: {
-      sans: ["B612", "sans-serif"],
+      sans: ["'B612'", "sans-serif"],
     },
     fontSize: {
       sm: fontSize["xl"],
