@@ -9,6 +9,9 @@ import {
   launchStateSchema,
 } from "@/lib/launchState";
 import {
+  GPS_STATE_SOURCE,
+  GpsState,
+  gpsStateSchema,
   SET_STATION_OP_STATE_TARGET,
   STATION_FIRE_OP_STATE,
   STATION_STATE_SOURCE,
@@ -29,6 +32,8 @@ function checklistIsComplete(checklist: Record<string, boolean>) {
 function armStatusIsComplete(armStatus: Record<string, boolean>) {
   return Object.values(armStatus).every(Boolean);
 }
+
+export type MergedStationState = StationState & { gps: GpsState | null };
 
 export interface SentMessage {
   timestamp: Date;
@@ -86,14 +91,14 @@ export function createLaunchMachine(api: Api) {
         context: {} as {
           launchState: LaunchState;
           pendingLaunchState: LaunchState | null;
-          stationState: StationState | null;
-          stationRecords: ApiRecord<StationState>[];
+          stationState: MergedStationState | null;
+          stationRecords: ApiRecord<MergedStationState>[];
           sentMessages: SentMessage[];
         },
         services: {} as {
           fetchLaunchState: { data: LaunchState };
           mutateLaunchState: { data: LaunchState };
-          fetchStationRecord: { data: ApiRecord<StationState> | null };
+          fetchStationRecord: { data: ApiRecord<MergedStationState> | null };
           mutateStationOpState: { data: SentMessage };
           sendManualMessage: { data: SentMessage };
         },
@@ -336,10 +341,12 @@ export function createLaunchMachine(api: Api) {
           return context.pendingLaunchState;
         },
         fetchStationRecord: async (context) => {
+          // merges station and gps data into one record
+
           const latestRecord = context.stationRecords[0];
           const rangeStart = latestRecord ? latestRecord.timestamp + 1 : undefined;
 
-          const records = await api.listRecords(
+          const stationRecords = await api.listRecords(
             {
               source: STATION_STATE_SOURCE,
               rangeStart,
@@ -347,10 +354,30 @@ export function createLaunchMachine(api: Api) {
             },
             stationStateSchema
           );
-          if (records.length === 0) {
+
+          const gpsRecords = await api.listRecords(
+            {
+              source: GPS_STATE_SOURCE,
+              rangeStart,
+              take: 1,
+            },
+            gpsStateSchema
+          );
+
+          const stationRecord = stationRecords.length > 0 ? stationRecords[0] : null;
+          const gpsRecord = gpsRecords.length > 0 ? gpsRecords[0] : null;
+
+          if (!stationRecord) {
             return null;
           }
-          return records[0];
+
+          return {
+            timestamp: stationRecord.timestamp,
+            data: {
+              ...stationRecord.data,
+              gps: gpsRecord?.data ?? null,
+            },
+          };
         },
         mutateStationOpState: async (_, event) => {
           const message = {

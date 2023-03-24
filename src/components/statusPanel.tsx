@@ -83,7 +83,7 @@ const OxidizerTankTempDisplay = memo(function OxidizerTankTempDisplay() {
 
 const AltitudeDisplay = memo(function OxidizerTankTempDisplay() {
   const altitude = useLaunchMachineSelector((state) =>
-    Math.round(state.context.stationState?.gps.alt ?? 0)
+    Math.round(state.context.stationState?.gps?.alt ?? 0)
   );
 
   return (

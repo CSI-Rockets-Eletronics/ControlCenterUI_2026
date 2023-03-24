@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 export const STATION_STATE_SOURCE = "STATION_STATE";
+export const GPS_STATE_SOURCE = "GPS_STATE";
+
 export const SET_STATION_OP_STATE_TARGET = "SET_STATION_OP_STATE";
 
 export const STATION_FIRE_OP_STATE = "fire";
@@ -29,22 +31,22 @@ export const stationStatusSchema = z.object({
   oxidizerTankTemp: z.number(),
 });
 
-export const stationGpsSchema = z.object({
-  lat: z.number(),
-  long: z.number(),
-  alt: z.number(),
-});
-
 export const stationStateSchema = z.object({
   opState: stationOpStateSchema,
   relays: stationRelaysSchema,
   status: stationStatusSchema,
-  gps: stationGpsSchema,
 });
 
 export type StationOpState = z.infer<typeof stationOpStateSchema>;
 export type StationRelays = z.infer<typeof stationRelaysSchema>;
 export type StationStatus = z.infer<typeof stationStatusSchema>;
-export type StationGps = z.infer<typeof stationGpsSchema>;
 
 export type StationState = z.infer<typeof stationStateSchema>;
+
+export const gpsStateSchema = z.object({
+  lat: z.number(),
+  long: z.number(),
+  alt: z.number(),
+});
+
+export type GpsState = z.infer<typeof gpsStateSchema>;

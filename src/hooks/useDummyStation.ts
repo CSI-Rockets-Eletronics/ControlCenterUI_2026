@@ -3,6 +3,8 @@ import { useSearchParams } from "react-router-dom";
 
 import { type Api } from "@/lib/api";
 import {
+  GPS_STATE_SOURCE,
+  type GpsState,
   SET_STATION_OP_STATE_TARGET,
   STATION_STATE_SOURCE,
   type StationOpState,
@@ -71,7 +73,7 @@ class DummyStation {
     const randRange = (min: number, max: number) =>
       min + (max - min) * Math.random();
 
-    const state: StationState = {
+    const stationState: StationState = {
       opState: this.opState,
       relays: {
         fill: randBool(),
@@ -85,16 +87,22 @@ class DummyStation {
         combustionPressure: randRange(0, 100),
         oxidizerTankTemp: randRange(0, 100),
       },
-      gps: {
-        lat: randRange(0, 90),
-        long: randRange(-90, 0),
-        alt: randRange(0, 10_000),
-      },
+    };
+
+    const gpsState: GpsState = {
+      lat: randRange(0, 90),
+      long: randRange(-90, 0),
+      alt: randRange(0, 10_000),
     };
 
     this.api.createRecord({
       source: STATION_STATE_SOURCE,
-      data: state,
+      data: stationState,
+    });
+
+    this.api.createRecord({
+      source: GPS_STATE_SOURCE,
+      data: gpsState,
     });
   }
 }
