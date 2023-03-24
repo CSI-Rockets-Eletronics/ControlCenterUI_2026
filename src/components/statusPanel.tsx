@@ -1,9 +1,57 @@
 import { shallowEqual } from "@xstate/react";
-import { memo } from "react";
+import { memo, useCallback } from "react";
+
+import { type LaunchState } from "@/lib/launchState";
 
 import { Panel } from "./design/panel";
 import { StatusDisplay } from "./design/statusDisplay";
-import { useLaunchMachineSelector } from "./launchMachineProvider";
+import {
+  useLaunchMachineActorRef,
+  useLaunchMachineSelector,
+} from "./launchMachineProvider";
+
+const ClickableDisplay = memo(function ClickableDisplay({
+  label,
+  field,
+  trueValue,
+  falseValue,
+}: {
+  field: keyof LaunchState["mainStatus"];
+  label: string;
+  trueValue: string;
+  falseValue: string;
+}) {
+  const launchActorRef = useLaunchMachineActorRef();
+
+  const isTrue = useLaunchMachineSelector(
+    (state) => state.context.launchState.mainStatus[field]
+  );
+
+  const disabled = useLaunchMachineSelector(
+    (state) =>
+      !state.can({
+        type: "UPDATE_MAIN_STATUS",
+        data: { [field]: !isTrue },
+      })
+  );
+
+  const handleChange = useCallback(() => {
+    launchActorRef.send({
+      type: "UPDATE_MAIN_STATUS",
+      data: { [field]: !isTrue },
+    });
+  }, [field, isTrue, launchActorRef]);
+
+  return (
+    <StatusDisplay
+      label={label}
+      color={isTrue ? "yellow" : "green"}
+      value={isTrue ? trueValue : falseValue}
+      disabled={disabled}
+      onClick={handleChange}
+    />
+  );
+});
 
 const CombustionPressureDisplay = memo(function TankPressureDisplay() {
   const combustionPressure = useLaunchMachineSelector((state) =>
@@ -48,15 +96,10 @@ const AltitudeDisplay = memo(function OxidizerTankTempDisplay() {
 });
 
 export const StatusPanel = memo(function StatusPanel() {
-  const status = useLaunchMachineSelector((state) => {
-    const status = state.context.stationState?.status;
-    return {
-      batteryConnected: !!status?.batteryConnected,
-      fillTankOpen: !!status?.fillTankOpen,
-      ignitersConnected: !!status?.ignitersConnected,
-      mechPowerOn: !!status?.mechPowerOn,
-    };
-  }, shallowEqual);
+  const status = useLaunchMachineSelector(
+    (state) => state.context.launchState.mainStatus,
+    shallowEqual
+  );
 
   const isRecovery = useLaunchMachineSelector(
     (state) => state.context.launchState.activePanel === "recovery"
@@ -65,25 +108,29 @@ export const StatusPanel = memo(function StatusPanel() {
   return (
     <Panel className="flex flex-col gap-4">
       <p className="text-lg text-gray-text">Status</p>
-      <StatusDisplay
+      <ClickableDisplay
+        field="batteryConnected"
         label="Battery"
-        color={status.batteryConnected ? "yellow" : "green"}
-        value={status.batteryConnected ? "Connected" : "Disconnected"}
+        trueValue="Connected"
+        falseValue="Disconnected"
       />
-      <StatusDisplay
+      <ClickableDisplay
+        field="fillTankOpen"
         label="Fill Tank"
-        color={status.fillTankOpen ? "yellow" : "green"}
-        value={status.fillTankOpen ? "Open" : "Closed"}
+        trueValue="Open"
+        falseValue="Closed"
       />
-      <StatusDisplay
+      <ClickableDisplay
+        field="ignitersConnected"
         label="Igniters"
-        color={status.ignitersConnected ? "yellow" : "green"}
-        value={status.ignitersConnected ? "Connected" : "Disconnected"}
+        trueValue="Connected"
+        falseValue="Disconnected"
       />
-      <StatusDisplay
+      <ClickableDisplay
+        field="mechPowerOn"
         label="Mech Power"
-        color={status.mechPowerOn ? "yellow" : "green"}
-        value={status.mechPowerOn ? "On" : "Off"}
+        trueValue="On"
+        falseValue="Off"
       />
 
       {isRecovery ? (

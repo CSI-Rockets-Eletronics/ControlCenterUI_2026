@@ -51,6 +51,10 @@ export type LaunchMachineEvent =
       data: Partial<LaunchState["goPoll"]>;
     }
   | {
+      type: "UPDATE_MAIN_STATUS";
+      data: Partial<LaunchState["mainStatus"]>;
+    }
+  | {
       type: "UPDATE_ARM_STATUS";
       data: Partial<LaunchState["armStatus"]>;
     }
@@ -126,6 +130,7 @@ export function createLaunchMachine(api: Api) {
                     UPDATE_ACTIVE_PANEL: { actions: "updateActivePanel" },
                     UPDATE_PRE_FILL_CHECKLIST: { actions: "updatePreFillChecklist" },
                     UPDATE_GO_POLL: { actions: "updateGoPoll" },
+                    UPDATE_MAIN_STATUS: { actions: "updateMainStatus" },
                     UPDATE_ARM_STATUS: { actions: "updateArmStatus", cond: "canUpdateArmStatus" },
                     UPDATE_RANGE_PERMIT: { actions: "updateRangePermit" },
                     UPDATE_VISUAL_CONTACT_CONFIRMED: { actions: "updateVisualContactConfirmed" },
@@ -254,6 +259,12 @@ export function createLaunchMachine(api: Api) {
           pendingLaunchState: (context, event) => ({
             ...context.launchState,
             goPoll: { ...context.launchState.goPoll, ...event.data },
+          }),
+        }),
+        updateMainStatus: assign({
+          pendingLaunchState: (context, event) => ({
+            ...context.launchState,
+            mainStatus: { ...context.launchState.mainStatus, ...event.data },
           }),
         }),
         updateArmStatus: assign({

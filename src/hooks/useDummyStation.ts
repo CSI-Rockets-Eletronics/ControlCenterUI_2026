@@ -82,10 +82,6 @@ class DummyStation {
         extra: randBool(),
       },
       status: {
-        batteryConnected: randBool(),
-        fillTankOpen: randBool(),
-        ignitersConnected: randBool(),
-        mechPowerOn: randBool(),
         combustionPressure: randRange(0, 100),
         oxidizerTankTemp: randRange(0, 100),
       },
