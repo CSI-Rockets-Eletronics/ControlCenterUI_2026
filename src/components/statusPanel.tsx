@@ -1,4 +1,3 @@
-import { shallowEqual } from "@xstate/react";
 import { memo, useCallback } from "react";
 
 import { type LaunchState } from "@/lib/launchState";
@@ -96,11 +95,6 @@ const AltitudeDisplay = memo(function OxidizerTankTempDisplay() {
 });
 
 export const StatusPanel = memo(function StatusPanel() {
-  const status = useLaunchMachineSelector(
-    (state) => state.context.launchState.mainStatus,
-    shallowEqual
-  );
-
   const isRecovery = useLaunchMachineSelector(
     (state) => state.context.launchState.activePanel === "recovery"
   );
