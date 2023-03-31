@@ -2,7 +2,7 @@ import { memo, useCallback, useMemo } from "react";
 import { twMerge } from "tailwind-merge";
 
 import { type LaunchState } from "@/lib/launchState";
-import { type StationOpState } from "@/lib/stationInterface";
+import { type StationOpState } from "@/lib/stationState";
 import { type LaunchMachineEvent } from "@/machines/launchMachine";
 
 import { StatusButton } from "./design/statusButton";

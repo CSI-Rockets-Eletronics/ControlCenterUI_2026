@@ -11,7 +11,7 @@ import {
   stationOpStateSchema,
   type StationState,
   stationStateSchema,
-} from "@/lib/stationInterface";
+} from "@/lib/stationState";
 
 const TICK_INTERVAL = 1000;
 

@@ -18,7 +18,7 @@ import {
   StationOpState,
   StationState,
   stationStateSchema,
-} from "@/lib/stationInterface";
+} from "@/lib/stationState";
 
 const LAUNCH_STATE_FETCH_INTERVAL = 1000;
 const STATION_STATE_FETCH_INTERVAL = 1000;

@@ -1,6 +1,6 @@
 import { memo, useCallback } from "react";
 
-import { type StationOpState } from "@/lib/stationInterface";
+import { type StationOpState } from "@/lib/stationState";
 
 import { Panel } from "./design/panel";
 import { StatusButton } from "./design/statusButton";
