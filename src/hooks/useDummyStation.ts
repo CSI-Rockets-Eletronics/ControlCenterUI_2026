@@ -3,13 +3,17 @@ import { useSearchParams } from "react-router-dom";
 
 import { type Api } from "@/lib/api";
 import {
+  dummyToActuatorStateByte,
+  dummyToStateByte,
+  type RemoteStationState,
+} from "@/lib/stationInterface";
+import {
   GPS_STATE_SOURCE,
   type GpsState,
   SET_STATION_OP_STATE_TARGET,
   STATION_STATE_SOURCE,
   type StationOpState,
   stationOpStateSchema,
-  type StationState,
   stationStateSchema,
 } from "@/lib/stationState";
 
@@ -73,20 +77,18 @@ class DummyStation {
     const randRange = (min: number, max: number) =>
       min + (max - min) * Math.random();
 
-    const stationState: StationState = {
-      opState: this.opState,
-      relays: {
+    const remoteStationState: RemoteStationState = {
+      stateByte: dummyToStateByte(this.opState),
+      actuatorStatusByte: dummyToActuatorStateByte({
         fill: randBool(),
         vent: randBool(),
         pyroValve: randBool(),
         pyroCutter: randBool(),
         igniter: randBool(),
         extra: randBool(),
-      },
-      status: {
-        combustionPressure: randRange(0, 100),
-        oxidizerTankTemp: randRange(0, 100),
-      },
+      }),
+      oxidizerTankTransducerValue: randRange(0, 100),
+      combustionChamberTransducerValue: randRange(0, 100),
     };
 
     const gpsState: GpsState = {
@@ -97,7 +99,7 @@ class DummyStation {
 
     this.api.createRecord({
       source: STATION_STATE_SOURCE,
-      data: stationState,
+      data: remoteStationState,
     });
 
     this.api.createRecord({

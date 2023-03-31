@@ -8,6 +8,7 @@ import {
   LaunchState,
   launchStateSchema,
 } from "@/lib/launchState";
+import { parseRemoteStationState, remoteStationStateSchema } from "@/lib/stationInterface";
 import {
   GPS_STATE_SOURCE,
   GpsState,
@@ -17,7 +18,6 @@ import {
   STATION_STATE_SOURCE,
   StationOpState,
   StationState,
-  stationStateSchema,
 } from "@/lib/stationState";
 
 const LAUNCH_STATE_FETCH_INTERVAL = 1000;
@@ -346,13 +346,13 @@ export function createLaunchMachine(api: Api) {
           const latestRecord = context.stationRecords[0];
           const rangeStart = latestRecord ? latestRecord.timestamp + 1 : undefined;
 
-          const stationRecords = await api.listRecords(
+          const remoteStationRecords = await api.listRecords(
             {
               source: STATION_STATE_SOURCE,
               rangeStart,
               take: 1,
             },
-            stationStateSchema
+            remoteStationStateSchema
           );
 
           const gpsRecords = await api.listRecords(
@@ -364,17 +364,19 @@ export function createLaunchMachine(api: Api) {
             gpsStateSchema
           );
 
-          const stationRecord = stationRecords.length > 0 ? stationRecords[0] : null;
-          const gpsRecord = gpsRecords.length > 0 ? gpsRecords[0] : null;
-
-          if (!stationRecord) {
+          if (remoteStationRecords.length === 0) {
             return null;
           }
 
+          const timestamp = remoteStationRecords[0].timestamp;
+
+          const stationState = parseRemoteStationState(remoteStationRecords[0].data);
+          const gpsRecord = gpsRecords.length > 0 ? gpsRecords[0] : null;
+
           return {
-            timestamp: stationRecord.timestamp,
+            timestamp,
             data: {
-              ...stationRecord.data,
+              ...stationState,
               gps: gpsRecord?.data ?? null,
             },
           };
