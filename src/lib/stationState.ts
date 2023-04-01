@@ -1,15 +1,5 @@
 import { z } from "zod";
 
-const stationOpStateSchema = z.enum([
-  "standby",
-  "keep",
-  "fill",
-  "purge",
-  "pulse",
-  "fire",
-  "abort",
-]);
-
 const stationRelaysSchema = z.object({
   fill: z.boolean(),
   vent: z.boolean(),
@@ -24,17 +14,23 @@ const stationStatusSchema = z.object({
   oxidizerTankTemp: z.number(),
 });
 
-export const stationStateSchema = z.object({
-  opState: stationOpStateSchema,
-  relays: stationRelaysSchema,
-  status: stationStatusSchema,
-});
+export type StationOpState =
+  | "standby"
+  | "keep"
+  | "fill"
+  | "purge"
+  | "pulse"
+  | "fire"
+  | "abort";
 
-export type StationOpState = z.infer<typeof stationOpStateSchema>;
 export type StationRelays = z.infer<typeof stationRelaysSchema>;
 export type StationStatus = z.infer<typeof stationStatusSchema>;
 
-export type StationState = z.infer<typeof stationStateSchema>;
+export type StationState = {
+  opState: StationOpState;
+  relays: StationRelays;
+  status: StationStatus;
+};
 
 export const gpsStateSchema = z.object({
   lat: z.number(),
