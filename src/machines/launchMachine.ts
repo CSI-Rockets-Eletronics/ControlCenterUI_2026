@@ -8,17 +8,15 @@ import {
   LaunchState,
   launchStateSchema,
 } from "@/lib/launchState";
-import { parseRemoteStationState, remoteStationStateSchema } from "@/lib/stationInterface";
 import {
   GPS_STATE_SOURCE,
-  GpsState,
-  gpsStateSchema,
+  parseRemoteStationState,
+  remoteStationStateSchema,
   SET_STATION_OP_STATE_TARGET,
-  STATION_FIRE_OP_STATE,
   STATION_STATE_SOURCE,
-  StationOpState,
-  StationState,
-} from "@/lib/stationState";
+  toRemoteSetStationOpStateCommand,
+} from "@/lib/stationInterface";
+import { GpsState, gpsStateSchema, StationOpState, StationState } from "@/lib/stationState";
 
 const LAUNCH_STATE_FETCH_INTERVAL = 1000;
 const STATION_STATE_FETCH_INTERVAL = 1000;
@@ -384,7 +382,7 @@ export function createLaunchMachine(api: Api) {
         mutateStationOpState: async (_, event) => {
           const message = {
             target: SET_STATION_OP_STATE_TARGET,
-            data: event.value satisfies StationOpState,
+            data: toRemoteSetStationOpStateCommand(event.value),
           };
           await api.createMessage(message);
           console.log("Sent message", message);
@@ -415,7 +413,7 @@ export function createLaunchMachine(api: Api) {
             return false;
           }
 
-          if (event.value === STATION_FIRE_OP_STATE) {
+          if (event.value === "fire") {
             return (
               checklistIsComplete(context.launchState.preFillChecklist) &&
               checklistIsComplete(context.launchState.goPoll) &&

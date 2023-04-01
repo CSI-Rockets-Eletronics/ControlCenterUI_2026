@@ -1,23 +1,16 @@
 import { z } from "zod";
 
-export const STATION_STATE_SOURCE = "STATION_STATE";
-export const GPS_STATE_SOURCE = "GPS_STATE";
-
-export const SET_STATION_OP_STATE_TARGET = "SET_STATION_OP_STATE";
-
-export const STATION_FIRE_OP_STATE = "fire";
-
-export const stationOpStateSchema = z.enum([
+const stationOpStateSchema = z.enum([
   "standby",
   "keep",
   "fill",
   "purge",
   "pulse",
-  STATION_FIRE_OP_STATE,
+  "fire",
   "abort",
 ]);
 
-export const stationRelaysSchema = z.object({
+const stationRelaysSchema = z.object({
   fill: z.boolean(),
   vent: z.boolean(),
   pyroValve: z.boolean(),
@@ -26,7 +19,7 @@ export const stationRelaysSchema = z.object({
   extra: z.boolean(),
 });
 
-export const stationStatusSchema = z.object({
+const stationStatusSchema = z.object({
   combustionPressure: z.number(),
   oxidizerTankTemp: z.number(),
 });

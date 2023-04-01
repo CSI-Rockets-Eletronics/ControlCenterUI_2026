@@ -5,17 +5,15 @@ import { type Api } from "@/lib/api";
 import {
   dummyToActuatorStateByte,
   dummyToStateByte,
-  type RemoteStationState,
-} from "@/lib/stationInterface";
-import {
   GPS_STATE_SOURCE,
-  type GpsState,
+  parseRemoteStationState,
+  remoteSetStationOpStateCommandSchema,
+  type RemoteStationState,
+  remoteStationStateSchema,
   SET_STATION_OP_STATE_TARGET,
   STATION_STATE_SOURCE,
-  type StationOpState,
-  stationOpStateSchema,
-  stationStateSchema,
-} from "@/lib/stationState";
+} from "@/lib/stationInterface";
+import { type GpsState, type StationOpState } from "@/lib/stationState";
 
 const TICK_INTERVAL = 1000;
 
@@ -41,16 +39,16 @@ class DummyStation {
   private async initOpState() {
     const records = await this.api.listRecords(
       {
-        source: SET_STATION_OP_STATE_TARGET,
+        source: STATION_STATE_SOURCE,
         take: 1,
       },
-      stationStateSchema
+      remoteStationStateSchema
     );
 
     if (this.destroyed) return;
 
     if (records.length > 0) {
-      this.opState = records[0].data.opState;
+      this.opState = parseRemoteStationState(records[0].data).opState;
     } else {
       this.opState = "standby";
     }
@@ -63,13 +61,13 @@ class DummyStation {
       {
         target: SET_STATION_OP_STATE_TARGET,
       },
-      stationOpStateSchema
+      remoteSetStationOpStateCommandSchema
     );
 
     if (this.destroyed) return;
 
     if (message) {
-      this.opState = message.data;
+      this.opState = message.data.command;
     }
 
     const randBool = () => Math.random() > 0.5;

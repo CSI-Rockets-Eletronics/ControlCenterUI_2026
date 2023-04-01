@@ -6,6 +6,11 @@ import {
   type StationState,
 } from "./stationState";
 
+export const STATION_STATE_SOURCE = "FiringStation";
+export const GPS_STATE_SOURCE = "GpsState";
+
+export const SET_STATION_OP_STATE_TARGET = "FiringStation";
+
 /**
  * See generateJsonPostPayload() in
  * https://github.com/CSI-Rockets-Eletronics/GroundStation/blob/main/FiringStation/Station%20Code/ESP32MainRadioVerV8/ESP32MainRadioVerV8.ino
@@ -101,4 +106,26 @@ export function parseRemoteStationState(
       oxidizerTankTemp: remoteState.oxidizerTankTransducerValue,
     },
   };
+}
+
+export const remoteSetStationOpStateCommandSchema = z.object({
+  command: z.enum([
+    "standby",
+    "keep",
+    "fill",
+    "purge",
+    "pulse",
+    "fire",
+    "abort",
+  ]),
+});
+
+export type RemoteSetStationOpStateCommand = z.infer<
+  typeof remoteSetStationOpStateCommandSchema
+>;
+
+export function toRemoteSetStationOpStateCommand(
+  opState: StationOpState
+): RemoteSetStationOpStateCommand {
+  return { command: opState };
 }
