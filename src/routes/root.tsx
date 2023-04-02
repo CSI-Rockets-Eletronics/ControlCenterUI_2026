@@ -7,10 +7,9 @@ import { useDummyStation } from "@/hooks/useDummyStation";
 import { Api } from "@/lib/api";
 
 export const Root = memo(function Root() {
-  const { stationId, sessionId, dummy } = useParams<{
+  const { stationId, sessionId } = useParams<{
     stationId: string;
     sessionId?: string;
-    dummy?: string;
   }>();
 
   if (!stationId) {
