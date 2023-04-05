@@ -21,8 +21,6 @@ import { GpsState, gpsStateSchema, StationOpState, StationState } from "@/lib/st
 const LAUNCH_STATE_FETCH_INTERVAL = 1000;
 const STATION_STATE_FETCH_INTERVAL = 1000;
 
-const STATION_RECORDS_RETENTION_MS = 10 * 1000;
-
 function checklistIsComplete(checklist: Record<string, boolean>) {
   return Object.values(checklist).every(Boolean);
 }
@@ -90,7 +88,6 @@ export function createLaunchMachine(api: Api) {
           launchState: LaunchState;
           pendingLaunchState: LaunchState | null;
           stationState: MergedStationState | null;
-          stationRecords: ApiRecord<MergedStationState>[];
           sentMessages: SentMessage[];
         },
         services: {} as {
@@ -106,7 +103,6 @@ export function createLaunchMachine(api: Api) {
         launchState: initialLaunchState,
         pendingLaunchState: null,
         stationState: null,
-        stationRecords: [],
         sentMessages: [],
       },
       initial: "live",
@@ -293,16 +289,7 @@ export function createLaunchMachine(api: Api) {
           if (!newRecord) {
             return {};
           }
-          return {
-            stationState: newRecord.data,
-            stationRecords: [
-              ...context.stationRecords.filter(
-                // timestamps are in microseconds
-                (record) => record.timestamp > newRecord.timestamp - STATION_RECORDS_RETENTION_MS * 1000
-              ),
-              newRecord,
-            ],
-          };
+          return { stationState: newRecord.data };
         }),
         logNetworkError: (_, event) => {
           console.error("Launch machine network error", event);
@@ -341,13 +328,9 @@ export function createLaunchMachine(api: Api) {
         fetchStationRecord: async (context) => {
           // merges station and gps data into one record
 
-          const latestRecord = context.stationRecords[0];
-          const rangeStart = latestRecord ? latestRecord.timestamp + 1 : undefined;
-
           const remoteStationRecords = await api.listRecords(
             {
               source: STATION_STATE_SOURCE,
-              rangeStart,
               take: 1,
             },
             remoteStationStateSchema
@@ -356,7 +339,6 @@ export function createLaunchMachine(api: Api) {
           const gpsRecords = await api.listRecords(
             {
               source: GPS_STATE_SOURCE,
-              rangeStart,
               take: 1,
             },
             gpsStateSchema
