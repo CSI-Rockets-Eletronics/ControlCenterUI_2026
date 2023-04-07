@@ -102,8 +102,13 @@ export function parseRemoteStationState(
     opState: parseStateByte(remoteState.stateByte),
     relays: parseActuatorStateByte(remoteState.actuatorStatusByte),
     status: {
-      combustionPressure: remoteState.combustionChamberTransducerValue,
-      oxidizerTankTemp: remoteState.oxidizerTankTransducerValue,
+      // convert pressures tom mPSI to PSI
+      combustionPressure: Math.round(
+        remoteState.combustionChamberTransducerValue / 1000
+      ),
+      oxidizerTankPressure: Math.round(
+        remoteState.oxidizerTankTransducerValue / 1000
+      ),
     },
   };
 }

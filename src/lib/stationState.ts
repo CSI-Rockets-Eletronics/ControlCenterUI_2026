@@ -10,8 +10,8 @@ const stationRelaysSchema = z.object({
 });
 
 const stationStatusSchema = z.object({
-  combustionPressure: z.number(),
-  oxidizerTankTemp: z.number(),
+  combustionPressure: z.number(), // in PSI
+  oxidizerTankPressure: z.number(), // in PSI
 });
 
 export type StationOpState =

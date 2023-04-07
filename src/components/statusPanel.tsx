@@ -52,35 +52,37 @@ const ClickableDisplay = memo(function ClickableDisplay({
   );
 });
 
-const CombustionPressureDisplay = memo(function TankPressureDisplay() {
+const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
   const combustionPressure = useLaunchMachineSelector((state) =>
     Math.round(state.context.stationState?.status.combustionPressure ?? 0)
   );
 
   return (
     <StatusDisplay
-      label="Combustion Chamber Pressure (PSI)"
+      label="CC Pressure (PSI)"
       color="green"
       value={String(combustionPressure)}
     />
   );
 });
 
-const OxidizerTankTempDisplay = memo(function OxidizerTankTempDisplay() {
-  const oxidizerTankTemp = useLaunchMachineSelector((state) =>
-    Math.round(state.context.stationState?.status.oxidizerTankTemp ?? 0)
-  );
+const OxidizerTankPressureDisplay = memo(
+  function OxidizerTankPressureDisplay() {
+    const oxidizerTankPressure = useLaunchMachineSelector((state) =>
+      Math.round(state.context.stationState?.status.oxidizerTankPressure ?? 0)
+    );
 
-  return (
-    <StatusDisplay
-      label="Oxidizer Tank Temp (F)"
-      color="green"
-      value={String(oxidizerTankTemp)}
-    />
-  );
-});
+    return (
+      <StatusDisplay
+        label="Ox Tank Pressure (PSI)"
+        color="green"
+        value={String(oxidizerTankPressure)}
+      />
+    );
+  }
+);
 
-const AltitudeDisplay = memo(function OxidizerTankTempDisplay() {
+const AltitudeDisplay = memo(function AltitudeDisplay() {
   const altitude = useLaunchMachineSelector((state) =>
     Math.round(state.context.stationState?.gps?.alt ?? 0)
   );
@@ -132,7 +134,7 @@ export const StatusPanel = memo(function StatusPanel() {
       ) : (
         <>
           <CombustionPressureDisplay />
-          <OxidizerTankTempDisplay />
+          <OxidizerTankPressureDisplay />
         </>
       )}
     </Panel>
