@@ -18,7 +18,7 @@ import {
 } from "@/lib/stationInterface";
 import { GpsState, gpsStateSchema, StationOpState, StationState } from "@/lib/stationState";
 
-const LAUNCH_STATE_FETCH_INTERVAL = 1000;
+const LAUNCH_STATE_FETCH_INTERVAL = 0; // fetch as soon as the previous fetch completes
 const STATION_STATE_FETCH_INTERVAL = 1000;
 
 function checklistIsComplete(checklist: Record<string, boolean>) {
