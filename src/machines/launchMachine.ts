@@ -325,7 +325,7 @@ export function createLaunchMachine(api: Api) {
           });
           return context.pendingLaunchState;
         },
-        fetchStationRecord: async (context) => {
+        fetchStationRecord: async () => {
           // merges station and gps data into one record
 
           const remoteStationRecords = await api.listRecords(
