@@ -19,7 +19,9 @@ export type StationOpState =
   | "keep"
   | "fill"
   | "purge"
-  | "pulse"
+  | "pulse-A"
+  | "pulse-B"
+  | "pulse-C"
   | "fire"
   | "abort";
 

@@ -43,7 +43,11 @@ function parseStateByte(stateByte: number): StationOpState {
     case 86:
       return "keep";
     case 99:
-      return "pulse";
+      return "pulse-A";
+    case 98:
+      return "pulse-B";
+    case 97:
+      return "pulse-C";
     default:
       console.error("Unknown state byte", stateByte);
       return "standby";
@@ -65,8 +69,12 @@ export function dummyToStateByte(opState: StationOpState): number {
       return 189;
     case "keep":
       return 86;
-    case "pulse":
+    case "pulse-A":
       return 99;
+    case "pulse-B":
+      return 98;
+    case "pulse-C":
+      return 97;
   }
 }
 
@@ -115,7 +123,9 @@ export const remoteSetStationOpStateCommandSchema = z.object({
     "keep",
     "fill",
     "purge",
-    "pulse",
+    "pulse-A",
+    "pulse-B",
+    "pulse-C",
     "fire",
     "abort",
   ]),
