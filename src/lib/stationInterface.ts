@@ -30,23 +30,23 @@ export type RemoteStationState = z.infer<typeof remoteStationStateSchema>;
 
 function parseStateByte(byte: number): StationOpState {
   switch (byte) {
-    case 214:
+    case 0:
       return "fire";
-    case 101:
+    case 1:
       return "fill";
-    case 138:
+    case 2:
       return "purge";
-    case 136:
+    case 3:
       return "abort";
-    case 189:
+    case 4:
       return "standby";
-    case 86:
+    case 5:
       return "keep";
-    case 99:
+    case 6:
       return "pulse-A";
-    case 98:
+    case 7:
       return "pulse-B";
-    case 97:
+    case 8:
       return "pulse-C";
     default:
       console.error("Unknown state byte", byte);
@@ -58,23 +58,23 @@ function parseStateByte(byte: number): StationOpState {
 export function dummyToStateByte(opState: StationOpState): number {
   switch (opState) {
     case "fire":
-      return 214;
+      return 0;
     case "fill":
-      return 101;
+      return 1;
     case "purge":
-      return 138;
+      return 2;
     case "abort":
-      return 136;
+      return 3;
     case "standby":
-      return 189;
+      return 4;
     case "keep":
-      return 86;
+      return 5;
     case "pulse-A":
-      return 99;
+      return 6;
     case "pulse-B":
-      return 98;
+      return 7;
     case "pulse-C":
-      return 97;
+      return 8;
   }
 }
 
