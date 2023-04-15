@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 
 import { type Api } from "@/lib/api";
 import {
-  dummyToActuatorStateByte,
+  dummyToRelayStatusByte,
   dummyToStateByte,
   GPS_STATE_SOURCE,
   parseRemoteStationState,
@@ -77,7 +77,7 @@ class DummyStation {
 
     const remoteStationState: RemoteStationState = {
       stateByte: dummyToStateByte(this.opState),
-      actuatorStatusByte: dummyToActuatorStateByte({
+      relayStatusByte: dummyToRelayStatusByte({
         fill: randBool(),
         vent: randBool(),
         pyroValve: randBool(),
@@ -85,8 +85,8 @@ class DummyStation {
         igniter: randBool(),
         extra: randBool(),
       }),
-      oxidizerTankTransducerValue: randRange(0, 100),
-      combustionChamberTransducerValue: randRange(0, 100),
+      oxTankMPSI: randRange(0, 100),
+      ccMPSI: randRange(0, 100),
     };
 
     const gpsState: GpsState = {

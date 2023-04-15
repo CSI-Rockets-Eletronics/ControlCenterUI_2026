@@ -18,9 +18,9 @@ export const SET_STATION_OP_STATE_TARGET = "FiringStation";
 export const remoteStationStateSchema = z.object({
   // time: z.number(),
   stateByte: z.number(),
-  actuatorStatusByte: z.number(),
-  oxidizerTankTransducerValue: z.number(),
-  combustionChamberTransducerValue: z.number(),
+  relayStatusByte: z.number(),
+  oxTankMPSI: z.number(),
+  ccMPSI: z.number(),
   // timeSinceLastCalibration: z.number(),
   // timeSinceLastStartup: z.number(),
   // opState: z.string(),
@@ -28,8 +28,8 @@ export const remoteStationStateSchema = z.object({
 
 export type RemoteStationState = z.infer<typeof remoteStationStateSchema>;
 
-function parseStateByte(stateByte: number): StationOpState {
-  switch (stateByte) {
+function parseStateByte(byte: number): StationOpState {
+  switch (byte) {
     case 214:
       return "fire";
     case 101:
@@ -49,7 +49,7 @@ function parseStateByte(stateByte: number): StationOpState {
     case 97:
       return "pulse-C";
     default:
-      console.error("Unknown state byte", stateByte);
+      console.error("Unknown state byte", byte);
       return "standby";
   }
 }
@@ -78,19 +78,19 @@ export function dummyToStateByte(opState: StationOpState): number {
   }
 }
 
-function parseActuatorStateByte(actuatorStateByte: number): StationRelays {
+function parseRelayStatusByte(byte: number): StationRelays {
   return {
-    fill: (actuatorStateByte & 1) === 1,
-    vent: (actuatorStateByte & 2) === 2,
-    pyroCutter: (actuatorStateByte & 4) === 4,
-    pyroValve: (actuatorStateByte & 8) === 8,
-    igniter: (actuatorStateByte & 16) === 16,
+    fill: (byte & 1) === 1,
+    vent: (byte & 2) === 2,
+    pyroCutter: (byte & 4) === 4,
+    pyroValve: (byte & 8) === 8,
+    igniter: (byte & 16) === 16,
     extra: false,
   };
 }
 
 /** For dummy station. */
-export function dummyToActuatorStateByte(relays: StationRelays): number {
+export function dummyToRelayStatusByte(relays: StationRelays): number {
   return (
     (relays.fill ? 1 : 0) |
     (relays.vent ? 2 : 0) |
@@ -108,11 +108,11 @@ export function parseRemoteStationState(
 ): StationState {
   return {
     opState: parseStateByte(remoteState.stateByte),
-    relays: parseActuatorStateByte(remoteState.actuatorStatusByte),
+    relays: parseRelayStatusByte(remoteState.relayStatusByte),
     status: {
       // convert pressures tom mPSI to PSI
-      combustionPressure: remoteState.combustionChamberTransducerValue / 1000,
-      oxidizerTankPressure: remoteState.oxidizerTankTransducerValue / 1000,
+      combustionPressure: remoteState.ccMPSI / 1000,
+      oxidizerTankPressure: remoteState.oxTankMPSI / 1000,
     },
   };
 }
