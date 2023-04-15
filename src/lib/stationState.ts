@@ -12,6 +12,8 @@ const stationRelaysSchema = z.object({
 const stationStatusSchema = z.object({
   combustionPressure: z.number(), // in PSI
   oxidizerTankPressure: z.number(), // in PSI
+  timeSinceBoot: z.number(), // in seconds
+  timeSinceCalibration: z.number(), // in seconds
 });
 
 export type StationOpState =

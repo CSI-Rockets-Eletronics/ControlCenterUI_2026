@@ -37,17 +37,29 @@ export const TopStatusPanel = memo(function TopStatusPanel({
   );
 
   const currentState = {
-    standby: "STANDBY",
-    launch: "LAUNCH",
-    recovery: "RECOVERY",
+    standby: "Standby",
+    launch: "Launch",
+    recovery: "Recovery",
   }[activePanel];
+
+  const timeSinceBoot = useLaunchMachineSelector((state) =>
+    Math.round(state.context.stationState?.status.timeSinceBoot ?? 0)
+  );
+
+  const timeSinceCalibration = useLaunchMachineSelector((state) =>
+    Math.round(state.context.stationState?.status.timeSinceCalibration ?? 0)
+  );
 
   return (
     <div className="grid grid-rows-[auto,auto] md:grid-rows-none md:grid-cols-[1fr,auto] space-y-4 md:space-y-0 md:space-x-4">
       <Panel className="flex flex-col items-stretch md:items-center md:flex-row gap-4 md:gap-6">
-        <p className="text-lg text-gray-text grow">
-          Current State: {currentState}
-        </p>
+        <p className="text-lg text-gray-text">State: {currentState}</p>
+        <div className="flex flex-col ml-2 grow">
+          <p className="text-gray-text">FS Uptime: {timeSinceBoot} s</p>
+          <p className="text-gray-text">
+            Calib Uptime: {timeSinceCalibration} s
+          </p>
+        </div>
         <RelaysGroup />
         <Button color="gray" disabled={false} onClick={openMessagesModal}>
           ⌨️

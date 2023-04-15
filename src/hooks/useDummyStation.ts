@@ -21,9 +21,12 @@ class DummyStation {
   private readonly intervalId: number;
   private destroyed = false;
 
+  private bootTime; // microseconds
   private opState: StationOpState | null = null;
 
   constructor(private readonly api: Api) {
+    this.bootTime = Date.now() * 1000;
+
     this.initOpState().catch((error) => {
       console.error("Failed to init dummy station opState", error);
     });
@@ -75,6 +78,8 @@ class DummyStation {
     const randRange = (min: number, max: number) =>
       min + (max - min) * Math.random();
 
+    const curTime = Date.now() * 1000;
+
     const remoteStationState: RemoteStationState = {
       stateByte: dummyToStateByte(this.opState),
       relayStatusByte: dummyToRelayStatusByte({
@@ -87,6 +92,8 @@ class DummyStation {
       }),
       oxTankMPSI: randRange(0, 100),
       ccMPSI: randRange(0, 100),
+      timeSinceBoot: curTime - this.bootTime,
+      timeSinceCalibration: curTime - this.bootTime,
     };
 
     const gpsState: GpsState = {

@@ -21,9 +21,8 @@ export const remoteStationStateSchema = z.object({
   relayStatusByte: z.number(),
   oxTankMPSI: z.number(),
   ccMPSI: z.number(),
-  // timeSinceLastCalibration: z.number(),
-  // timeSinceLastStartup: z.number(),
-  // opState: z.string(),
+  timeSinceBoot: z.number(),
+  timeSinceCalibration: z.number(),
 });
 
 export type RemoteStationState = z.infer<typeof remoteStationStateSchema>;
@@ -110,7 +109,10 @@ export function parseRemoteStationState(
     opState: parseStateByte(remoteState.stateByte),
     relays: parseRelayStatusByte(remoteState.relayStatusByte),
     status: {
-      // convert pressures tom mPSI to PSI
+      // convert micros to seconds
+      timeSinceBoot: remoteState.timeSinceBoot / 1e6,
+      timeSinceCalibration: remoteState.timeSinceCalibration / 1e6,
+      // convert pressures to mPSI to PSI
       combustionPressure: remoteState.ccMPSI / 1000,
       oxidizerTankPressure: remoteState.oxTankMPSI / 1000,
     },
