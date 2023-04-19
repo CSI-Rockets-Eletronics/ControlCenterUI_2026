@@ -43,11 +43,13 @@ export const TopStatusPanel = memo(function TopStatusPanel({
   }[activePanel];
 
   const timeSinceBoot = useLaunchMachineSelector((state) =>
-    Math.round(state.context.stationState?.status.timeSinceBoot ?? 0)
+    (state.context.stationState?.status.timeSinceBoot ?? 0).toFixed(1)
   );
 
   const timeSinceCalibration = useLaunchMachineSelector((state) =>
-    Math.round(state.context.stationState?.status.timeSinceCalibration ?? 0)
+    Math.round(
+      state.context.stationState?.status.timeSinceCalibration ?? 0
+    ).toFixed(1)
   );
 
   return (
