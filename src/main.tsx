@@ -2,19 +2,16 @@ import "./index.css";
 
 import React from "react";
 import ReactDOM from "react-dom/client";
-import {
-  createBrowserRouter,
-  redirect,
-  RouterProvider,
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
+import { Root } from "./routes/root";
 import { Station } from "./routes/station";
 
 const router = createBrowserRouter(
   [
     {
       path: "/",
-      loader: () => redirect("/cl9vt57vf0000qw4nmwr6glcm"),
+      element: <Root />,
     },
     {
       path: "/:stationId",
