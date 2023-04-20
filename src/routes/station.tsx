@@ -6,7 +6,7 @@ import { LaunchMachineProvider } from "@/components/launchMachineProvider";
 import { useDummyStation } from "@/hooks/useDummyStation";
 import { Api } from "@/lib/api";
 
-export const Root = memo(function Root() {
+export const Station = memo(function Station() {
   const { stationId, sessionId } = useParams<{
     stationId: string;
     sessionId?: string;

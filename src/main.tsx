@@ -8,7 +8,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 
-import { Root } from "./routes/root";
+import { Station } from "./routes/station";
 
 const router = createBrowserRouter(
   [
@@ -18,11 +18,11 @@ const router = createBrowserRouter(
     },
     {
       path: "/:stationId",
-      element: <Root />,
+      element: <Station />,
     },
     {
       path: "/:stationId/:sessionId",
-      element: <Root />,
+      element: <Station />,
     },
   ],
   {
