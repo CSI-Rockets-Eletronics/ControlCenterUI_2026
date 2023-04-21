@@ -47,9 +47,7 @@ export const TopStatusPanel = memo(function TopStatusPanel({
   );
 
   const timeSinceCalibration = useLaunchMachineSelector((state) =>
-    Math.round(
-      state.context.stationState?.status.timeSinceCalibration ?? 0
-    ).toFixed(1)
+    (state.context.stationState?.status.timeSinceCalibration ?? 0).toFixed(1)
   );
 
   return (
