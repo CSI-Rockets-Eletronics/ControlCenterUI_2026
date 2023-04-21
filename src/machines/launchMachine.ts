@@ -19,7 +19,7 @@ import {
 import { GpsState, gpsStateSchema, StationOpState, StationState } from "@/lib/stationState";
 
 const LAUNCH_STATE_FETCH_INTERVAL = 0; // fetch as soon as the previous fetch completes
-const STATION_STATE_FETCH_INTERVAL = 1000;
+const STATION_STATE_FETCH_INTERVAL = 0; // fetch as soon as the previous fetch completes
 
 function checklistIsComplete(checklist: Record<string, boolean>) {
   return Object.values(checklist).every(Boolean);
