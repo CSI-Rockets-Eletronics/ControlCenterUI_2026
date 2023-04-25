@@ -13,14 +13,20 @@ Next, install the dependencies:
 yarn install
 ```
 
-To run the dev server:
+To run the dev server, which has hot reloading:
 
 ```sh
 yarn dev
 ```
 
-To build the production bundle:
+During actual operation, build the production bundle:
 
 ```sh
 yarn build
+```
+
+Then, use the following command to serve the bundle:
+
+```sh
+yarn preview
 ```
