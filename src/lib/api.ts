@@ -1,6 +1,7 @@
 import { type z } from "zod";
 
 const ORIGIN = "https://csiwiki.me.columbia.edu/rocketsdata";
+// const ORIGIN = "http://localhost:3000";
 
 export interface Session {
   id: string;
