@@ -1,6 +1,7 @@
 import { memo, useEffect } from "react";
 import { twMerge } from "tailwind-merge";
 
+import { PresetMessagesPanel } from "./presetMessagesPanel";
 import { SendManualMessagePanel } from "./sendManualMessagePanel";
 import { SentMessagesPanel } from "./sentMessagesPanel";
 
@@ -38,9 +39,14 @@ export const MessagesModal = memo(function MessagesModal({
         className="absolute inset-0 opacity-95 bg-gray-bg-1"
         onClick={onClose}
       />
-      <div className="relative w-full h-full max-w-2xl grid grid-rows-[minmax(0,1fr),auto] gap-4">
-        <SentMessagesPanel />
-        <SendManualMessagePanel />
+      <div className="relative w-full h-full max-w-7xl gap-4 grid grid-rows-1 grid-cols-2">
+        <div className="grid grid-rows-[minmax(0,1fr),auto] gap-4">
+          <SentMessagesPanel />
+          <SendManualMessagePanel />
+        </div>
+        <div className="grid grid-rows-[auto,minmax(0,1fr)] gap-4">
+          <PresetMessagesPanel />
+        </div>
       </div>
     </div>
   );
