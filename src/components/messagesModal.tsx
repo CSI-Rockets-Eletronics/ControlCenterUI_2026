@@ -1,6 +1,7 @@
 import { memo, useEffect } from "react";
 import { twMerge } from "tailwind-merge";
 
+import { MonitorRecordsPanel } from "./monitorRecordsPanel";
 import { PresetMessagesPanel } from "./presetMessagesPanel";
 import { SendManualMessagePanel } from "./sendManualMessagePanel";
 import { SentMessagesPanel } from "./sentMessagesPanel";
@@ -46,6 +47,7 @@ export const MessagesModal = memo(function MessagesModal({
         </div>
         <div className="grid grid-rows-[auto,minmax(0,1fr)] gap-4">
           <PresetMessagesPanel />
+          <MonitorRecordsPanel />
         </div>
       </div>
     </div>
