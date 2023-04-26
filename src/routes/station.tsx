@@ -1,31 +1,15 @@
-import { memo, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { memo } from "react";
 
+import { ApiProvider } from "@/components/apiProvider";
 import { ControlCenter } from "@/components/controlCenter";
 import { LaunchMachineProvider } from "@/components/launchMachineProvider";
-import { useDummyStation } from "@/hooks/useDummyStation";
-import { Api } from "@/lib/api";
 
 export const Station = memo(function Station() {
-  const { stationId, sessionId } = useParams<{
-    stationId: string;
-    sessionId?: string;
-  }>();
-
-  if (!stationId) {
-    throw new Error("Station ID is required");
-  }
-
-  const api = useMemo(
-    () => new Api(stationId, sessionId),
-    [stationId, sessionId]
-  );
-
-  useDummyStation(api);
-
   return (
-    <LaunchMachineProvider api={api}>
-      <ControlCenter />
-    </LaunchMachineProvider>
+    <ApiProvider>
+      <LaunchMachineProvider>
+        <ControlCenter />
+      </LaunchMachineProvider>
+    </ApiProvider>
   );
 });

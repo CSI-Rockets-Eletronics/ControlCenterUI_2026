@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 
+import { useApi } from "@/components/apiProvider";
 import { type Api } from "@/lib/api";
 import {
   dummyToRelayStatusByte,
@@ -114,8 +115,10 @@ class DummyStation {
   }
 }
 
-export function useDummyStation(api: Api) {
+export function useDummyStation() {
   const [searchParams] = useSearchParams();
+
+  const api = useApi();
 
   const enabled = searchParams.has("dummy");
   const newSessionName = searchParams.get("session");
