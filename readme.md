@@ -28,5 +28,5 @@ yarn build
 Then, use the following command to serve the bundle:
 
 ```sh
-yarn preview
+yarn preview --host
 ```
