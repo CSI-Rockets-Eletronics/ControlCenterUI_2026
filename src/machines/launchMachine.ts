@@ -21,6 +21,8 @@ import { GpsState, gpsStateSchema, StationOpState, StationState } from "@/lib/st
 const LAUNCH_STATE_FETCH_INTERVAL = 0; // fetch as soon as the previous fetch completes
 const STATION_STATE_FETCH_INTERVAL = 0; // fetch as soon as the previous fetch completes
 
+const FETCH_GPS = false; // enable once we have GPS data
+
 function checklistIsComplete(checklist: Record<string, boolean>) {
   return Object.values(checklist).every(Boolean);
 }
@@ -336,13 +338,15 @@ export function createLaunchMachine(api: Api) {
             remoteStationStateSchema
           );
 
-          const gpsRecords = await api.listRecords(
-            {
-              source: GPS_STATE_SOURCE,
-              take: 1,
-            },
-            gpsStateSchema
-          );
+          const gpsRecords = FETCH_GPS
+            ? await api.listRecords(
+                {
+                  source: GPS_STATE_SOURCE,
+                  take: 1,
+                },
+                gpsStateSchema
+              )
+            : [];
 
           if (remoteStationRecords.length === 0) {
             return null;
