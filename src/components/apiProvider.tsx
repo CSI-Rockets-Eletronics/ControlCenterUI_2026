@@ -8,7 +8,7 @@ const Context = createContext(new Api(""));
 export function ApiProvider({ children }: { children: ReactNode }) {
   const { stationId, sessionId } = useParams<{
     stationId: string;
-    sessionId?: string;
+    sessionId: string;
   }>();
 
   if (!stationId) {
