@@ -79,7 +79,9 @@ export type LaunchMachineEvent =
       data: unknown;
     };
 
-export function createLaunchMachine(api: Api) {
+export function createLaunchMachine(api: Api, replayFromSeconds: number | null) {
+  const startTimeMicros = Date.now() * 1000;
+
   return createMachine(
     {
       tsTypes: {} as import("./launchMachine.typegen").Typegen0,
@@ -328,12 +330,20 @@ export function createLaunchMachine(api: Api) {
           return context.pendingLaunchState;
         },
         fetchStationRecord: async () => {
+          const curTimeMicros = Date.now() * 1000;
+          const elapsedMicros = curTimeMicros - startTimeMicros;
+
+          const useRelativeTimestamps = replayFromSeconds != null;
+          const rangeEnd = useRelativeTimestamps ? elapsedMicros + replayFromSeconds * 1e6 : undefined;
+
           // merges station and gps data into one record
 
           const remoteStationRecords = await api.listRecords(
             {
               source: STATION_STATE_SOURCE,
               take: 1,
+              useRelativeTimestamps,
+              rangeEnd,
             },
             remoteStationStateSchema
           );
@@ -343,6 +353,8 @@ export function createLaunchMachine(api: Api) {
                 {
                   source: GPS_STATE_SOURCE,
                   take: 1,
+                  useRelativeTimestamps,
+                  rangeEnd,
                 },
                 gpsStateSchema
               )

@@ -143,6 +143,7 @@ export class Api {
       rangeStart?: number | null;
       rangeEnd?: number | null;
       take?: number | null;
+      useRelativeTimestamps?: boolean;
     },
     schema?: Schema
   ): Promise<Record<z.infer<Schema>>[]> {
