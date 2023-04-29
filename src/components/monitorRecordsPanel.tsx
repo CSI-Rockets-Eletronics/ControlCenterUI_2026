@@ -1,9 +1,11 @@
 import { memo, useEffect, useState } from "react";
 
+import { useReplayFromSeconds } from "@/hooks/useReplayFromSeconds";
 import { type Record } from "@/lib/api";
 
 import { useApi } from "./apiProvider";
 import { Panel } from "./design/panel";
+import { useLaunchMachineSelector } from "./launchMachineProvider";
 
 const SOURCES = ["FiringStation", "scientific", "IDA100"];
 
@@ -15,17 +17,32 @@ export interface RecordWithSource extends Record {
 
 export const MonitorRecordsPanel = memo(function MonitorRecordsPanel() {
   const api = useApi();
+  const replayFromSeconds = useReplayFromSeconds();
 
   const [records, setRecords] = useState<RecordWithSource[]>([]);
   const [hasError, setHasError] = useState(false);
 
+  const startTimeMicros = useLaunchMachineSelector(
+    (state) => state.context.startTimeMicros
+  );
+
   useEffect(() => {
     async function fetchRecords(): Promise<(RecordWithSource | null)[]> {
+      const curTimeMicros = Date.now() * 1000;
+      const elapsedMicros = curTimeMicros - startTimeMicros;
+
+      const useRelativeTimestamps = replayFromSeconds != null;
+      const rangeEnd = useRelativeTimestamps
+        ? elapsedMicros + replayFromSeconds * 1e6
+        : undefined;
+
       return await Promise.all(
         SOURCES.map(async (source) => {
           const record = await api.listRecords({
             source,
             take: 1,
+            useRelativeTimestamps,
+            rangeEnd,
           });
           if (record.length === 0) return null;
           return { ...record[0], source };
@@ -49,7 +66,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel() {
     return () => {
       clearInterval(interval);
     };
-  }, [api]);
+  }, [api, startTimeMicros]);
 
   return (
     <Panel className="px-0 grid grid-rows-[auto,auto,minmax(0,1fr)] gap-4">

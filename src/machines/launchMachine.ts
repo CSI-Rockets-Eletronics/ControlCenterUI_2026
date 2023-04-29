@@ -89,6 +89,7 @@ export function createLaunchMachine(api: Api, replayFromSeconds: number | null) 
       schema: {
         events: {} as LaunchMachineEvent,
         context: {} as {
+          startTimeMicros: number;
           launchState: LaunchState;
           pendingLaunchState: LaunchState | null;
           stationState: MergedStationState | null;
@@ -104,6 +105,7 @@ export function createLaunchMachine(api: Api, replayFromSeconds: number | null) 
       },
       id: "launch",
       context: {
+        startTimeMicros,
         launchState: initialLaunchState,
         pendingLaunchState: null,
         stationState: null,
