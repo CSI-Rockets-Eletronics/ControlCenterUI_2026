@@ -79,7 +79,7 @@ export type LaunchMachineEvent =
       data: unknown;
     };
 
-export function createLaunchMachine(api: Api, replayFromSeconds: number | null) {
+export function createLaunchMachine(api: Api, canWrite = false, replayFromSeconds: number | null = null) {
   const startTimeMicros = Date.now() * 1000;
 
   return createMachine(
@@ -132,13 +132,13 @@ export function createLaunchMachine(api: Api, replayFromSeconds: number | null) 
                 idle: {
                   always: { cond: "hasPendingLaunchState", target: "mutating" },
                   on: {
-                    UPDATE_ACTIVE_PANEL: { actions: "updateActivePanel" },
-                    UPDATE_PRE_FILL_CHECKLIST: { actions: "updatePreFillChecklist" },
-                    UPDATE_GO_POLL: { actions: "updateGoPoll" },
-                    UPDATE_MAIN_STATUS: { actions: "updateMainStatus" },
+                    UPDATE_ACTIVE_PANEL: { actions: "updateActivePanel", cond: "canWrite" },
+                    UPDATE_PRE_FILL_CHECKLIST: { actions: "updatePreFillChecklist", cond: "canWrite" },
+                    UPDATE_GO_POLL: { actions: "updateGoPoll", cond: "canWrite" },
+                    UPDATE_MAIN_STATUS: { actions: "updateMainStatus", cond: "canWrite" },
                     UPDATE_ARM_STATUS: { actions: "updateArmStatus", cond: "canUpdateArmStatus" },
-                    UPDATE_RANGE_PERMIT: { actions: "updateRangePermit" },
-                    UPDATE_VISUAL_CONTACT_CONFIRMED: { actions: "updateVisualContactConfirmed" },
+                    UPDATE_RANGE_PERMIT: { actions: "updateRangePermit", cond: "canWrite" },
+                    UPDATE_VISUAL_CONTACT_CONFIRMED: { actions: "updateVisualContactConfirmed", cond: "canWrite" },
                   },
                   initial: "waitingToRefetch",
                   states: {
@@ -185,13 +185,8 @@ export function createLaunchMachine(api: Api, replayFromSeconds: number | null) 
                 },
                 idle: {
                   on: {
-                    MUTATE_STATION_OP_STATE: {
-                      target: "mutatingOpState",
-                      cond: "canMutateOpState",
-                    },
-                    SEND_MANUAL_MESSAGE: {
-                      target: "sendingManualMessage",
-                    },
+                    MUTATE_STATION_OP_STATE: { target: "mutatingOpState", cond: "canMutateOpState" },
+                    SEND_MANUAL_MESSAGE: { target: "sendingManualMessage", cond: "canWrite" },
                   },
                   initial: "waitingToRefetch",
                   states: {
@@ -400,7 +395,12 @@ export function createLaunchMachine(api: Api, replayFromSeconds: number | null) 
       },
       guards: {
         hasPendingLaunchState: (context) => !!context.pendingLaunchState,
+        canWrite: () => canWrite,
         canUpdateArmStatus: (context, event) => {
+          if (!canWrite) {
+            return false;
+          }
+
           const oldArmStatus = context.launchState.armStatus;
           const newArmStatus = { ...oldArmStatus, ...event.data };
           return (
@@ -409,6 +409,10 @@ export function createLaunchMachine(api: Api, replayFromSeconds: number | null) 
           );
         },
         canMutateOpState: (context, event) => {
+          if (!canWrite) {
+            return false;
+          }
+
           if (event.value === context.stationState?.opState) {
             return false;
           }
