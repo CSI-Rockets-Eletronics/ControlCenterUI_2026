@@ -93,7 +93,6 @@ export const StationChart = memo(function StationChart({
           domain={[minY, maxY]}
           axisLine={{ className: "!stroke-gray-solid" }}
           tick={{ fontSize: 20 }}
-          padding={{ bottom: 15 }}
         />
         <Tooltip
           isAnimationActive={false}
