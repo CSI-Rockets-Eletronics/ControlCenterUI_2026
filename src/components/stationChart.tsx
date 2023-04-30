@@ -1,3 +1,5 @@
+/* eslint-disable react-perf/jsx-no-new-object-as-prop */
+/* eslint-disable react-perf/jsx-no-new-array-as-prop */
 import { shallowEqual } from "@xstate/react";
 import { memo, useCallback, useEffect, useState } from "react";
 import {
@@ -79,25 +81,23 @@ export const StationChart = memo(function StationChart({
         <XAxis
           type="number"
           scale="linear"
-          // eslint-disable-next-line react-perf/jsx-no-new-array-as-prop
           domain={[-retentionSeconds, 0]}
-          // eslint-disable-next-line react-perf/jsx-no-new-array-as-prop
           ticks={[-retentionSeconds, -retentionSeconds / 2, 0]}
-          stroke="#90908c" // Radix sand 9
+          axisLine={{ className: "!stroke-gray-solid" }}
+          tick={{ fontSize: 20 }}
           dataKey="seconds"
           tickFormatter={tickFormatter}
         />
         <YAxis
           scale="linear"
-          // eslint-disable-next-line react-perf/jsx-no-new-array-as-prop
           domain={[minY, maxY]}
-          stroke="#90908c" // Radix sand 9
-          // eslint-disable-next-line react-perf/jsx-no-new-object-as-prop
+          axisLine={{ className: "!stroke-gray-solid" }}
+          tick={{ fontSize: 20 }}
           padding={{ bottom: 15 }}
         />
         <Tooltip
           isAnimationActive={false}
-          wrapperClassName="!bg-gray-el-bg-hover !rounded !border !border-gray-border-hover !text-sm"
+          wrapperClassName="!bg-gray-el-bg-hover !rounded !border !border-gray-border-hover !text-sm !text-green-solid"
           labelClassName="!text-gray-text"
           labelFormatter={labelFormatter}
           formatter={valueFormatter}
@@ -107,7 +107,8 @@ export const StationChart = memo(function StationChart({
           isAnimationActive={false}
           dot={false}
           dataKey="value"
-          stroke="#46a758" // Radix grass 9
+          stroke="#" // hack to use tailwind color
+          className="!stroke-green-solid"
           strokeWidth={1.5}
         />
       </LineChart>
