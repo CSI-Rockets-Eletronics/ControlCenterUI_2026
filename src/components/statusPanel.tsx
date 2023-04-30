@@ -164,8 +164,8 @@ const LoadCellDisplay = memo(function LoadCellDisplay() {
           // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
           valueSelector={(state) => state.loadCell?.data ?? null}
           valuePrecision={3}
-          minY="dataMin - 1"
-          maxY="dataMax + 1"
+          minY="dataMin - 0.01"
+          maxY="dataMax + 0.01"
         />
       </ChartLoadingFallback>
     );
