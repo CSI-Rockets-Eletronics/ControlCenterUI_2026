@@ -89,6 +89,8 @@ export const StationChart = memo(function StationChart({
           isAnimationActive={false}
           dot={false}
           dataKey="value"
+          stroke="#46a758" // Radix grass 9
+          strokeWidth={1.5}
         />
       </LineChart>
     </ResponsiveContainer>
