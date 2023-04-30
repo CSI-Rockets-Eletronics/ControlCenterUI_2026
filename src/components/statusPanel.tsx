@@ -203,7 +203,7 @@ export const StatusPanel = memo(function StatusPanel() {
   );
 
   return (
-    <Panel className="flex flex-col gap-4 scrollable min-w-min">
+    <Panel className="flex flex-col gap-4 md:scrollable md:min-w-min">
       <p className="text-lg text-gray-text">Status</p>
       <ClickableDisplay
         field="batteryConnected"
