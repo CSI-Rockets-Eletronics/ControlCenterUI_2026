@@ -31,7 +31,7 @@ function armStatusIsComplete(armStatus: Record<string, boolean>) {
   return Object.values(armStatus).every(Boolean);
 }
 
-export type MergedStationState = StationState & { gps: GpsState | null };
+export type MergedStationState = StationState & { gps: GpsState | null } & { timestamp: number };
 
 export interface SentMessage {
   timestamp: Date;
@@ -369,6 +369,7 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
           return {
             timestamp,
             data: {
+              timestamp,
               ...stationState,
               gps: gpsRecord?.data ?? null,
             },

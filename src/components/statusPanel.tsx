@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 
 import { type LaunchState } from "@/lib/launchState";
 
@@ -8,6 +8,7 @@ import {
   useLaunchMachineActorRef,
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
+import { StationChart } from "./stationChart";
 
 const ClickableDisplay = memo(function ClickableDisplay({
   label,
@@ -57,8 +58,31 @@ const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
     (state.context.stationState?.status.combustionPressure ?? 0).toFixed(1)
   );
 
+  const chartElement = useMemo(() => {
+    return (
+      <StationChart
+        // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+        valueSelector={(state) => state.status.combustionPressure}
+        minY={0}
+      />
+    );
+  }, []);
+
+  const [showChart, setShowChart] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setShowChart(!showChart);
+  }, [showChart]);
+
   return (
-    <StatusDisplay label="CC Pressure (PSI)" color="green" value={value} />
+    <StatusDisplay
+      label="CC Pressure (PSI)"
+      color="green"
+      value={value}
+      overflowElement={showChart ? chartElement : undefined}
+      disabled={false}
+      onClick={handleClick}
+    />
   );
 });
 
@@ -68,11 +92,30 @@ const OxidizerTankPressureDisplay = memo(
       (state.context.stationState?.status.oxidizerTankPressure ?? 0).toFixed(1)
     );
 
+    const chartElement = useMemo(() => {
+      return (
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          valueSelector={(state) => state.status.oxidizerTankPressure}
+          minY={0}
+        />
+      );
+    }, []);
+
+    const [showChart, setShowChart] = useState(false);
+
+    const handleClick = useCallback(() => {
+      setShowChart(!showChart);
+    }, [showChart]);
+
     return (
       <StatusDisplay
         label="Ox Tank Pressure (PSI)"
         color="green"
         value={value}
+        overflowElement={showChart ? chartElement : undefined}
+        disabled={false}
+        onClick={handleClick}
       />
     );
   }
