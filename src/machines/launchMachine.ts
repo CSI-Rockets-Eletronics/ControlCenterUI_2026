@@ -10,13 +10,21 @@ import {
 } from "@/lib/launchState";
 import {
   GPS_STATE_SOURCE,
+  LOAD_CELL_SOURCE,
   parseRemoteStationState,
   remoteStationStateSchema,
   SET_STATION_OP_STATE_TARGET,
   STATION_STATE_SOURCE,
   toRemoteSetStationOpStateCommand,
 } from "@/lib/stationInterface";
-import { GpsState, gpsStateSchema, StationOpState, StationState } from "@/lib/stationState";
+import {
+  GpsState,
+  gpsStateSchema,
+  LoadCellState,
+  loadCellStateSchema,
+  StationOpState,
+  StationState,
+} from "@/lib/stationState";
 
 const LAUNCH_STATE_FETCH_INTERVAL = 1000;
 const STATION_STATE_FETCH_INTERVAL = 0; // fetch as soon as the previous fetch completes
@@ -31,7 +39,13 @@ function armStatusIsComplete(armStatus: Record<string, boolean>) {
   return Object.values(armStatus).every(Boolean);
 }
 
-export type MergedStationState = StationState & { gps: GpsState | null } & { timestamp: number };
+export type MergedStationState = StationState & {
+  loadCell: LoadCellState | null;
+} & {
+  gps: GpsState | null;
+} & {
+  timestamp: number;
+};
 
 export interface SentMessage {
   timestamp: Date;
@@ -333,7 +347,7 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
           const useRelativeTimestamps = replayFromSeconds != null;
           const rangeEnd = useRelativeTimestamps ? elapsedMicros + replayFromSeconds * 1e6 : undefined;
 
-          // merges station and gps data into one record
+          // merges different sources into one record
 
           const remoteStationRecords = await api.listRecords(
             {
@@ -343,6 +357,16 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
               rangeEnd,
             },
             remoteStationStateSchema
+          );
+
+          const loadCellRecords = await api.listRecords(
+            {
+              source: LOAD_CELL_SOURCE,
+              take: 1,
+              useRelativeTimestamps,
+              rangeEnd,
+            },
+            loadCellStateSchema
           );
 
           const gpsRecords = FETCH_GPS
@@ -364,6 +388,7 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
           const timestamp = remoteStationRecords[0].timestamp;
 
           const stationState = parseRemoteStationState(remoteStationRecords[0].data);
+          const loadCellRecord = loadCellRecords.length > 0 ? loadCellRecords[0] : null;
           const gpsRecord = gpsRecords.length > 0 ? gpsRecords[0] : null;
 
           return {
@@ -371,6 +396,7 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
             data: {
               timestamp,
               ...stationState,
+              loadCell: loadCellRecord?.data ?? null,
               gps: gpsRecord?.data ?? null,
             },
           };

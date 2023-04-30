@@ -15,7 +15,7 @@ import { type MergedStationState } from "@/machines/launchMachine";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
 interface Props {
-  valueSelector: (state: MergedStationState) => number;
+  valueSelector: (state: MergedStationState) => number | null;
   valuePrecision: number;
   retentionSeconds?: number;
   minY?: AxisDomainItem;
@@ -38,6 +38,8 @@ export const StationChart = memo(function StationChart({
 
     const seconds = state.context.stationState.timestamp / 1e6;
     const value = valueSelector(state.context.stationState);
+
+    if (value === null) return null;
 
     return { seconds, value };
   }, shallowEqual);

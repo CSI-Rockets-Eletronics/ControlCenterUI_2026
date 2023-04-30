@@ -36,6 +36,12 @@ export type StationState = {
   status: StationStatus;
 };
 
+export const loadCellStateSchema = z.object({
+  data: z.number(),
+});
+
+export type LoadCellState = z.infer<typeof loadCellStateSchema>;
+
 export const gpsStateSchema = z.object({
   lat: z.number(),
   long: z.number(),

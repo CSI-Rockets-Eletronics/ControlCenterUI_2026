@@ -7,6 +7,7 @@ import {
 } from "./stationState";
 
 export const STATION_STATE_SOURCE = "FiringStation";
+export const LOAD_CELL_SOURCE = "IDA100";
 export const GPS_STATE_SOURCE = "GpsState";
 
 export const SET_STATION_OP_STATE_TARGET = "FiringStation";

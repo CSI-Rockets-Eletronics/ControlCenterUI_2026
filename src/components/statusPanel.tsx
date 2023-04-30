@@ -152,6 +152,43 @@ const OxidizerTankPressureDisplay = memo(
   }
 );
 
+const LoadCellDisplay = memo(function LoadCellDisplay() {
+  const value = useLaunchMachineSelector((state) =>
+    (state.context.stationState?.loadCell?.data ?? 0).toFixed(3)
+  );
+
+  const chartElement = useMemo(() => {
+    return (
+      <ChartLoadingFallback>
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          valueSelector={(state) => state.loadCell?.data ?? null}
+          valuePrecision={3}
+          minY="dataMin - 1"
+          maxY="dataMax + 1"
+        />
+      </ChartLoadingFallback>
+    );
+  }, []);
+
+  const [showChart, setShowChart] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setShowChart(!showChart);
+  }, [showChart]);
+
+  return (
+    <StatusDisplay
+      label="Load Cell (lbs)"
+      color="green"
+      value={value}
+      overflowElement={showChart ? chartElement : undefined}
+      disabled={false}
+      onClick={handleClick}
+    />
+  );
+});
+
 const AltitudeDisplay = memo(function AltitudeDisplay() {
   const value = useLaunchMachineSelector((state) =>
     (state.context.stationState?.gps?.alt ?? 0).toFixed(1)
@@ -199,6 +236,7 @@ export const StatusPanel = memo(function StatusPanel() {
         <>
           <CombustionPressureDisplay />
           <OxidizerTankPressureDisplay />
+          <LoadCellDisplay />
         </>
       )}
     </Panel>
