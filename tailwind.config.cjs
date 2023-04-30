@@ -1,16 +1,15 @@
 /* eslint-disable @typescript-eslint/no-var-requires, no-undef */
 
 const { fontSize } = require("tailwindcss/defaultTheme");
-const radixColors = require("@radix-ui/colors");
 
 const radixColorOptions = {
   // semantic colors
   colorMappings: {
-    gray: "sandDark",
-    red: "tomatoDark",
-    orange: "orangeDark",
-    yellow: "yellowDark",
-    green: "grassDark",
+    gray: "sand",
+    red: "tomato",
+    orange: "orange",
+    yellow: "yellow",
+    green: "grass",
   },
   stepMappings: {
     // background
@@ -31,17 +30,14 @@ const radixColorOptions = {
   },
 };
 
-function toTailwindColor(radixColor) {
-  const numberSteps = Object.fromEntries(
-    Object.entries(radixColor).map(([k, v]) => [k.replace(/[^\d]+/, ""), v])
-  );
-
+function radixColorToCssVar(radixName) {
   const steps = {};
   // prefer semantic colors
   for (const [k, v] of Object.entries(radixColorOptions.stepMappings)) {
-    steps[k] = numberSteps[v];
+    const value = `hsl(var(--radix-color-${radixName}-${v}) / <alpha-value>)`;
+    steps[k] = value;
     // discourage the use of fallback colors
-    steps[`fallback-${v}`] = numberSteps[v];
+    steps[`fallback-${v}`] = value;
   }
   return steps;
 }
@@ -62,7 +58,7 @@ module.exports = {
     colors: {
       ...Object.fromEntries(
         Object.entries(radixColorOptions.colorMappings).map(
-          ([name, radixName]) => [name, toTailwindColor(radixColors[radixName])]
+          ([name, radixName]) => [name, radixColorToCssVar(radixName)]
         )
       ),
     },
