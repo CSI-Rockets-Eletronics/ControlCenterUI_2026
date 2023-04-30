@@ -81,6 +81,7 @@ export const StationChart = memo(function StationChart({
           domain={[-retentionSeconds, 0]}
           // eslint-disable-next-line react-perf/jsx-no-new-array-as-prop
           ticks={[-retentionSeconds, -retentionSeconds / 2, 0]}
+          stroke="#90908c" // Radix sand 9
           dataKey="seconds"
           tickFormatter={tickFormatter}
         />
@@ -88,6 +89,7 @@ export const StationChart = memo(function StationChart({
           scale="linear"
           // eslint-disable-next-line react-perf/jsx-no-new-array-as-prop
           domain={[minY, maxY]}
+          stroke="#90908c" // Radix sand 9
           // eslint-disable-next-line react-perf/jsx-no-new-object-as-prop
           padding={{ bottom: 15 }}
         />
