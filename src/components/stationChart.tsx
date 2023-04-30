@@ -64,7 +64,7 @@ export const StationChart = memo(function StationChart({
   const tickFormatter = useCallback((val: string) => `${val}s`, []);
 
   return (
-    <ResponsiveContainer width="100%" aspect={2}>
+    <ResponsiveContainer width="100%" aspect={2} className="overflow-hidden">
       <LineChart data={getShiftedData()}>
         <XAxis
           type="number"

@@ -29,7 +29,7 @@ export const ControlCenter = memo(function ControlCenter() {
 
   return (
     <>
-      <div className="h-full p-4 grid grid-rows-[auto,1fr] gap-4 scrollable">
+      <div className="h-full p-4 grid grid-rows-[auto,minmax(0,1fr)] gap-4 scrollable">
         <TopStatusPanel openMessagesModal={openMessagesModal} />
         {mainPanel}
       </div>
