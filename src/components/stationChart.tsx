@@ -8,6 +8,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { type AxisDomainItem } from "recharts/types/util/types";
 
 import { type MergedStationState } from "@/machines/launchMachine";
 
@@ -16,15 +17,15 @@ import { useLaunchMachineSelector } from "./launchMachineProvider";
 interface Props {
   valueSelector: (state: MergedStationState) => number;
   retentionSeconds?: number;
-  minY?: number;
-  maxY?: number;
+  minY?: AxisDomainItem;
+  maxY?: AxisDomainItem;
 }
 
 export const StationChart = memo(function StationChart({
   valueSelector,
   retentionSeconds = 2 * 60,
-  minY,
-  maxY,
+  minY = "auto",
+  maxY = "auto",
 }: Props) {
   const [data, setData] = useState<{ seconds: number; value: number }[]>([]);
 
@@ -78,7 +79,7 @@ export const StationChart = memo(function StationChart({
         <YAxis
           scale="linear"
           // eslint-disable-next-line react-perf/jsx-no-new-array-as-prop
-          domain={[minY ?? "auto", maxY ?? "auto"]}
+          domain={[minY, maxY]}
           // eslint-disable-next-line react-perf/jsx-no-new-object-as-prop
           padding={{ bottom: 15 }}
         />
