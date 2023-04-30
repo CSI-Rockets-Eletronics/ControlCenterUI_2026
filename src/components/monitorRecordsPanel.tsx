@@ -66,7 +66,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel() {
     return () => {
       clearInterval(interval);
     };
-  }, [api, startTimeMicros]);
+  }, [api, replayFromSeconds, startTimeMicros]);
 
   return (
     <Panel className="px-0 grid grid-rows-[auto,auto,minmax(0,1fr)] gap-4">
