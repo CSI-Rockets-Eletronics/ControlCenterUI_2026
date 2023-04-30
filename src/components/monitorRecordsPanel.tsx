@@ -15,7 +15,13 @@ export interface RecordWithSource extends Record {
   source: string;
 }
 
-export const MonitorRecordsPanel = memo(function MonitorRecordsPanel() {
+interface Props {
+  visible: boolean;
+}
+
+export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
+  visible,
+}: Props) {
   const api = useApi();
   const replayFromSeconds = useReplayFromSeconds();
 
@@ -27,6 +33,8 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel() {
   );
 
   useEffect(() => {
+    if (!visible) return;
+
     async function fetchRecords(): Promise<(RecordWithSource | null)[]> {
       const curTimeMicros = Date.now() * 1000;
       const elapsedMicros = curTimeMicros - startTimeMicros;
@@ -66,7 +74,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel() {
     return () => {
       clearInterval(interval);
     };
-  }, [api, replayFromSeconds, startTimeMicros]);
+  }, [api, replayFromSeconds, startTimeMicros, visible]);
 
   return (
     <Panel className="px-0 grid grid-rows-[auto,auto,minmax(0,1fr)] gap-4">

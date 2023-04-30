@@ -47,7 +47,7 @@ export const MessagesModal = memo(function MessagesModal({
         </div>
         <div className="grid grid-rows-[auto,minmax(0,1fr)] gap-4">
           <PresetMessagesPanel />
-          <MonitorRecordsPanel />
+          <MonitorRecordsPanel visible={open} />
         </div>
       </div>
     </div>
