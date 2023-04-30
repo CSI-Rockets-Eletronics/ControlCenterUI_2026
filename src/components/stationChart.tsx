@@ -63,6 +63,8 @@ export const StationChart = memo(function StationChart({
 
   const tickFormatter = useCallback((val: string) => `${val}s`, []);
 
+  const labelFormatter = useCallback((val: number) => val.toFixed(2), []);
+
   return (
     <ResponsiveContainer width="100%" aspect={2} className="overflow-hidden">
       <LineChart data={getShiftedData()}>
@@ -83,7 +85,12 @@ export const StationChart = memo(function StationChart({
           // eslint-disable-next-line react-perf/jsx-no-new-object-as-prop
           padding={{ bottom: 15 }}
         />
-        <Tooltip />
+        <Tooltip
+          isAnimationActive={false}
+          wrapperClassName="!bg-gray-el-bg-hover !rounded !border !border-gray-border-hover !text-sm"
+          labelClassName="!text-gray-text"
+          labelFormatter={labelFormatter}
+        />
         <Line
           type="monotone"
           isAnimationActive={false}
