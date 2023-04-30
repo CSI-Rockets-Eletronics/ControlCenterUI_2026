@@ -349,37 +349,37 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
 
           // merges different sources into one record
 
-          const remoteStationRecords = await api.listRecords(
-            {
-              source: STATION_STATE_SOURCE,
-              take: 1,
-              useRelativeTimestamps,
-              rangeEnd,
-            },
-            remoteStationStateSchema
-          );
-
-          const loadCellRecords = await api.listRecords(
-            {
-              source: LOAD_CELL_SOURCE,
-              take: 1,
-              useRelativeTimestamps,
-              rangeEnd,
-            },
-            loadCellStateSchema
-          );
-
-          const gpsRecords = FETCH_GPS
-            ? await api.listRecords(
-                {
-                  source: GPS_STATE_SOURCE,
-                  take: 1,
-                  useRelativeTimestamps,
-                  rangeEnd,
-                },
-                gpsStateSchema
-              )
-            : [];
+          const [remoteStationRecords, loadCellRecords, gpsRecords] = await Promise.all([
+            api.listRecords(
+              {
+                source: STATION_STATE_SOURCE,
+                take: 1,
+                useRelativeTimestamps,
+                rangeEnd,
+              },
+              remoteStationStateSchema
+            ),
+            api.listRecords(
+              {
+                source: LOAD_CELL_SOURCE,
+                take: 1,
+                useRelativeTimestamps,
+                rangeEnd,
+              },
+              loadCellStateSchema
+            ),
+            FETCH_GPS
+              ? await api.listRecords(
+                  {
+                    source: GPS_STATE_SOURCE,
+                    take: 1,
+                    useRelativeTimestamps,
+                    rangeEnd,
+                  },
+                  gpsStateSchema
+                )
+              : [],
+          ]);
 
           if (remoteStationRecords.length === 0) {
             return null;
