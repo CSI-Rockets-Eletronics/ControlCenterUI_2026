@@ -9,7 +9,7 @@
     "build:rockets-ui": "tsc && vite build --outDir dist-rockets-ui --base /rockets-ui/",
     "preview": "vite preview",
     "format": "prettier --write .",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint": "eslint src",
     "type-check": "tsc --noEmit",
     "xstate:typegen": "xstate typegen src/machines/**/*.ts",
     "prepare": "husky install",
