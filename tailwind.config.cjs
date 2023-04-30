@@ -40,10 +40,8 @@ function toTailwindColor(radixColor) {
   // prefer semantic colors
   for (const [k, v] of Object.entries(radixColorOptions.stepMappings)) {
     steps[k] = numberSteps[v];
-  }
-  // discourage the use of fallback colors
-  for (const [k, v] of Object.entries(numberSteps)) {
-    steps[`fallback-${k}`] = v;
+    // discourage the use of fallback colors
+    steps[`fallback-${v}`] = numberSteps[v];
   }
   return steps;
 }
