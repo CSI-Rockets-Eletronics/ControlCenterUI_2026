@@ -1,4 +1,12 @@
-import { memo, useCallback, useMemo, useState } from "react";
+import {
+  lazy,
+  memo,
+  type ReactNode,
+  Suspense,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 
 import { type LaunchState } from "@/lib/launchState";
 
@@ -8,7 +16,10 @@ import {
   useLaunchMachineActorRef,
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
-import { StationChart } from "./stationChart";
+
+const StationChart = lazy(() =>
+  import("./stationChart").then((res) => ({ default: res.StationChart }))
+);
 
 const ClickableDisplay = memo(function ClickableDisplay({
   label,
@@ -53,6 +64,18 @@ const ClickableDisplay = memo(function ClickableDisplay({
   );
 });
 
+const ChartLoadingFallback = memo(function ChartLoadingFallback({
+  children,
+}: {
+  children?: ReactNode;
+}) {
+  return (
+    <Suspense fallback={<p className="text-gray-text">Loading chart...</p>}>
+      {children}
+    </Suspense>
+  );
+});
+
 const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
   const value = useLaunchMachineSelector((state) =>
     (state.context.stationState?.status.combustionPressure ?? 0).toFixed(1)
@@ -60,11 +83,13 @@ const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
 
   const chartElement = useMemo(() => {
     return (
-      <StationChart
-        // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-        valueSelector={(state) => state.status.combustionPressure}
-        minY={0}
-      />
+      <ChartLoadingFallback>
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          valueSelector={(state) => state.status.combustionPressure}
+          minY={0}
+        />
+      </ChartLoadingFallback>
     );
   }, []);
 
@@ -94,11 +119,13 @@ const OxidizerTankPressureDisplay = memo(
 
     const chartElement = useMemo(() => {
       return (
-        <StationChart
-          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          valueSelector={(state) => state.status.oxidizerTankPressure}
-          minY={0}
-        />
+        <ChartLoadingFallback>
+          <StationChart
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            valueSelector={(state) => state.status.oxidizerTankPressure}
+            minY={0}
+          />
+        </ChartLoadingFallback>
       );
     }, []);
 
