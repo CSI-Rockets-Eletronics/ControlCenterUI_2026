@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires, no-undef */
-
-const { fontSize } = require("tailwindcss/defaultTheme");
-const radixColors = require("@radix-ui/colors");
+import radixColors from "@radix-ui/colors";
+import tailwindScrollbar from "tailwind-scrollbar";
+import defaultTheme from "tailwindcss/defaultTheme";
 
 const radixColorOptions = {
   // semantic colors
@@ -49,7 +48,8 @@ function toTailwindColor(radixColor) {
 }
 
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+// eslint-disable-next-line import/no-default-export
+export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     fontFamily: {
@@ -57,9 +57,9 @@ module.exports = {
       mono: ["'B612 Mono'", "monospace"],
     },
     fontSize: {
-      sm: fontSize["xl"],
-      base: fontSize["2xl"],
-      lg: fontSize["3xl"],
+      sm: defaultTheme.fontSize["xl"],
+      base: defaultTheme.fontSize["2xl"],
+      lg: defaultTheme.fontSize["3xl"],
     },
     colors: {
       ...Object.fromEntries(
@@ -70,5 +70,5 @@ module.exports = {
     },
     extend: {},
   },
-  plugins: [require("tailwind-scrollbar")({ nocompatible: true })],
+  plugins: [tailwindScrollbar({ nocompatible: true })],
 };
