@@ -76,15 +76,15 @@ export const StationChart = memo(function StationChart({
   );
 
   return (
-    <ResponsiveContainer width="100%" aspect={2} className="overflow-hidden">
-      <LineChart data={getShiftedData()}>
+    <ResponsiveContainer width="100%" height={180} className="overflow-hidden">
+      <LineChart data={getShiftedData()} margin={{ bottom: -4 }}>
         <XAxis
           type="number"
           scale="linear"
           domain={[-retentionSeconds, 0]}
           ticks={[-retentionSeconds, -retentionSeconds / 2, 0]}
           axisLine={{ className: "!stroke-gray-solid" }}
-          tick={{ fontSize: 20 }}
+          tick={{ fontSize: 18 }}
           dataKey="seconds"
           tickFormatter={tickFormatter}
         />
@@ -92,7 +92,7 @@ export const StationChart = memo(function StationChart({
           scale="linear"
           domain={[minY, maxY]}
           axisLine={{ className: "!stroke-gray-solid" }}
-          tick={{ fontSize: 20 }}
+          tick={{ fontSize: 18 }}
         />
         <Tooltip
           isAnimationActive={false}
