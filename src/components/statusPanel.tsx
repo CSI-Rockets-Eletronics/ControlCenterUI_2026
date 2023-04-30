@@ -87,6 +87,7 @@ const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
         <StationChart
           // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
           valueSelector={(state) => state.status.combustionPressure}
+          valuePrecision={1}
           minY={0}
           maxY="dataMax + 10"
         />
@@ -124,6 +125,7 @@ const OxidizerTankPressureDisplay = memo(
           <StationChart
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
             valueSelector={(state) => state.status.oxidizerTankPressure}
+            valuePrecision={1}
             minY={0}
             maxY="dataMax + 10"
           />

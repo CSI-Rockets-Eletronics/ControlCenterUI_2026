@@ -16,6 +16,7 @@ import { useLaunchMachineSelector } from "./launchMachineProvider";
 
 interface Props {
   valueSelector: (state: MergedStationState) => number;
+  valuePrecision: number;
   retentionSeconds?: number;
   minY?: AxisDomainItem;
   maxY?: AxisDomainItem;
@@ -23,6 +24,7 @@ interface Props {
 
 export const StationChart = memo(function StationChart({
   valueSelector,
+  valuePrecision,
   retentionSeconds = 2 * 60,
   minY = "auto",
   maxY = "auto",
@@ -64,6 +66,10 @@ export const StationChart = memo(function StationChart({
   const tickFormatter = useCallback((val: string) => `${val}s`, []);
 
   const labelFormatter = useCallback((val: number) => val.toFixed(2), []);
+  const valueFormatter = useCallback(
+    (val: unknown) => Number(val).toFixed(valuePrecision),
+    [valuePrecision]
+  );
 
   return (
     <ResponsiveContainer width="100%" aspect={2} className="overflow-hidden">
@@ -90,6 +96,7 @@ export const StationChart = memo(function StationChart({
           wrapperClassName="!bg-gray-el-bg-hover !rounded !border !border-gray-border-hover !text-sm"
           labelClassName="!text-gray-text"
           labelFormatter={labelFormatter}
+          formatter={valueFormatter}
         />
         <Line
           type="monotone"
