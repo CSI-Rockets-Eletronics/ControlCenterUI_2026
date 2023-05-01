@@ -7,7 +7,6 @@ const radixColorOptions = {
   colorMappings: {
     gray: "sand",
     red: "tomato",
-    orange: "orange",
     yellow: "yellow",
     green: "grass",
   },
