@@ -29,7 +29,7 @@ export const launchStateSchema = z.object({
     fillTankOpen: z.boolean(),
     ignitersConnected: z.boolean(),
     mechPowerOn: z.boolean(),
-    manualFire: z.boolean(),
+    manualFire: z.boolean().default(false),
   }),
   armStatus: z.object({
     commandCenter: z.boolean(),
