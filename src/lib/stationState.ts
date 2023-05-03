@@ -25,6 +25,8 @@ export type StationOpState =
   | "pulse-B"
   | "pulse-C"
   | "fire"
+  | "fire-manual-igniter"
+  | "fire-manual-valve"
   | "abort";
 
 export type StationRelays = z.infer<typeof stationRelaysSchema>;

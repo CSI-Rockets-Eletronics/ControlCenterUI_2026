@@ -229,6 +229,12 @@ export const StatusPanel = memo(function StatusPanel() {
         trueValue="On"
         falseValue="Off"
       />
+      <ClickableDisplay
+        field="manualFire"
+        label="Manual Fire"
+        trueValue="Enabled"
+        falseValue="Disabled"
+      />
 
       {isRecovery ? (
         <AltitudeDisplay />

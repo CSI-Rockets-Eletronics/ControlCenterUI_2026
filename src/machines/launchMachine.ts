@@ -10,7 +10,7 @@ import {
 } from "@/lib/launchState";
 import {
   GPS_STATE_SOURCE,
-  LOAD_CELL_SOURCE,
+  LOAD_CELL_STATE_SOURCE,
   parseRemoteStationState,
   remoteStationStateSchema,
   SET_STATION_OP_STATE_TARGET,
@@ -361,7 +361,7 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
             ),
             api.listRecords(
               {
-                source: LOAD_CELL_SOURCE,
+                source: LOAD_CELL_STATE_SOURCE,
                 take: 1,
                 useRelativeTimestamps,
                 rangeEnd,
@@ -444,13 +444,15 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
             return false;
           }
 
+          const fireReqsComplete =
+            checklistIsComplete(context.launchState.preFillChecklist) &&
+            checklistIsComplete(context.launchState.goPoll) &&
+            armStatusIsComplete(context.launchState.armStatus);
+
           if (event.value === "fire") {
-            return (
-              checklistIsComplete(context.launchState.preFillChecklist) &&
-              checklistIsComplete(context.launchState.goPoll) &&
-              armStatusIsComplete(context.launchState.armStatus) &&
-              context.stationState?.opState === "keep"
-            );
+            return fireReqsComplete && context.stationState?.opState === "keep";
+          } else if (event.value === "fire-manual-igniter" || event.value === "fire-manual-valve") {
+            return fireReqsComplete;
           } else {
             return true;
           }

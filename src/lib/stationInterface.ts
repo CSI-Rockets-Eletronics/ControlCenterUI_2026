@@ -7,7 +7,7 @@ import {
 } from "./stationState";
 
 export const STATION_STATE_SOURCE = "FiringStation";
-export const LOAD_CELL_SOURCE = "IDA100";
+export const LOAD_CELL_STATE_SOURCE = "IDA100";
 export const GPS_STATE_SOURCE = "GpsState";
 
 export const SET_STATION_OP_STATE_TARGET = "FiringStation";
@@ -48,6 +48,10 @@ function parseStateByte(byte: number): StationOpState {
       return "pulse-B";
     case 8:
       return "pulse-C";
+    case 20:
+      return "fire-manual-igniter";
+    case 21:
+      return "fire-manual-valve";
     default:
       console.error("Unknown state byte", byte);
       return "standby";
@@ -75,6 +79,10 @@ export function dummyToStateByte(opState: StationOpState): number {
       return 7;
     case "pulse-C":
       return 8;
+    case "fire-manual-igniter":
+      return 20;
+    case "fire-manual-valve":
+      return 21;
   }
 }
 
@@ -130,6 +138,8 @@ export const remoteSetStationOpStateCommandSchema = z.object({
     "pulse-B",
     "pulse-C",
     "fire",
+    "fire-manual-igniter",
+    "fire-manual-valve",
     "abort",
   ]),
 });
