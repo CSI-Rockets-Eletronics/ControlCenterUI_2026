@@ -20,7 +20,7 @@ export type LaunchControlEntryState =
 type Props = {
   label: string;
   isAbort?: boolean;
-  disabled?: boolean;
+  fadeIfDisabled?: boolean;
 } & (
   | {
       type: "opState";
@@ -39,7 +39,7 @@ type Props = {
 export const LaunchControlEntry = memo(function LaunchControlEntry({
   label,
   isAbort = false,
-  disabled = false,
+  fadeIfDisabled = false,
   ...rest
 }: Props) {
   const launchActorRef = useLaunchMachineActorRef();
@@ -86,11 +86,17 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
     }
   }, [launchActorRef, stopEvent]);
 
+  const isInState = useLaunchMachineSelector(
+    (state) => state.context.stationState?.opState === rest.executeOpState
+  );
+
+  const fade = fadeIfDisabled && executeDisabled && !isInState;
+
   return (
     <div
       className={twMerge(
         "flex flex-col md:flex-row items-center px-4 py-3 border rounded-lg gap-4 bg-gray-el-bg border-gray-border",
-        disabled && "opacity-50 pointer-events-none"
+        fade && "opacity-50 pointer-events-none"
       )}
     >
       <div className="flex items-center self-stretch md:self-center gap-4 grow">
@@ -109,14 +115,14 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
       <div className="flex items-center gap-4">
         <StatusButton
           color="green"
-          disabled={!disabled && executeDisabled}
+          disabled={!fade && executeDisabled}
           onClick={handleExecute}
         >
           EXECUTE
         </StatusButton>
         <StatusButton
           color="red"
-          disabled={!disabled && stopDisabled}
+          disabled={!fade && stopDisabled}
           onClick={handleStop}
         >
           STOP
