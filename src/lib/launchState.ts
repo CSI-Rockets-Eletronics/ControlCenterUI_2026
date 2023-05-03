@@ -40,7 +40,6 @@ export const launchStateSchema = z.object({
     safetyOfficer2: z.boolean(),
     adviser: z.boolean(),
   }),
-  visualContactConfirmed: z.boolean(),
 });
 
 export type LaunchState = z.infer<typeof launchStateSchema>;
@@ -79,5 +78,4 @@ export const initialLaunchState: LaunchState = {
     safetyOfficer2: false,
     adviser: false,
   },
-  visualContactConfirmed: false,
 };

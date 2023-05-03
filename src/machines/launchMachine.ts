@@ -80,10 +80,6 @@ export type LaunchMachineEvent =
       data: Partial<LaunchState["rangePermit"]>;
     }
   | {
-      type: "UPDATE_VISUAL_CONTACT_CONFIRMED";
-      value: boolean;
-    }
-  | {
       type: "MUTATE_STATION_OP_STATE";
       value: StationOpState;
     }
@@ -152,7 +148,6 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
                     UPDATE_MAIN_STATUS: { actions: "updateMainStatus", cond: "canWrite" },
                     UPDATE_ARM_STATUS: { actions: "updateArmStatus", cond: "canUpdateArmStatus" },
                     UPDATE_RANGE_PERMIT: { actions: "updateRangePermit", cond: "canWrite" },
-                    UPDATE_VISUAL_CONTACT_CONFIRMED: { actions: "updateVisualContactConfirmed", cond: "canWrite" },
                   },
                   initial: "waitingToRefetch",
                   states: {
@@ -291,12 +286,6 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
           pendingLaunchState: (context, event) => ({
             ...context.launchState,
             rangePermit: { ...context.launchState.rangePermit, ...event.data },
-          }),
-        }),
-        updateVisualContactConfirmed: assign({
-          pendingLaunchState: (context, event) => ({
-            ...context.launchState,
-            visualContactConfirmed: event.value,
           }),
         }),
         setStationState: assign((context, event) => {
