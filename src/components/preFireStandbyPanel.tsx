@@ -29,7 +29,7 @@ export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
   }, [launchActorRef]);
 
   return (
-    <Panel className="md:overflow-hidden grid grid-rows-[minmax(0,1fr),auto] gap-4">
+    <Panel className="md:min-h-0 grid grid-rows-[minmax(0,1fr),auto] gap-4">
       <div className="grid grid-rows-[auto,auto] md:grid-rows-none md:grid-cols-[2fr,1fr] gap-4">
         <PreFillChecklist />
         <StandbyStateSelection />
