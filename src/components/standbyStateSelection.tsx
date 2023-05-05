@@ -87,14 +87,14 @@ export const StandbyStateSelection = memo(function StandbyStateSelection() {
 
       <EntryGroup title="Pulse Vent">
         <Entry inRow label="1s" opState="pulse-vent-A" />
-        <Entry inRow label="5s" opState="pulse-vent-B" />
-        <Entry inRow label="10s" opState="pulse-vent-C" />
+        <Entry inRow label="2s" opState="pulse-vent-B" />
+        <Entry inRow label="5s" opState="pulse-vent-C" />
       </EntryGroup>
 
       <EntryGroup title="Pulse Purge">
         <Entry inRow label="1s" opState="pulse-purge-A" />
-        <Entry inRow label="5s" opState="pulse-purge-B" />
-        <Entry inRow label="10s" opState="pulse-purge-C" />
+        <Entry inRow label="2s" opState="pulse-purge-B" />
+        <Entry inRow label="5s" opState="pulse-purge-C" />
       </EntryGroup>
     </Panel>
   );
