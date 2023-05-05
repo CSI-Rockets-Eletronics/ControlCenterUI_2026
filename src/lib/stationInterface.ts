@@ -49,6 +49,18 @@ function parseStateByte(byte: number): StationOpState {
       return "pulse-fill-B";
     case 8:
       return "pulse-fill-C";
+    case 25:
+      return "pulse-vent-A";
+    case 26:
+      return "pulse-vent-B";
+    case 27:
+      return "pulse-vent-C";
+    case 30:
+      return "pulse-purge-A";
+    case 31:
+      return "pulse-purge-B";
+    case 32:
+      return "pulse-purge-C";
     case 20:
       return "fire-manual-igniter";
     case 21:
@@ -80,6 +92,18 @@ export function dummyToStateByte(opState: StationOpState): number {
       return 7;
     case "pulse-fill-C":
       return 8;
+    case "pulse-vent-A":
+      return 25;
+    case "pulse-vent-B":
+      return 26;
+    case "pulse-vent-C":
+      return 27;
+    case "pulse-purge-A":
+      return 30;
+    case "pulse-purge-B":
+      return 31;
+    case "pulse-purge-C":
+      return 32;
     case "fire-manual-igniter":
       return 20;
     case "fire-manual-valve":
