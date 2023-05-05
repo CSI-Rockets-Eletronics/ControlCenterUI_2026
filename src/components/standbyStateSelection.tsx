@@ -63,7 +63,7 @@ const EntryGroup = memo(function EntryGroup({
   children: ReactNode;
 }) {
   return (
-    <Panel className="flex flex-col gap-3">
+    <Panel className="flex flex-col p-3 gap-2">
       <p className="text-gray-text">{title}</p>
       <div className="flex gap-3">{children}</div>
     </Panel>
