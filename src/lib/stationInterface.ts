@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import {
   type StationOpState,
+  stationOpStateSchema,
   type StationRelays,
   type StationState,
 } from "./stationState";
@@ -43,11 +44,11 @@ function parseStateByte(byte: number): StationOpState {
     case 5:
       return "keep";
     case 6:
-      return "pulse-A";
+      return "pulse-fill-A";
     case 7:
-      return "pulse-B";
+      return "pulse-fill-B";
     case 8:
-      return "pulse-C";
+      return "pulse-fill-C";
     case 20:
       return "fire-manual-igniter";
     case 21:
@@ -73,11 +74,11 @@ export function dummyToStateByte(opState: StationOpState): number {
       return 4;
     case "keep":
       return 5;
-    case "pulse-A":
+    case "pulse-fill-A":
       return 6;
-    case "pulse-B":
+    case "pulse-fill-B":
       return 7;
-    case "pulse-C":
+    case "pulse-fill-C":
       return 8;
     case "fire-manual-igniter":
       return 20;
@@ -129,19 +130,7 @@ export function parseRemoteStationState(
 }
 
 export const remoteSetStationOpStateCommandSchema = z.object({
-  command: z.enum([
-    "standby",
-    "keep",
-    "fill",
-    "purge",
-    "pulse-A",
-    "pulse-B",
-    "pulse-C",
-    "fire",
-    "fire-manual-igniter",
-    "fire-manual-valve",
-    "abort",
-  ]),
+  command: stationOpStateSchema,
 });
 
 export type RemoteSetStationOpStateCommand = z.infer<

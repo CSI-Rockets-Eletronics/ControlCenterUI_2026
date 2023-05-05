@@ -58,9 +58,10 @@ export const StandbyStateSelection = memo(function StandbyStateSelection() {
       <Entry label="KEEP" opState="keep" />
       <Entry label="FILL" opState="fill" />
       <Entry label="PURGE" opState="purge" />
-      <Entry label="PULSE (1s)" opState="pulse-A" />
-      <Entry label="PULSE (5s)" opState="pulse-B" />
-      <Entry label="PULSE (10s)" opState="pulse-C" />
+      <div className="h-0" />
+      <Entry label="PULSE FILL (1s)" opState="pulse-fill-A" />
+      <Entry label="PULSE FILL (5s)" opState="pulse-fill-B" />
+      <Entry label="PULSE FILL (10s)" opState="pulse-fill-C" />
     </Panel>
   );
 });

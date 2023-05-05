@@ -16,18 +16,21 @@ const stationStatusSchema = z.object({
   timeSinceCalibration: z.number(), // in seconds
 });
 
-export type StationOpState =
-  | "standby"
-  | "keep"
-  | "fill"
-  | "purge"
-  | "pulse-A"
-  | "pulse-B"
-  | "pulse-C"
-  | "fire"
-  | "fire-manual-igniter"
-  | "fire-manual-valve"
-  | "abort";
+export const stationOpStateSchema = z.enum([
+  "standby",
+  "keep",
+  "fill",
+  "purge",
+  "pulse-fill-A",
+  "pulse-fill-B",
+  "pulse-fill-C",
+  "fire",
+  "fire-manual-igniter",
+  "fire-manual-valve",
+  "abort",
+]);
+
+export type StationOpState = z.infer<typeof stationOpStateSchema>;
 
 export type StationRelays = z.infer<typeof stationRelaysSchema>;
 export type StationStatus = z.infer<typeof stationStatusSchema>;
