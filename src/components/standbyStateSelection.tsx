@@ -14,10 +14,12 @@ const Entry = memo(function Entry({
   label,
   opState,
   inRow = false,
+  onlyIfActive = false,
 }: {
   label: string;
   opState: StationOpState;
   inRow?: boolean;
+  onlyIfActive?: boolean;
 }) {
   const launchActorRef = useLaunchMachineActorRef();
 
@@ -29,6 +31,7 @@ const Entry = memo(function Entry({
 
   const disabled = useLaunchMachineSelector(
     (state) =>
+      opState === "custom" ||
       !state.can({
         type: "MUTATE_STATION_OP_STATE",
         value: opState,
@@ -36,11 +39,17 @@ const Entry = memo(function Entry({
   );
 
   const handleClick = useCallback(() => {
+    if (opState === "custom") return;
+
     launchActorRef.send({
       type: "MUTATE_STATION_OP_STATE",
       value: opState,
     });
   }, [launchActorRef, opState]);
+
+  if (onlyIfActive && !active) {
+    return null;
+  }
 
   return (
     <div className={twMerge("flex flex-col", inRow && "flex-1")}>
@@ -74,10 +83,16 @@ export const StandbyStateSelection = memo(function StandbyStateSelection() {
   return (
     <Panel className="flex flex-col h-full gap-4 md:scrollable md:min-w-min">
       <p className="text-lg text-gray-text">State Selection</p>
+
       <Entry label="STANDBY" opState="standby" />
       <Entry label="KEEP" opState="keep" />
       <Entry label="FILL" opState="fill" />
       <Entry label="PURGE" opState="purge" />
+
+      <Entry onlyIfActive label="FIRE" opState="fire" />
+      <Entry onlyIfActive label="FIRE IGNITER" opState="fire-manual-igniter" />
+      <Entry onlyIfActive label="FIRE VALVE" opState="fire-manual-valve" />
+      <Entry onlyIfActive label="CUSTOM" opState="custom" />
 
       <EntryGroup title="Pulse Fill">
         <Entry inRow label="1s" opState="pulse-fill-A" />

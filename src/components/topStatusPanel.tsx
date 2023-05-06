@@ -13,16 +13,6 @@ interface Props {
 export const TopStatusPanel = memo(function TopStatusPanel({
   openMessagesModal,
 }: Props) {
-  const activePanel = useLaunchMachineSelector(
-    (state) => state.context.launchState.activePanel
-  );
-
-  const currentState = {
-    standby: "Standby",
-    launch: "Launch",
-    recovery: "Recovery",
-  }[activePanel];
-
   const timeSinceBoot = useLaunchMachineSelector((state) =>
     (state.context.stationState?.status.timeSinceBoot ?? 0).toFixed(1)
   );

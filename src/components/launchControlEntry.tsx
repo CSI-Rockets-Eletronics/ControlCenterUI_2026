@@ -24,8 +24,8 @@ type Props = {
 } & (
   | {
       type: "opState";
-      executeOpState: StationOpState;
-      stopOpState: StationOpState | null;
+      executeOpState: Exclude<StationOpState, "custom">;
+      stopOpState: Exclude<StationOpState, "custom"> | null;
       field?: undefined;
     }
   | {
