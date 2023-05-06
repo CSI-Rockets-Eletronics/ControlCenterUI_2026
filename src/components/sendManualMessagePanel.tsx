@@ -14,9 +14,9 @@ import {
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
 
-const PRESET_TARGETS = ["SET_STATION_OP_STATE"];
+const PRESET_TARGETS = ["FiringStation", "scientific", "IDA100"];
 
-function validateTarget(target: string) {
+function isTargetValid(target: string) {
   return (
     target.length > 0 &&
     // prevent mistake of wrapping target in quotes
@@ -37,7 +37,7 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
   const [target, setTarget] = useState("");
   const [data, setData] = useState("");
 
-  const targetIsValid = validateTarget(target);
+  const targetIsValid = isTargetValid(target);
   const targetMatchesPreset = PRESET_TARGETS.includes(target);
 
   const dataIsValid = validateData(data);
