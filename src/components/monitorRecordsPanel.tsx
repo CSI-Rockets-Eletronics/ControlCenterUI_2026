@@ -94,7 +94,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
             key={record.source}
             className="p-2 border border-gray-border rounded-md bg-gray-el-bg"
           >
-            <pre className="text-sm break-words whitespace-pre-wrap text-gray-text">
+            <pre className="text-sm break-words whitespace-pre-wrap select-text text-gray-text">
               {JSON.stringify(
                 {
                   source: record.source,

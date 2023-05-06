@@ -8,6 +8,8 @@
     @apply overflow-hidden;
     @apply bg-gray-bg-1;
     @apply text-base;
+
+    @apply select-none;
   }
 
   #root {
