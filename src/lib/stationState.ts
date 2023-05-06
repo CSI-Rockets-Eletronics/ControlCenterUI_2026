@@ -34,6 +34,7 @@ export const stationOpStateSchema = z.enum([
   "fire-manual-igniter",
   "fire-manual-valve",
   "abort",
+  "custom",
 ]);
 
 export type StationOpState = z.infer<typeof stationOpStateSchema>;

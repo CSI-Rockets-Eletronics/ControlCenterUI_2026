@@ -23,6 +23,7 @@ import {
   LoadCellState,
   loadCellStateSchema,
   StationOpState,
+  StationRelays,
   StationState,
 } from "@/lib/stationState";
 
@@ -81,7 +82,11 @@ export type LaunchMachineEvent =
     }
   | {
       type: "MUTATE_STATION_OP_STATE";
-      value: StationOpState;
+      value: Exclude<StationOpState, "custom">;
+    }
+  | {
+      type: "MUTATE_STATION_OP_STATE_CUSTOM";
+      relays: Partial<StationRelays>;
     }
   | {
       type: "SEND_MANUAL_MESSAGE";
@@ -195,6 +200,7 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
                 idle: {
                   on: {
                     MUTATE_STATION_OP_STATE: { target: "mutatingOpState", cond: "canMutateOpState" },
+                    MUTATE_STATION_OP_STATE_CUSTOM: { target: "mutatingOpState", cond: "canMutateOpState" },
                     SEND_MANUAL_MESSAGE: { target: "sendingManualMessage", cond: "canWrite" },
                   },
                   initial: "waitingToRefetch",
@@ -390,10 +396,21 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
             },
           };
         },
-        mutateStationOpState: async (_, event) => {
+        mutateStationOpState: async (context, event) => {
           const message = {
             target: SET_STATION_OP_STATE_TARGET,
-            data: toRemoteSetStationOpStateCommand(event.value),
+            data:
+              event.type === "MUTATE_STATION_OP_STATE_CUSTOM"
+                ? toRemoteSetStationOpStateCommand({
+                    opState: "custom",
+                    relays: {
+                      ...context.stationState?.relays,
+                      ...event.relays,
+                    },
+                  })
+                : toRemoteSetStationOpStateCommand({
+                    opState: event.value,
+                  }),
           };
           await api.createMessage(message);
           console.log("Sent message", message);
@@ -429,21 +446,29 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
             return false;
           }
 
-          if (event.value === context.stationState?.opState) {
-            return false;
-          }
-
           const fireReqsComplete =
             checklistIsComplete(context.launchState.preFillChecklist) &&
             checklistIsComplete(context.launchState.goPoll) &&
             armStatusIsComplete(context.launchState.armStatus);
 
-          if (event.value === "fire") {
-            return fireReqsComplete && context.stationState?.opState === "keep";
-          } else if (event.value === "fire-manual-igniter" || event.value === "fire-manual-valve") {
-            return fireReqsComplete;
+          if (event.type === "MUTATE_STATION_OP_STATE_CUSTOM") {
+            if (event.relays.pyroValve || event.relays.pyroCutter || event.relays.igniter) {
+              return fireReqsComplete;
+            } else {
+              return true;
+            }
           } else {
-            return true;
+            if (event.value === context.stationState?.opState) {
+              return false;
+            }
+
+            if (event.value === "fire") {
+              return fireReqsComplete && context.stationState?.opState === "keep";
+            } else if (event.value === "fire-manual-igniter" || event.value === "fire-manual-valve") {
+              return fireReqsComplete;
+            } else {
+              return true;
+            }
           }
         },
       },

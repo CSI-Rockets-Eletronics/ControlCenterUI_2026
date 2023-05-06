@@ -65,6 +65,8 @@ function parseStateByte(byte: number): StationOpState {
       return "fire-manual-igniter";
     case 21:
       return "fire-manual-valve";
+    case 40:
+      return "custom";
     default:
       console.error("Unknown state byte", byte);
       return "standby";
@@ -108,6 +110,8 @@ export function dummyToStateByte(opState: StationOpState): number {
       return 20;
     case "fire-manual-valve":
       return 21;
+    case "custom":
+      return 40;
   }
 }
 
@@ -123,7 +127,7 @@ function parseRelayStatusByte(byte: number): StationRelays {
 }
 
 /** For dummy station. */
-export function dummyToRelayStatusByte(relays: StationRelays): number {
+export function dummyToRelayStatusByte(relays: Partial<StationRelays>): number {
   return (
     (relays.fill ? 1 : 0) |
     (relays.vent ? 2 : 0) |
@@ -155,6 +159,7 @@ export function parseRemoteStationState(
 
 export const remoteSetStationOpStateCommandSchema = z.object({
   command: stationOpStateSchema,
+  relayStatusByte: z.number().optional(),
 });
 
 export type RemoteSetStationOpStateCommand = z.infer<
@@ -162,7 +167,18 @@ export type RemoteSetStationOpStateCommand = z.infer<
 >;
 
 export function toRemoteSetStationOpStateCommand(
-  opState: StationOpState
+  options:
+    | { opState: Exclude<StationOpState, "custom"> }
+    | {
+        opState: "custom";
+        relays: Partial<StationRelays>;
+      }
 ): RemoteSetStationOpStateCommand {
-  return { command: opState };
+  return {
+    command: options.opState,
+    relayStatusByte:
+      options.opState === "custom"
+        ? dummyToRelayStatusByte(options.relays)
+        : undefined,
+  };
 }
