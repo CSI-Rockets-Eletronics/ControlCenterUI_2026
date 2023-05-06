@@ -126,7 +126,7 @@ function parseRelayStatusByte(byte: number): StationRelays {
 }
 
 /** For dummy station. */
-export function dummyToRelayStatusByte(relays: StationRelays): number {
+export function toRelayStatusByte(relays: StationRelays): number {
   return (
     (relays.fill ? 1 : 0) |
     (relays.vent ? 2 : 0) |
@@ -177,7 +177,7 @@ export function toRemoteSetStationOpStateCommand(
     command: options.opState,
     relayStatusByte:
       options.opState === "custom"
-        ? dummyToRelayStatusByte(options.relays)
+        ? toRelayStatusByte(options.relays)
         : undefined,
   };
 }

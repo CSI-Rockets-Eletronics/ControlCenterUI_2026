@@ -4,7 +4,6 @@ import { useSearchParams } from "react-router-dom";
 import { useApi } from "@/components/apiProvider";
 import { type Api } from "@/lib/api";
 import {
-  dummyToRelayStatusByte,
   dummyToStateByte,
   GPS_STATE_SOURCE,
   parseRemoteStationState,
@@ -13,6 +12,7 @@ import {
   remoteStationStateSchema,
   SET_STATION_OP_STATE_TARGET,
   STATION_STATE_SOURCE,
+  toRelayStatusByte,
 } from "@/lib/stationInterface";
 import { type GpsState, type StationOpState } from "@/lib/stationState";
 
@@ -83,7 +83,7 @@ class DummyStation {
 
     const remoteStationState: RemoteStationState = {
       stateByte: dummyToStateByte(this.opState),
-      relayStatusByte: dummyToRelayStatusByte({
+      relayStatusByte: toRelayStatusByte({
         fill: randBool(),
         vent: randBool(),
         pyroValve: randBool(),
