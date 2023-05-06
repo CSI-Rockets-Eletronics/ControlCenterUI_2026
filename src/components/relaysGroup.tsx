@@ -110,7 +110,6 @@ export const RelaysGroup = memo(function RelaysGroup() {
       <Entry label="Pyro Valve" field="pyroValve" pr={pr} spr={spr} />
       <Entry label="Pyro Cutter" field="pyroCutter" pr={pr} spr={spr} />
       <Entry label="Igniter" field="igniter" pr={pr} spr={spr} />
-      {/* <Entry label="Extra" field="extra" pr={pr} spr={spr} /> */}
     </div>
   );
 });

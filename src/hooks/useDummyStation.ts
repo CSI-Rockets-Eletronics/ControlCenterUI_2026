@@ -89,7 +89,6 @@ class DummyStation {
         pyroValve: randBool(),
         pyroCutter: randBool(),
         igniter: randBool(),
-        extra: randBool(),
       }),
       oxTankMPSI: randRange(0, 100),
       ccMPSI: randRange(0, 100),

@@ -122,7 +122,6 @@ function parseRelayStatusByte(byte: number): StationRelays {
     pyroCutter: (byte & 4) === 4,
     pyroValve: (byte & 8) === 8,
     igniter: (byte & 16) === 16,
-    extra: false,
   };
 }
 
