@@ -1,12 +1,34 @@
 import * as radixColors from "@radix-ui/colors";
-import { memo, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  memo,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 const BASE_RADIX_COLORS = Object.keys(radixColors).filter(
   (color) => !color.endsWith("Dark") && !color.endsWith("A")
 );
 
-export const ColorTheme = memo(function ColorThemeProvider() {
+const ColorThemeContext = createContext({
+  isDark: true,
+  toggleDark: () => undefined as void,
+});
+
+export const ColorThemeProvider = memo(function ColorThemeProvider({
+  children,
+}: {
+  children?: ReactNode;
+}) {
   const [isDark, setIsDark] = useState(true);
+
+  const toggleDark = useCallback(() => {
+    setIsDark((isDark) => !isDark);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -45,5 +67,22 @@ export const ColorTheme = memo(function ColorThemeProvider() {
     return `body { ${innerStyles.join(" ")} }`;
   }, [isDark]);
 
-  return <style>{style}</style>;
+  const colorThemeContextValue = useMemo(
+    () => ({
+      isDark,
+      toggleDark,
+    }),
+    [isDark, toggleDark]
+  );
+
+  return (
+    <ColorThemeContext.Provider value={colorThemeContextValue}>
+      <style>{style}</style>
+      {children}
+    </ColorThemeContext.Provider>
+  );
 });
+
+export function useColorTheme() {
+  return useContext(ColorThemeContext);
+}

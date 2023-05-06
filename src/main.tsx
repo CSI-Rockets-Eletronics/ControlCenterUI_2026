@@ -4,7 +4,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import { ColorTheme } from "./colorTheme";
+import { ColorThemeProvider } from "./colorThemeProvider";
 import { Root } from "./routes/root";
 import { Station } from "./routes/station";
 
@@ -30,7 +30,8 @@ const router = createBrowserRouter(
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <ColorTheme />
-    <RouterProvider router={router} />
+    <ColorThemeProvider>
+      <RouterProvider router={router} />
+    </ColorThemeProvider>
   </React.StrictMode>
 );
