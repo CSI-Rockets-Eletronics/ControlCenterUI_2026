@@ -38,6 +38,9 @@ export const WeatherPanel = memo(function WeatherPanel() {
       <div className="overflow-hidden rounded-md" ref={parentRef} />
       <style>
         {`
+          #ww_6c99c8c4ca696 {
+            max-width: 100%;
+          }
           #ww_6c99c8c4ca696 .ww_source {
             display: none;
           }
