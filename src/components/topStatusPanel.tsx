@@ -35,9 +35,12 @@ export const TopStatusPanel = memo(function TopStatusPanel({
 
         <RelaysGroup />
 
-        <div className="flex items-center gap-4">
+        <div
+          className="flex items-center gap-4"
+          style={{ fontFamily: "serif" }} // emojis look weird in custom font
+        >
           <Button color="gray" disabled={false} onClick={toggleDark}>
-            {isDark ? "🌞" : "🌚"}
+            {isDark ? "☀️" : "🌑"}
           </Button>
           <Button color="gray" disabled={false} onClick={openMessagesModal}>
             ⌨️
