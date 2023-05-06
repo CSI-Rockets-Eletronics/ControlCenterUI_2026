@@ -35,8 +35,6 @@ const Entry = memo(function Entry({
 
   const hasPending = pendingRelays != null;
 
-  const pendingChecked = hasPending ? pendingRelays[field] : checked;
-
   const handleChange = useCallback(() => {
     if (hasPending) {
       setPendingRelays({
@@ -53,11 +51,15 @@ const Entry = memo(function Entry({
       className={twMerge(
         "rounded-lg",
         hasPending && "ring",
-        hasPending && (pendingChecked ? "ring-green-border" : "ring-red-border")
+        hasPending &&
+          (pendingRelays[field] ? "ring-green-border" : "ring-red-border")
       )}
     >
       <CheckboxEntry
         size="lg"
+        backgroundColor={
+          hasPending ? (pendingRelays[field] ? "green" : "red") : "gray"
+        }
         label={label}
         checked={checked}
         disabled={false}
@@ -102,9 +104,9 @@ export const RelaysGroup = memo(function RelaysGroup() {
   const spr = setPendingRelays;
 
   return (
-    <div className="flex flex-wrap items-center gap-4">
+    <div className="flex items-center gap-6">
       {pendingRelays != null && (
-        <>
+        <div className="flex items-center gap-4">
           <Button
             color="green"
             disabled={setPendingRelaysDisabled}
@@ -115,14 +117,16 @@ export const RelaysGroup = memo(function RelaysGroup() {
           <Button color="red" disabled={false} onClick={cancelPendingRelays}>
             Cancel
           </Button>
-        </>
+        </div>
       )}
 
-      <Entry label="Fill" field="fill" pr={pr} spr={spr} />
-      <Entry label="Vent" field="vent" pr={pr} spr={spr} />
-      <Entry label="Pyro Valve" field="pyroValve" pr={pr} spr={spr} />
-      <Entry label="Pyro Cutter" field="pyroCutter" pr={pr} spr={spr} />
-      <Entry label="Igniter" field="igniter" pr={pr} spr={spr} />
+      <div className="flex flex-wrap items-center gap-4">
+        <Entry label="Fill" field="fill" pr={pr} spr={spr} />
+        <Entry label="Vent" field="vent" pr={pr} spr={spr} />
+        <Entry label="Pyro Valve" field="pyroValve" pr={pr} spr={spr} />
+        <Entry label="Pyro Cutter" field="pyroCutter" pr={pr} spr={spr} />
+        <Entry label="Igniter" field="igniter" pr={pr} spr={spr} />
+      </div>
     </div>
   );
 });

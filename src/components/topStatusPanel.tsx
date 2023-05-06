@@ -24,7 +24,7 @@ export const TopStatusPanel = memo(function TopStatusPanel({
   return (
     <div className="grid grid-rows-[auto,auto] md:grid-rows-none md:grid-cols-[1fr,auto] space-y-4 md:space-y-0 md:space-x-4">
       <Panel className="flex flex-col items-stretch md:items-center md:flex-row gap-4 md:gap-6">
-        <div className="flex flex-col ml-2 grow">
+        <div className="flex flex-col ml-2 grow shrink-0">
           <p className="text-gray-text">FS Uptime: {timeSinceBoot} s</p>
           <p className="text-gray-text">
             Calib Uptime: {timeSinceCalibration} s

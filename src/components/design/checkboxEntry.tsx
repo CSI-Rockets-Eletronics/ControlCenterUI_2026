@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge";
 
 interface Props {
   size: "sm" | "lg";
+  backgroundColor?: "gray" | "green" | "red";
   label: string;
   checked: boolean;
   disabled: boolean;
@@ -11,6 +12,7 @@ interface Props {
 
 export const CheckboxEntry = memo(function CheckboxEntry({
   size,
+  backgroundColor = "gray",
   label,
   checked,
   disabled,
@@ -19,7 +21,13 @@ export const CheckboxEntry = memo(function CheckboxEntry({
   return (
     <label
       className={twMerge(
-        "flex items-center rounded-lg cursor-pointer text-gray-text bg-gray-el-bg border border-gray-border hover:bg-gray-el-bg-hover active:bg-gray-el-bg-active",
+        "flex items-center rounded-lg cursor-pointer text-gray-text border",
+        backgroundColor === "gray" &&
+          "bg-gray-el-bg border-gray-border hover:bg-gray-el-bg-hover active:bg-gray-el-bg-active",
+        backgroundColor === "green" &&
+          "bg-green-el-bg border-green-border hover:bg-green-el-bg-hover active:bg-green-el-bg-active",
+        backgroundColor === "red" &&
+          "bg-red-el-bg border-red-border hover:bg-red-el-bg-hover active:bg-red-el-bg-active",
         disabled && "opacity-50 pointer-events-none",
         size === "lg" && "p-4 gap-6 text-base",
         size === "sm" && "px-3 py-2 gap-5 text-sm"
