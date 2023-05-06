@@ -92,6 +92,7 @@ export const StandbyStateSelection = memo(function StandbyStateSelection() {
       <Entry onlyIfActive label="FIRE" opState="fire" />
       <Entry onlyIfActive label="FIRE IGNITER" opState="fire-manual-igniter" />
       <Entry onlyIfActive label="FIRE VALVE" opState="fire-manual-valve" />
+      <Entry onlyIfActive label="ABORT" opState="abort" />
       <Entry onlyIfActive label="CUSTOM" opState="custom" />
 
       <EntryGroup title="Pulse Fill">
