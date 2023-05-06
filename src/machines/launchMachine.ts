@@ -86,7 +86,7 @@ export type LaunchMachineEvent =
     }
   | {
       type: "MUTATE_STATION_OP_STATE_CUSTOM";
-      relays: Partial<StationRelays>;
+      relays: StationRelays;
     }
   | {
       type: "SEND_MANUAL_MESSAGE";
@@ -403,10 +403,7 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
               event.type === "MUTATE_STATION_OP_STATE_CUSTOM"
                 ? toRemoteSetStationOpStateCommand({
                     opState: "custom",
-                    relays: {
-                      ...context.stationState?.relays,
-                      ...event.relays,
-                    },
+                    relays: event.relays,
                   })
                 : toRemoteSetStationOpStateCommand({
                     opState: event.value,

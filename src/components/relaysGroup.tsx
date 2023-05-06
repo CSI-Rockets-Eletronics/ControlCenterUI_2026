@@ -10,6 +10,14 @@ import {
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
 
+const defaultPendingRelays: StationRelays = {
+  fill: false,
+  vent: false,
+  pyroValve: false,
+  pyroCutter: false,
+  igniter: false,
+};
+
 const Entry = memo(function Entry({
   label,
   field,
@@ -18,23 +26,27 @@ const Entry = memo(function Entry({
 }: {
   label: string;
   field: keyof StationRelays;
-  pr: Partial<StationRelays>;
-  spr: (pendingRelays: Partial<StationRelays>) => void;
+  pr: StationRelays | null; // pendingRelays
+  spr: (pendingRelays: StationRelays) => void; // setPendingRelays
 }) {
   const checked = useLaunchMachineSelector(
     (state) => !!state.context.stationState?.relays[field]
   );
 
-  const pendingChecked = pendingRelays?.[field] ?? checked;
+  const hasPending = pendingRelays != null;
 
-  const hasPending = field in pendingRelays;
+  const pendingChecked = hasPending ? pendingRelays[field] : checked;
 
   const handleChange = useCallback(() => {
-    setPendingRelays({
-      ...pendingRelays,
-      [field]: !pendingChecked,
-    });
-  }, [field, pendingChecked, pendingRelays, setPendingRelays]);
+    if (hasPending) {
+      setPendingRelays({
+        ...pendingRelays,
+        [field]: !pendingRelays[field],
+      });
+    } else {
+      setPendingRelays(defaultPendingRelays);
+    }
+  }, [field, hasPending, pendingRelays, setPendingRelays]);
 
   return (
     <div
@@ -58,31 +70,32 @@ const Entry = memo(function Entry({
 export const RelaysGroup = memo(function RelaysGroup() {
   const launchActorRef = useLaunchMachineActorRef();
 
-  const [pendingRelays, setPendingRelays] = useState<Partial<StationRelays>>(
-    {}
+  const [pendingRelays, setPendingRelays] = useState<StationRelays | null>(
+    null
   );
-
-  const hasPending = Object.keys(pendingRelays).length > 0;
 
   const setPendingRelaysDisabled = useLaunchMachineSelector(
     (state) =>
+      pendingRelays == null ||
       !state.can({
         type: "MUTATE_STATION_OP_STATE_CUSTOM",
         relays: pendingRelays,
       })
   );
 
-  const resetPendingRelays = useCallback(() => {
-    setPendingRelays({});
+  const cancelPendingRelays = useCallback(() => {
+    setPendingRelays(null);
   }, []);
 
   const handleSetPendingRelays = useCallback(() => {
+    if (pendingRelays == null) return;
+
     launchActorRef.send({
       type: "MUTATE_STATION_OP_STATE_CUSTOM",
       relays: pendingRelays,
     });
-    resetPendingRelays();
-  }, [launchActorRef, pendingRelays, resetPendingRelays]);
+    cancelPendingRelays();
+  }, [launchActorRef, pendingRelays, cancelPendingRelays]);
 
   // for brevity
   const pr = pendingRelays;
@@ -90,17 +103,17 @@ export const RelaysGroup = memo(function RelaysGroup() {
 
   return (
     <div className="flex flex-wrap items-center gap-4">
-      {hasPending && (
+      {pendingRelays != null && (
         <>
-          <Button color="red" disabled={false} onClick={resetPendingRelays}>
-            Revert
-          </Button>
           <Button
             color="green"
             disabled={setPendingRelaysDisabled}
             onClick={handleSetPendingRelays}
           >
             Set
+          </Button>
+          <Button color="red" disabled={false} onClick={cancelPendingRelays}>
+            Cancel
           </Button>
         </>
       )}
