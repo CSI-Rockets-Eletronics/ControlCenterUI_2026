@@ -59,7 +59,7 @@ const Entry = memo(function Entry({
       <CheckboxEntry
         size="lg"
         label={label}
-        checked={pendingChecked}
+        checked={checked}
         disabled={false}
         onChange={handleChange}
       />
