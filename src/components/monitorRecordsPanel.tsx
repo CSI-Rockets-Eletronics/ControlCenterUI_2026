@@ -4,6 +4,7 @@ import { useReplayFromSeconds } from "@/hooks/useReplayFromSeconds";
 import { type Record } from "@/lib/api";
 
 import { useApi } from "./apiProvider";
+import { CodeBlock } from "./design/codeBlock";
 import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
@@ -90,22 +91,17 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
       </div>
       <div className="flex flex-col px-4 -mt-4 scrollable gap-3">
         {records.map((record) => (
-          <div
-            key={record.source}
-            className="p-2 border border-gray-border rounded-md bg-gray-el-bg"
-          >
-            <pre className="text-sm break-words whitespace-pre-wrap select-text text-gray-text">
-              {JSON.stringify(
-                {
-                  source: record.source,
-                  timestamp: record.timestamp,
-                  data: record.data,
-                },
-                null,
-                2
-              )}
-            </pre>
-          </div>
+          <CodeBlock key={record.source}>
+            {JSON.stringify(
+              {
+                source: record.source,
+                timestamp: record.timestamp,
+                data: record.data,
+              },
+              null,
+              2
+            )}
+          </CodeBlock>
         ))}
       </div>
     </Panel>

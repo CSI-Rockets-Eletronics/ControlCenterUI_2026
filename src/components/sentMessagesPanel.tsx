@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef } from "react";
 
+import { CodeBlock } from "./design/codeBlock";
 import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
@@ -24,22 +25,17 @@ export const SentMessagesPanel = memo(function SentMessagesPanel() {
       </div>
       <div ref={scrollRef} className="flex flex-col px-4 scrollable gap-3">
         {sentMessages.map((message, index) => (
-          <div
-            key={index}
-            className="p-2 border border-gray-border rounded-md bg-gray-el-bg"
-          >
-            <pre className="text-sm break-words whitespace-pre-wrap select-text text-gray-text">
-              {JSON.stringify(
-                {
-                  target: message.target,
-                  timestamp: message.timestamp,
-                  data: message.data,
-                },
-                null,
-                2
-              )}
-            </pre>
-          </div>
+          <CodeBlock key={index}>
+            {JSON.stringify(
+              {
+                target: message.target,
+                timestamp: message.timestamp,
+                data: message.data,
+              },
+              null,
+              2
+            )}
+          </CodeBlock>
         ))}
       </div>
     </Panel>
