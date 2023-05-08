@@ -1,5 +1,7 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
+import { useApi } from "./apiProvider";
 import { Button } from "./design/button";
 import { Panel } from "./design/panel";
 import {
@@ -20,7 +22,7 @@ const PRESET_MESSAGES: PresetMessage[] = [
     data: { command: "recalibrate" },
   },
   {
-    label: "FS CLEAR CALIBRATION",
+    label: "FS CLEAR CALIB.",
     target: "FiringStation",
     data: { command: "clear-calibration" },
   },
@@ -66,11 +68,41 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton({
   );
 });
 
+const NewSessionButton = memo(function NewSessionButton() {
+  const api = useApi();
+
+  const [loading, setLoading] = useState(false);
+
+  const handleClick = useCallback(() => {
+    if (loading) return;
+
+    setLoading(true);
+
+    api
+      .createSession({
+        name: uuidv4(),
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [api, loading]);
+
+  return (
+    <Button color="green" disabled={loading} onClick={handleClick}>
+      NEW SESSION
+    </Button>
+  );
+});
+
 export const PresetMessagesPanel = memo(function PresetMessagesPanel() {
   return (
     <Panel className="flex flex-col gap-4">
       <p className="text-lg text-gray-text">Send Preset Message</p>
       <div className="flex flex-wrap gap-4">
+        <NewSessionButton />
         {PRESET_MESSAGES.map((message) => (
           <SendPresetMessageButton key={message.label} message={message} />
         ))}

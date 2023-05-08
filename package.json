@@ -29,12 +29,14 @@
     "recharts": "^2.5.0",
     "tailwind-merge": "^1.9.1",
     "tailwind-scrollbar": "^2.1.0",
+    "uuid": "^9.0.0",
     "xstate": "^4.35.4",
     "zod": "^3.20.6"
   },
   "devDependencies": {
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
+    "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.50.0",
     "@typescript-eslint/parser": "^5.50.0",
     "@vitejs/plugin-react-swc": "^3.0.0",
