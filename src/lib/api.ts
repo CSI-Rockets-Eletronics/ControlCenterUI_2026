@@ -45,6 +45,28 @@ export class Api {
     return session;
   }
 
+  async getAllSessions(): Promise<{
+    sessions: Session[];
+    activeSessionId: string | null;
+  }> {
+    const res = await fetch(`${ORIGIN}/session/all`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        stationId: this.stationId,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to get all sessions");
+    }
+
+    const { sessions, activeSessionId } = await res.json();
+    return { sessions, activeSessionId };
+  }
+
   async createMessage(options: {
     target: string;
     data: unknown;

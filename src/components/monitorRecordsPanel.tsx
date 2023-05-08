@@ -1,4 +1,5 @@
 import { memo, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 import { useReplayFromSeconds } from "@/hooks/useReplayFromSeconds";
 import { type Record } from "@/lib/api";
@@ -24,6 +25,12 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
   visible,
 }: Props) {
   const api = useApi();
+
+  const params = useParams<{ sessionId: string }>();
+  const usingParamSessionId = params.sessionId != null;
+
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+
   const replayFromSeconds = useReplayFromSeconds();
 
   const [records, setRecords] = useState<RecordWithSource[]>([]);
@@ -60,6 +67,18 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
     }
 
     const interval = setInterval(() => {
+      if (!usingParamSessionId) {
+        api
+          .getAllSessions()
+          .then((res) => {
+            setActiveSessionId(res.activeSessionId);
+          })
+          .catch((error) => {
+            console.error(error);
+            setActiveSessionId(null);
+          });
+      }
+
       fetchRecords()
         .then((records) => {
           setRecords(
@@ -67,7 +86,8 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
           );
           setHasError(false);
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error(error);
           setHasError(true);
         });
     }, FETCH_INTERVAL);
@@ -75,7 +95,9 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
     return () => {
       clearInterval(interval);
     };
-  }, [api, replayFromSeconds, startTimeMicros, visible]);
+  }, [api, replayFromSeconds, startTimeMicros, usingParamSessionId, visible]);
+
+  const sessionId = usingParamSessionId ? params.sessionId : activeSessionId;
 
   return (
     <Panel className="px-0 grid grid-rows-[auto,auto,minmax(0,1fr)] gap-4">
@@ -90,6 +112,9 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
         )}
       </div>
       <div className="flex flex-col px-4 -mt-4 scrollable gap-3">
+        {sessionId != null && (
+          <CodeBlock>{`Current sessionId: ${sessionId}`}</CodeBlock>
+        )}
         {records.map((record) => (
           <CodeBlock key={record.source}>
             {JSON.stringify(

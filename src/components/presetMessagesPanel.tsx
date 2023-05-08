@@ -1,4 +1,5 @@
 import { memo, useCallback, useState } from "react";
+import { useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 
 import { useApi } from "./apiProvider";
@@ -69,6 +70,9 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton({
 });
 
 const NewSessionButton = memo(function NewSessionButton() {
+  const params = useParams<{ sessionId: string }>();
+  const usingParamSessionId = params.sessionId != null;
+
   const api = useApi();
 
   const [loading, setLoading] = useState(false);
@@ -91,7 +95,11 @@ const NewSessionButton = memo(function NewSessionButton() {
   }, [api, loading]);
 
   return (
-    <Button color="green" disabled={loading} onClick={handleClick}>
+    <Button
+      color="green"
+      disabled={usingParamSessionId || loading}
+      onClick={handleClick}
+    >
       NEW SESSION
     </Button>
   );
