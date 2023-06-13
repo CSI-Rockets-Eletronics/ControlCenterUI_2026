@@ -103,7 +103,7 @@ const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
 
   return (
     <StatusDisplay
-      label="CC Pressure (PSI)"
+      label="LoadCellFS (lbs)"
       color="green"
       value={value}
       overflowElement={showChart ? chartElement : undefined}
