@@ -460,8 +460,8 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
             }
 
             if (event.value === "fire") {
-              const validFireSourceState =
-                context.stationState?.opState === "standby" || context.stationState?.opState === "keep";
+              const opState = context.stationState?.opState;
+              const validFireSourceState = opState === "standby" || opState === "keep" || opState === "custom";
               return fireReqsComplete && validFireSourceState;
             } else if (event.value === "fire-manual-igniter" || event.value === "fire-manual-valve") {
               return fireReqsComplete;
