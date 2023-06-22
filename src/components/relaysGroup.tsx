@@ -123,7 +123,7 @@ export const RelaysGroup = memo(function RelaysGroup() {
       <div className="flex flex-wrap items-center gap-4">
         <Entry label="Fill" field="fill" pr={pr} spr={spr} />
         <Entry label="Vent" field="vent" pr={pr} spr={spr} />
-        <Entry label="Pyro Valve" field="pyroValve" pr={pr} spr={spr} />
+        <Entry label="Servo Valve" field="pyroValve" pr={pr} spr={spr} />
         <Entry label="Pyro Cutter" field="pyroCutter" pr={pr} spr={spr} />
         <Entry label="Igniter" field="igniter" pr={pr} spr={spr} />
       </div>
