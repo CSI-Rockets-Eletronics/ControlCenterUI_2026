@@ -76,6 +76,20 @@ const ChartLoadingFallback = memo(function ChartLoadingFallback({
   );
 });
 
+const FillLineDisplay = memo(function FillLineDisplay() {
+  const isConnected = useLaunchMachineSelector(
+    (state) => state.context.stationState?.status.fillLineConnected ?? false
+  );
+
+  return (
+    <StatusDisplay
+      label="Fill Line"
+      color={isConnected ? "yellow" : "green"}
+      value={isConnected ? "Connected" : "Cut"}
+    />
+  );
+});
+
 const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
   const value = useLaunchMachineSelector((state) =>
     (state.context.stationState?.status.combustionPressure ?? 0).toFixed(1)
@@ -240,6 +254,7 @@ export const StatusPanel = memo(function StatusPanel() {
         <AltitudeDisplay />
       ) : (
         <>
+          <FillLineDisplay />
           <CombustionPressureDisplay />
           <OxidizerTankPressureDisplay />
           <LoadCellDisplay />
