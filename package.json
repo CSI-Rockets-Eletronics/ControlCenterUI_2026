@@ -13,7 +13,7 @@
     "type-check": "tsc --noEmit",
     "xstate:typegen": "xstate typegen src/machines/**/*.ts",
     "prepare": "husky install",
-    "postinstall": "yarn xstate:typegen"
+    "postinstall": "bun xstate:typegen"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --fix",
