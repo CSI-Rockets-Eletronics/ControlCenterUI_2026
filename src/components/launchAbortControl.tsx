@@ -16,7 +16,7 @@ export const LaunchAbortControl = memo(function LaunchAbortControl() {
       !state.can({
         type: "UPDATE_ACTIVE_PANEL",
         value: "standby",
-      })
+      }),
   );
 
   const goToRecoveryModeDisabled = useLaunchMachineSelector(
@@ -24,7 +24,7 @@ export const LaunchAbortControl = memo(function LaunchAbortControl() {
       !state.can({
         type: "UPDATE_ACTIVE_PANEL",
         value: "recovery",
-      })
+      }),
   );
 
   const handleGoToStandbyMode = useCallback(() => {

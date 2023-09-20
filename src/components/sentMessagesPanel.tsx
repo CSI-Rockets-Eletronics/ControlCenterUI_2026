@@ -6,7 +6,7 @@ import { useLaunchMachineSelector } from "./launchMachineProvider";
 
 export const SentMessagesPanel = memo(function SentMessagesPanel() {
   const sentMessages = useLaunchMachineSelector(
-    (state) => state.context.sentMessages
+    (state) => state.context.sentMessages,
   );
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -33,7 +33,7 @@ export const SentMessagesPanel = memo(function SentMessagesPanel() {
                 data: message.data,
               },
               null,
-              2
+              2,
             )}
           </CodeBlock>
         ))}

@@ -49,7 +49,7 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
       rest.type === "opState"
         ? { type: "MUTATE_STATION_OP_STATE", value: rest.executeOpState }
         : { type: "UPDATE_ARM_STATUS", data: { [rest.field]: true } },
-    [rest.executeOpState, rest.field, rest.type]
+    [rest.executeOpState, rest.field, rest.type],
   );
 
   const stopEvent = useMemo<LaunchMachineEvent | null>(
@@ -59,21 +59,21 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
           ? { type: "MUTATE_STATION_OP_STATE", value: rest.stopOpState }
           : null
         : { type: "UPDATE_ARM_STATUS", data: { [rest.field]: false } },
-    [rest.stopOpState, rest.field, rest.type]
+    [rest.stopOpState, rest.field, rest.type],
   );
 
   const executeDisabled = useLaunchMachineSelector(
-    (state) => !state.can(executeEvent)
+    (state) => !state.can(executeEvent),
   );
 
   const stopDisabled = useLaunchMachineSelector(
-    (state) => state.can(executeEvent) || !stopEvent || !state.can(stopEvent)
+    (state) => state.can(executeEvent) || !stopEvent || !state.can(stopEvent),
   );
 
   const isExecuting = useLaunchMachineSelector((state) =>
     rest.type === "opState"
       ? state.context.stationState?.opState === rest.executeOpState
-      : state.context.launchState.armStatus[rest.field]
+      : state.context.launchState.armStatus[rest.field],
   );
 
   const handleExecute = useCallback(() => {
@@ -87,7 +87,7 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
   }, [launchActorRef, stopEvent]);
 
   const isInState = useLaunchMachineSelector(
-    (state) => state.context.stationState?.opState === rest.executeOpState
+    (state) => state.context.stationState?.opState === rest.executeOpState,
   );
 
   const fade = fadeIfDisabled && executeDisabled && !isInState;
@@ -96,7 +96,7 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
     <div
       className={twMerge(
         "flex flex-col md:flex-row items-center px-4 py-3 border rounded-lg gap-4 bg-gray-el-bg border-gray-border",
-        fade && "opacity-50 pointer-events-none"
+        fade && "opacity-50 pointer-events-none",
       )}
     >
       <div className="flex items-center self-stretch md:self-center gap-4 grow">
@@ -107,7 +107,7 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
               ? isAbort
                 ? "bg-red-solid"
                 : "bg-green-solid"
-              : "bg-gray-solid"
+              : "bg-gray-solid",
           )}
         />
         <p className="grow text-gray-text">{label}</p>

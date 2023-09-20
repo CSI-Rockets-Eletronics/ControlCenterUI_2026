@@ -24,7 +24,7 @@ const Entry = memo(function Entry({
   const launchActorRef = useLaunchMachineActorRef();
 
   const curOpState = useLaunchMachineSelector(
-    (state) => state.context.stationState?.opState
+    (state) => state.context.stationState?.opState,
   );
 
   const active = curOpState === opState;
@@ -35,7 +35,7 @@ const Entry = memo(function Entry({
       !state.can({
         type: "MUTATE_STATION_OP_STATE",
         value: opState,
-      })
+      }),
   );
 
   const handleClick = useCallback(() => {

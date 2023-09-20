@@ -20,7 +20,7 @@ export const Panel = memo(function Panel({
         color === "red" && "bg-red-bg-2 border-red-border",
         color === "yellow" && "bg-yellow-bg-2 border-yellow-border",
         color === "green" && "bg-green-bg-2 border-green-border",
-        className
+        className,
       )}
     >
       {children}

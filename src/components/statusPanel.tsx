@@ -18,7 +18,7 @@ import {
 } from "./launchMachineProvider";
 
 const StationChart = lazy(() =>
-  import("./stationChart").then((res) => ({ default: res.StationChart }))
+  import("./stationChart").then((res) => ({ default: res.StationChart })),
 );
 
 const ClickableDisplay = memo(function ClickableDisplay({
@@ -35,7 +35,7 @@ const ClickableDisplay = memo(function ClickableDisplay({
   const launchActorRef = useLaunchMachineActorRef();
 
   const isTrue = useLaunchMachineSelector(
-    (state) => state.context.launchState.mainStatus[field]
+    (state) => state.context.launchState.mainStatus[field],
   );
 
   const disabled = useLaunchMachineSelector(
@@ -43,7 +43,7 @@ const ClickableDisplay = memo(function ClickableDisplay({
       !state.can({
         type: "UPDATE_MAIN_STATUS",
         data: { [field]: !isTrue },
-      })
+      }),
   );
 
   const handleChange = useCallback(() => {
@@ -78,7 +78,7 @@ const ChartLoadingFallback = memo(function ChartLoadingFallback({
 
 const FillLineDisplay = memo(function FillLineDisplay() {
   const isConnected = useLaunchMachineSelector(
-    (state) => state.context.stationState?.status.fillLineConnected ?? false
+    (state) => state.context.stationState?.status.fillLineConnected ?? false,
   );
 
   return (
@@ -92,7 +92,7 @@ const FillLineDisplay = memo(function FillLineDisplay() {
 
 const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
   const value = useLaunchMachineSelector((state) =>
-    (state.context.stationState?.status.combustionPressure ?? 0).toFixed(1)
+    (state.context.stationState?.status.combustionPressure ?? 0).toFixed(1),
   );
 
   const chartElement = useMemo(() => {
@@ -130,7 +130,7 @@ const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
 const OxidizerTankPressureDisplay = memo(
   function OxidizerTankPressureDisplay() {
     const value = useLaunchMachineSelector((state) =>
-      (state.context.stationState?.status.oxidizerTankPressure ?? 0).toFixed(1)
+      (state.context.stationState?.status.oxidizerTankPressure ?? 0).toFixed(1),
     );
 
     const chartElement = useMemo(() => {
@@ -163,12 +163,12 @@ const OxidizerTankPressureDisplay = memo(
         onClick={handleClick}
       />
     );
-  }
+  },
 );
 
 const LoadCellDisplay = memo(function LoadCellDisplay() {
   const value = useLaunchMachineSelector((state) =>
-    (state.context.stationState?.loadCell?.data_converted ?? 0).toFixed(2)
+    (state.context.stationState?.loadCell?.data_converted ?? 0).toFixed(2),
   );
 
   const chartElement = useMemo(() => {
@@ -205,7 +205,7 @@ const LoadCellDisplay = memo(function LoadCellDisplay() {
 
 const AltitudeDisplay = memo(function AltitudeDisplay() {
   const value = useLaunchMachineSelector((state) =>
-    (state.context.stationState?.gps?.alt ?? 0).toFixed(1)
+    (state.context.stationState?.gps?.alt ?? 0).toFixed(1),
   );
 
   return <StatusDisplay label="Altitude (ft)" color="green" value={value} />;
@@ -213,7 +213,7 @@ const AltitudeDisplay = memo(function AltitudeDisplay() {
 
 export const StatusPanel = memo(function StatusPanel() {
   const isRecovery = useLaunchMachineSelector(
-    (state) => state.context.launchState.activePanel === "recovery"
+    (state) => state.context.launchState.activePanel === "recovery",
   );
 
   return (

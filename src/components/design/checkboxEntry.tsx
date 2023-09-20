@@ -30,7 +30,7 @@ export const CheckboxEntry = memo(function CheckboxEntry({
           "bg-red-el-bg border-red-border hover:bg-red-el-bg-hover active:bg-red-el-bg-active",
         disabled && "opacity-50 pointer-events-none",
         size === "lg" && "p-4 gap-6 text-base",
-        size === "sm" && "px-3 py-2 gap-5 text-sm"
+        size === "sm" && "px-3 py-2 gap-5 text-sm",
       )}
     >
       <input
@@ -38,7 +38,7 @@ export const CheckboxEntry = memo(function CheckboxEntry({
         className={twMerge(
           "shrink-0 rounded-full appearance-none bg-red-solid checked:bg-green-solid",
           size === "lg" && "w-8 h-8",
-          size === "sm" && "w-6 h-6"
+          size === "sm" && "w-6 h-6",
         )}
         checked={checked}
         onChange={onChange}

@@ -19,7 +19,7 @@ const GoToLaunchModePanel = memo(function GoToLaunchModePanel() {
       !state.can({
         type: "UPDATE_ACTIVE_PANEL",
         value: "launch",
-      })
+      }),
   );
 
   const handleGoToLaunchMode = useCallback(() => {

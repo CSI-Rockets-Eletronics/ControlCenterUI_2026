@@ -6,7 +6,7 @@ import { useLaunchMachineSelector } from "./launchMachineProvider";
 
 export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
   const manualFire = useLaunchMachineSelector(
-    (state) => state.context.launchState.mainStatus.manualFire
+    (state) => state.context.launchState.mainStatus.manualFire,
   );
 
   return (

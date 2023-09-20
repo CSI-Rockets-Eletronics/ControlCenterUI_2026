@@ -22,7 +22,7 @@ export const StatusButton = memo(function StatusButton({
         disabled && "opacity-50 pointer-events-none",
         color === "none" && "text-gray-text",
         color === "green" && "text-green-solid",
-        color === "red" && "text-red-solid"
+        color === "red" && "text-red-solid",
       )}
       disabled={disabled}
       onClick={onClick}

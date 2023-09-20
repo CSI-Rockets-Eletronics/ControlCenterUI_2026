@@ -17,7 +17,7 @@ export function ApiProvider({ children }: { children: ReactNode }) {
 
   const api = useMemo(
     () => new Api(stationId, sessionId),
-    [stationId, sessionId]
+    [stationId, sessionId],
   );
 
   return <Context.Provider value={api}>{children}</Context.Provider>;

@@ -37,7 +37,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
   const [hasError, setHasError] = useState(false);
 
   const startTimeMicros = useLaunchMachineSelector(
-    (state) => state.context.startTimeMicros
+    (state) => state.context.startTimeMicros,
   );
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
           });
           if (record.length === 0) return null;
           return { ...record[0], source };
-        })
+        }),
       );
     }
 
@@ -82,7 +82,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
       fetchRecords()
         .then((records) => {
           setRecords(
-            records.filter((record) => record !== null) as RecordWithSource[]
+            records.filter((record) => record !== null) as RecordWithSource[],
           );
           setHasError(false);
         })
@@ -124,7 +124,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
                 data: record.data,
               },
               null,
-              2
+              2,
             )}
           </CodeBlock>
         ))}

@@ -27,7 +27,7 @@ export const Button = memo(function Button({
         color === "green" &&
           "bg-green-fallback-8 hover:bg-green-fallback-9 active:bg-green-fallback-10",
         color === "red" &&
-          "bg-red-solid hover:bg-red-solid-hover active:bg-red-solid-active"
+          "bg-red-solid hover:bg-red-solid-hover active:bg-red-solid-active",
       )}
       disabled={disabled}
       onClick={onClick}

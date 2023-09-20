@@ -20,7 +20,7 @@ const Entry = memo(function Entry({
   const launchActorRef = useLaunchMachineActorRef();
 
   const checked = useLaunchMachineSelector(
-    (state) => state.context.launchState.goPoll[field]
+    (state) => state.context.launchState.goPoll[field],
   );
 
   const disabled = useLaunchMachineSelector(
@@ -28,7 +28,7 @@ const Entry = memo(function Entry({
       !state.can({
         type: "UPDATE_GO_POLL",
         data: { [field]: !checked },
-      })
+      }),
   );
 
   const handleChange = useCallback(() => {
@@ -52,10 +52,10 @@ const Entry = memo(function Entry({
 export const GoPoll = memo(function GoPoll() {
   const count = useLaunchMachineSelector(
     (state) =>
-      Object.values(state.context.launchState.goPoll).filter(Boolean).length
+      Object.values(state.context.launchState.goPoll).filter(Boolean).length,
   );
   const total = useLaunchMachineSelector(
-    (state) => Object.keys(state.context.launchState.goPoll).length
+    (state) => Object.keys(state.context.launchState.goPoll).length,
   );
 
   return (
