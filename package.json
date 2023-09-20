@@ -17,7 +17,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --fix",
-    "*.{css,json,yml}": "prettier --write"
+    "*.{css,json,yml,yaml,md}": "prettier --write"
   },
   "dependencies": {
     "@radix-ui/colors": "^0.1.8",
