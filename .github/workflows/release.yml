@@ -12,13 +12,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: oven-sh/setup-bun@v1
         with:
-          node-version: 18
-          cache: "yarn"
-      - run: yarn install --frozen-lockfile
-      - run: yarn build
-      - run: yarn build:rockets-ui
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - run: bun run build:rockets-ui
       - run: zip -r dist.zip dist
       - run: zip -r dist-rockets-ui.zip dist-rockets-ui
       - uses: softprops/action-gh-release@v1
