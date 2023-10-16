@@ -294,7 +294,7 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
             rangePermit: { ...context.launchState.rangePermit, ...event.data },
           }),
         }),
-        setStationState: assign((context, event) => {
+        setStationState: assign((_context, event) => {
           const newRecord = event.data;
           if (!newRecord) {
             return {};
@@ -396,7 +396,7 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
             },
           };
         },
-        mutateStationOpState: async (context, event) => {
+        mutateStationOpState: async (_context, event) => {
           const message = {
             target: SET_STATION_OP_STATE_TARGET,
             data:
