@@ -1,32 +1,28 @@
 First, install a recent version of [Node.js](https://nodejs.org/).
 
-We use Yarn as the package manager. For Node.js >= 16.10, enable Yarn by running:
-
-```sh
-corepack enable
-corepack prepare yarn@stable --activate
-```
+We use bun as the package manager and runtime. See https://bun.sh for
+installation instructions.
 
 Next, install the dependencies:
 
 ```sh
-yarn install
+bun install
 ```
 
 To run the dev server, which has hot reloading:
 
 ```sh
-yarn dev
+bun dev
 ```
 
 During actual operation, build the production bundle:
 
 ```sh
-yarn build
+bun build
 ```
 
 Then, use the following command to serve the bundle:
 
 ```sh
-yarn preview --host
+bun preview --host
 ```
