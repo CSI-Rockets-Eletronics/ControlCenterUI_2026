@@ -19,7 +19,7 @@ export function LaunchMachineProvider({ children }: { children: ReactNode }) {
 
   const machine = useMemo(
     () => createLaunchMachine(api, !readonly, replayFromSeconds),
-    [api, readonly, replayFromSeconds]
+    [api, readonly, replayFromSeconds],
   );
 
   return <Context.Provider machine={machine}>{children}</Context.Provider>;

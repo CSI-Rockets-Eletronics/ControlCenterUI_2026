@@ -46,7 +46,7 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton({
       type: "SEND_MANUAL_MESSAGE",
       target: "",
       data: "",
-    })
+    }),
   );
 
   const handleClick = useCallback(() => {

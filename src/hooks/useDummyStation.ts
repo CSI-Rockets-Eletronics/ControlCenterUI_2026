@@ -46,7 +46,7 @@ class DummyStation {
         source: STATION_STATE_SOURCE,
         take: 1,
       },
-      remoteStationStateSchema
+      remoteStationStateSchema,
     );
 
     if (this.destroyed) return;
@@ -65,7 +65,7 @@ class DummyStation {
       {
         target: SET_STATION_OP_STATE_TARGET,
       },
-      remoteSetStationOpStateCommandSchema
+      remoteSetStationOpStateCommandSchema,
     );
 
     if (this.destroyed) return;

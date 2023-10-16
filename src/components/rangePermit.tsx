@@ -20,7 +20,7 @@ const Entry = memo(function Entry({
   const launchActorRef = useLaunchMachineActorRef();
 
   const checked = useLaunchMachineSelector(
-    (state) => state.context.launchState.rangePermit[field]
+    (state) => state.context.launchState.rangePermit[field],
   );
 
   const disabled = useLaunchMachineSelector(
@@ -28,7 +28,7 @@ const Entry = memo(function Entry({
       !state.can({
         type: "UPDATE_RANGE_PERMIT",
         data: { [field]: !checked },
-      })
+      }),
   );
 
   const handleChange = useCallback(() => {
@@ -53,10 +53,10 @@ export const RangePermit = memo(function RangePermit() {
   const count = useLaunchMachineSelector(
     (state) =>
       Object.values(state.context.launchState.rangePermit).filter(Boolean)
-        .length
+        .length,
   );
   const total = useLaunchMachineSelector(
-    (state) => Object.keys(state.context.launchState.rangePermit).length
+    (state) => Object.keys(state.context.launchState.rangePermit).length,
   );
 
   return (

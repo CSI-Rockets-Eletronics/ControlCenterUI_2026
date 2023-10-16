@@ -13,11 +13,11 @@ export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
   const launchActorRef = useLaunchMachineActorRef();
 
   const goToLaunchModeDisabled = useLaunchMachineSelector(
-    (state) => !state.can({ type: "UPDATE_ACTIVE_PANEL", value: "launch" })
+    (state) => !state.can({ type: "UPDATE_ACTIVE_PANEL", value: "launch" }),
   );
 
   const abortDisabled = useLaunchMachineSelector(
-    (state) => !state.can({ type: "MUTATE_STATION_OP_STATE", value: "abort" })
+    (state) => !state.can({ type: "MUTATE_STATION_OP_STATE", value: "abort" }),
   );
 
   const handleGoToLaunchMode = useCallback(() => {

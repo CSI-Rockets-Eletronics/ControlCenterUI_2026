@@ -19,7 +19,7 @@ export const Root = memo(function Root() {
     (event: ChangeEvent<HTMLInputElement>) => {
       setStationId(event.target.value);
     },
-    []
+    [],
   );
 
   const handleSubmit = useCallback(
@@ -27,7 +27,7 @@ export const Root = memo(function Root() {
       event.preventDefault();
       navigate(`/${stationId}`);
     },
-    [navigate, stationId]
+    [navigate, stationId],
   );
 
   return (

@@ -141,7 +141,7 @@ export function toRelayStatusByte(relays: StationRelays): number {
  * @param remoteState Should be already validated by remoteStationStateSchema.
  */
 export function parseRemoteStationState(
-  remoteState: RemoteStationState
+  remoteState: RemoteStationState,
 ): StationState {
   return {
     opState: parseStateByte(remoteState.stateByte),
@@ -173,7 +173,7 @@ export function toRemoteSetStationOpStateCommand(
     | {
         opState: "custom";
         relays: StationRelays;
-      }
+      },
 ): RemoteSetStationOpStateCommand {
   return {
     command: options.opState,

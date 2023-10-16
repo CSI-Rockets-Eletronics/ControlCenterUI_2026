@@ -33,7 +33,7 @@ export const MessagesModal = memo(function MessagesModal({
     <div
       className={twMerge(
         "absolute inset-0 flex items-center justify-center",
-        !open && "hidden"
+        !open && "hidden",
       )}
     >
       <div

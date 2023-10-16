@@ -25,7 +25,7 @@ const router = createBrowserRouter(
   ],
   {
     basename: import.meta.env.BASE_URL,
-  }
+  },
 );
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
@@ -33,5 +33,5 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <ColorThemeProvider>
       <RouterProvider router={router} />
     </ColorThemeProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

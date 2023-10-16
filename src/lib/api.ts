@@ -22,7 +22,7 @@ export interface Record<Data = unknown> {
 export class Api {
   constructor(
     private readonly stationId: string,
-    private readonly sessionId?: string
+    private readonly sessionId?: string,
   ) {}
 
   async createSession(options: { name: string }): Promise<Session> {
@@ -95,7 +95,7 @@ export class Api {
     options: {
       target: string;
     },
-    schema?: Schema
+    schema?: Schema,
   ): Promise<Message<z.infer<Schema>>[]> {
     const res = await fetch(`${ORIGIN}/message/list`, {
       method: "POST",
@@ -129,7 +129,7 @@ export class Api {
     options: {
       target: string;
     },
-    schema?: Schema
+    schema?: Schema,
   ): Promise<Message<z.infer<Schema>> | null> {
     const res = await fetch(`${ORIGIN}/message/next`, {
       method: "POST",
@@ -167,7 +167,7 @@ export class Api {
       take?: number | null;
       useRelativeTimestamps?: boolean;
     },
-    schema?: Schema
+    schema?: Schema,
   ): Promise<Record<z.infer<Schema>>[]> {
     const res = await fetch(`${ORIGIN}/record/list`, {
       method: "POST",

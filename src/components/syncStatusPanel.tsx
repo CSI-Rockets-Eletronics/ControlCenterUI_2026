@@ -13,15 +13,15 @@ export const SyncStatusPanel = memo(function SyncStatusPanel() {
   const fetching = useLaunchMachineSelector(
     (state) =>
       state.matches("live.launchState.fetching") ||
-      state.matches("live.stationState.fetching")
+      state.matches("live.stationState.fetching"),
   );
 
   const networkError = useLaunchMachineSelector((state) =>
-    state.matches("networkError")
+    state.matches("networkError"),
   );
 
   const dismissNetworkErrorDisabled = useLaunchMachineSelector(
-    (state) => !state.can("DISMISS_NETWORK_ERROR")
+    (state) => !state.can("DISMISS_NETWORK_ERROR"),
   );
 
   const dismissNetworkError = useCallback(() => {

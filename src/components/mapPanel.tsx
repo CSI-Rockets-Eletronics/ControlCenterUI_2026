@@ -38,7 +38,7 @@ export const MapPanel = memo(function MapPanel() {
       },
       {
         enableHighAccuracy: true,
-      }
+      },
     );
     return () => {
       navigator.geolocation.clearWatch(watchId);
@@ -57,7 +57,7 @@ export const MapPanel = memo(function MapPanel() {
       setCenter(center);
       setZoom(zoom);
     },
-    []
+    [],
   );
 
   const centerOnLocalAnchor = useCallback(() => {

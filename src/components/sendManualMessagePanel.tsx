@@ -46,14 +46,14 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
     (event: ChangeEvent<HTMLInputElement>) => {
       setTarget(event.target.value);
     },
-    []
+    [],
   );
 
   const handleDataChange = useCallback(
     (event: ChangeEvent<HTMLTextAreaElement>) => {
       setData(event.target.value);
     },
-    []
+    [],
   );
 
   const launchActorRef = useLaunchMachineActorRef();
@@ -63,7 +63,7 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
       type: "SEND_MANUAL_MESSAGE",
       target: "",
       data: "",
-    })
+    }),
   );
 
   const handleSubmit = useCallback(
@@ -76,7 +76,7 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
       });
       setData("");
     },
-    [data, launchActorRef, target]
+    [data, launchActorRef, target],
   );
 
   return (
@@ -94,7 +94,7 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
                   ? "bg-green-el-bg border-green-border"
                   : targetIsValid
                   ? "bg-yellow-el-bg border-yellow-border"
-                  : "bg-red-el-bg border-red-border")
+                  : "bg-red-el-bg border-red-border"),
             )}
             type="text"
             spellCheck={false}
@@ -111,7 +111,7 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
               data.length > 0 &&
                 (dataIsValid
                   ? "bg-green-el-bg border-green-border"
-                  : "bg-red-el-bg border-red-border")
+                  : "bg-red-el-bg border-red-border"),
             )}
             spellCheck={false}
             value={data}

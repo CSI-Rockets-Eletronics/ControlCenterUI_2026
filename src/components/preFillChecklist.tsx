@@ -19,7 +19,7 @@ const Entry = memo(function Entry({
   const launchActorRef = useLaunchMachineActorRef();
 
   const checked = useLaunchMachineSelector(
-    (state) => state.context.launchState.preFillChecklist[field]
+    (state) => state.context.launchState.preFillChecklist[field],
   );
 
   const disabled = useLaunchMachineSelector(
@@ -27,7 +27,7 @@ const Entry = memo(function Entry({
       !state.can({
         type: "UPDATE_PRE_FILL_CHECKLIST",
         data: { [field]: !checked },
-      })
+      }),
   );
 
   const handleChange = useCallback(() => {

@@ -30,7 +30,7 @@ const Entry = memo(function Entry({
   spr: (pendingRelays: StationRelays) => void; // setPendingRelays
 }) {
   const checked = useLaunchMachineSelector(
-    (state) => !!state.context.stationState?.relays[field]
+    (state) => !!state.context.stationState?.relays[field],
   );
 
   const hasPending = pendingRelays != null;
@@ -52,7 +52,7 @@ const Entry = memo(function Entry({
         "rounded-lg",
         hasPending && "ring",
         hasPending &&
-          (pendingRelays[field] ? "ring-green-border" : "ring-red-border")
+          (pendingRelays[field] ? "ring-green-border" : "ring-red-border"),
       )}
     >
       <CheckboxEntry
@@ -73,7 +73,7 @@ export const RelaysGroup = memo(function RelaysGroup() {
   const launchActorRef = useLaunchMachineActorRef();
 
   const [pendingRelays, setPendingRelays] = useState<StationRelays | null>(
-    null
+    null,
   );
 
   const setPendingRelaysDisabled = useLaunchMachineSelector(
@@ -82,7 +82,7 @@ export const RelaysGroup = memo(function RelaysGroup() {
       !state.can({
         type: "MUTATE_STATION_OP_STATE_CUSTOM",
         relays: pendingRelays,
-      })
+      }),
   );
 
   const cancelPendingRelays = useCallback(() => {

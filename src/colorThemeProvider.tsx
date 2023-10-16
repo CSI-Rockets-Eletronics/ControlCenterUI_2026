@@ -11,7 +11,7 @@ import {
 } from "react";
 
 const BASE_RADIX_COLORS = Object.keys(radixColors).filter(
-  (color) => !color.endsWith("Dark") && !color.endsWith("A")
+  (color) => !color.endsWith("Dark") && !color.endsWith("A"),
 );
 
 const ColorThemeContext = createContext({
@@ -55,10 +55,10 @@ export const ColorThemeProvider = memo(function ColorThemeProvider({
           // strip hsl to be compatible with Tailwind's opacity modifier
           const stepColorNoHsl = stepColor.replace(
             /hsl\((\S+), (\S+), (\S+)\)/,
-            "$1 $2 $3"
+            "$1 $2 $3",
           );
           innerStyles.push(
-            `--radix-color-${colorName}-${stepNum}: ${stepColorNoHsl};`
+            `--radix-color-${colorName}-${stepNum}: ${stepColorNoHsl};`,
           );
         }
       }
@@ -72,7 +72,7 @@ export const ColorThemeProvider = memo(function ColorThemeProvider({
       isDark,
       toggleDark,
     }),
-    [isDark, toggleDark]
+    [isDark, toggleDark],
   );
 
   return (

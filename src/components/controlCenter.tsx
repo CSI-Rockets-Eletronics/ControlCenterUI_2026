@@ -22,7 +22,7 @@ export const ControlCenter = memo(function ControlCenter() {
   }, []);
 
   const isRecovery = useLaunchMachineSelector(
-    (state) => state.context.launchState.activePanel === "recovery"
+    (state) => state.context.launchState.activePanel === "recovery",
   );
 
   const mainPanel = isRecovery ? <RecoveryPanel /> : <PreFirePanel />;

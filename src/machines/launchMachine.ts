@@ -317,7 +317,7 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
               source: LAUNCH_STATE_SOURCE,
               take: 1,
             },
-            launchStateSchema
+            launchStateSchema,
           );
           if (records.length === 0) {
             return initialLaunchState;
@@ -352,7 +352,7 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
                 useRelativeTimestamps,
                 rangeEnd,
               },
-              remoteStationStateSchema
+              remoteStationStateSchema,
             ),
             api.listRecords(
               {
@@ -361,7 +361,7 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
                 useRelativeTimestamps,
                 rangeEnd,
               },
-              loadCellStateSchema
+              loadCellStateSchema,
             ),
             FETCH_GPS
               ? await api.listRecords(
@@ -371,7 +371,7 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
                     useRelativeTimestamps,
                     rangeEnd,
                   },
-                  gpsStateSchema
+                  gpsStateSchema,
                 )
               : [],
           ]);
@@ -471,6 +471,6 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
           }
         },
       },
-    }
+    },
   );
 }

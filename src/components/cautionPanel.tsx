@@ -6,7 +6,7 @@ import { useLaunchMachineSelector } from "./launchMachineProvider";
 
 export const CautionPanel = memo(function CautionPanel() {
   const isLaunch = useLaunchMachineSelector(
-    (state) => state.context.launchState.activePanel === "launch"
+    (state) => state.context.launchState.activePanel === "launch",
   );
 
   const isHazardous = useLaunchMachineSelector((state) => {
@@ -18,11 +18,11 @@ export const CautionPanel = memo(function CautionPanel() {
     state.can({
       type: "MUTATE_STATION_OP_STATE",
       value: "fire",
-    })
+    }),
   );
 
   const isFired = useLaunchMachineSelector(
-    (state) => state.context.stationState?.opState === "fire"
+    (state) => state.context.stationState?.opState === "fire",
   );
 
   const message = isFired ? (

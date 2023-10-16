@@ -39,7 +39,7 @@ export const StatusDisplay = memo(function StatusDisplay({
             color === "green" &&
               "bg-green-fallback-7 border-green-fallback-9 hover:bg-green-fallback-8 active:bg-green-fallback-9",
             color === "yellow" &&
-              "bg-yellow-fallback-7 border-yellow-fallback-9 hover:bg-yellow-fallback-8 active:bg-yellow-fallback-9"
+              "bg-yellow-fallback-7 border-yellow-fallback-9 hover:bg-yellow-fallback-8 active:bg-yellow-fallback-9",
           )}
           disabled={blockClick}
           onClick={onClick}

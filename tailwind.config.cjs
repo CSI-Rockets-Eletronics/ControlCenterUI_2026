@@ -57,8 +57,8 @@ module.exports = {
     colors: {
       ...Object.fromEntries(
         Object.entries(radixColorOptions.colorMappings).map(
-          ([name, radixName]) => [name, radixColorToCssVar(radixName)]
-        )
+          ([name, radixName]) => [name, radixColorToCssVar(radixName)],
+        ),
       ),
     },
     extend: {},

@@ -14,7 +14,7 @@ export const ProgressBar = memo(function ProgressBar({
         style={{ width: `${progress * 100}%` }}
         className={twMerge(
           "h-full",
-          isComplete ? "bg-green-solid" : "bg-red-solid"
+          isComplete ? "bg-green-solid" : "bg-red-solid",
         )}
       />
     </div>

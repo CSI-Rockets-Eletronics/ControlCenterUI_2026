@@ -9,7 +9,7 @@ import { StatusPanel } from "./statusPanel";
 
 export const PreFirePanel = memo(function PreFirePanel() {
   const isLaunch = useLaunchMachineSelector(
-    (state) => state.context.launchState.activePanel === "launch"
+    (state) => state.context.launchState.activePanel === "launch",
   );
 
   return (
