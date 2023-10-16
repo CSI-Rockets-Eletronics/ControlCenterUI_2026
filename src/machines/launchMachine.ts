@@ -119,13 +119,13 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
         },
       },
       id: "launch",
-      context: {
+      context: () => ({
         startTimeMicros,
         launchState: initialLaunchState,
         pendingLaunchState: null,
         stationState: null,
         sentMessages: [],
-      },
+      }),
       initial: "live",
       states: {
         live: {
