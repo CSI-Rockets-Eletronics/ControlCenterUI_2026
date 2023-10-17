@@ -7,9 +7,9 @@ import {
   type StationState,
 } from "./stationState";
 
-export const STATION_STATE_SOURCE = "FiringStation";
-export const LOAD_CELL_STATE_SOURCE = "IDA100";
-export const GPS_STATE_SOURCE = "GpsState";
+export const STATION_STATE_PATH = "FiringStation";
+export const LOAD_CELL_STATE_PATH = "IDA100";
+export const GPS_STATE_PATH = "GpsState";
 
 export const SET_STATION_OP_STATE_TARGET = "FiringStation";
 

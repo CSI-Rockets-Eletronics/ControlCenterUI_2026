@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const LAUNCH_STATE_SOURCE = "LAUNCH_STATE";
+export const LAUNCH_STATE_PATH = "LAUNCH_STATE";
 
 export const activePanelSchema = z.enum(["standby", "launch", "recovery"]);
 

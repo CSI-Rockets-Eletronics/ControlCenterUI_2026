@@ -9,14 +9,14 @@ import { CodeBlock } from "./design/codeBlock";
 import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
-const SOURCES = ["FiringStation", "scientific", "IDA100"];
+const PATHS = ["FiringStation", "scientific", "IDA100"];
 
 const FETCH_INTERVAL = 1000;
 
-export interface RecordWithSource {
+export interface RecordWithPath {
+  path: string;
   ts: number;
   data: unknown;
-  source: string;
 }
 
 interface Props {
@@ -35,7 +35,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
 
   const replayFromSeconds = useReplayFromSeconds();
 
-  const [records, setRecords] = useState<RecordWithSource[]>([]);
+  const [records, setRecords] = useState<RecordWithPath[]>([]);
   const [hasError, setHasError] = useState(false);
 
   const startTimeMicros = useLaunchMachineSelector(
@@ -45,7 +45,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
   useEffect(() => {
     if (!visible) return;
 
-    async function fetchRecords(): Promise<RecordWithSource[]> {
+    async function fetchRecords(): Promise<RecordWithPath[]> {
       const curTimeMicros = Date.now() * 1000;
       const elapsedMicros = curTimeMicros - startTimeMicros;
 
@@ -54,26 +54,26 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
           ? String(elapsedMicros + replayFromSeconds * 1e6)
           : undefined;
 
-      const records: (RecordWithSource | null)[] = await Promise.all(
-        SOURCES.map(async (source) => {
+      const records: (RecordWithPath | null)[] = await Promise.all(
+        PATHS.map(async (path) => {
           const { records } = await catchError(
             api.records.get({
               $query: {
                 environmentKey,
                 session,
-                path: source,
+                path,
                 take: "1",
                 endTs,
               },
             }),
           );
           if (records.length === 0) return null;
-          return { ...records[0], source };
+          return { ...records[0], path };
         }),
       );
 
       return records.filter(
-        (record): record is RecordWithSource => record != null,
+        (record): record is RecordWithPath => record != null,
       );
     }
 
@@ -131,10 +131,10 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
           <CodeBlock>{`Current session: ${currentSession}`}</CodeBlock>
         )}
         {records.map((record) => (
-          <CodeBlock key={record.source}>
+          <CodeBlock key={record.path}>
             {JSON.stringify(
               {
-                source: record.source,
+                path: record.path,
                 ts: record.ts,
                 data: record.data,
               },

@@ -1,20 +1,14 @@
 import { assign, createMachine } from "xstate";
 
 import { api, catchError } from "@/lib/api";
+import { ActivePanel, initialLaunchState, LAUNCH_STATE_PATH, LaunchState, launchStateSchema } from "@/lib/launchState";
 import {
-  ActivePanel,
-  initialLaunchState,
-  LAUNCH_STATE_SOURCE,
-  LaunchState,
-  launchStateSchema,
-} from "@/lib/launchState";
-import {
-  GPS_STATE_SOURCE,
-  LOAD_CELL_STATE_SOURCE,
+  GPS_STATE_PATH,
+  LOAD_CELL_STATE_PATH,
   parseRemoteStationState,
   remoteStationStateSchema,
   SET_STATION_OP_STATE_TARGET,
-  STATION_STATE_SOURCE,
+  STATION_STATE_PATH,
   toRemoteSetStationOpStateCommand,
 } from "@/lib/stationInterface";
 import {
@@ -323,7 +317,7 @@ export function createLaunchMachine(
               $query: {
                 environmentKey,
                 session,
-                path: LAUNCH_STATE_SOURCE,
+                path: LAUNCH_STATE_PATH,
                 take: "1",
               },
             }),
@@ -341,7 +335,7 @@ export function createLaunchMachine(
           await catchError(
             api.records.post({
               environmentKey,
-              path: LAUNCH_STATE_SOURCE,
+              path: LAUNCH_STATE_PATH,
               data: context.pendingLaunchState,
             }),
           );
@@ -353,7 +347,7 @@ export function createLaunchMachine(
 
           const endTs = replayFromSeconds != null ? String(elapsedMicros + replayFromSeconds * 1e6) : undefined;
 
-          // merges different sources into one record
+          // merges different paths into one record
 
           const [remoteStationRecords, loadCellRecords, gpsRecords] = await Promise.all([
             catchError(
@@ -361,7 +355,7 @@ export function createLaunchMachine(
                 $query: {
                   environmentKey,
                   session,
-                  path: STATION_STATE_SOURCE,
+                  path: STATION_STATE_PATH,
                   take: "1",
                   endTs,
                 },
@@ -372,7 +366,7 @@ export function createLaunchMachine(
                 $query: {
                   environmentKey,
                   session,
-                  path: LOAD_CELL_STATE_SOURCE,
+                  path: LOAD_CELL_STATE_PATH,
                   take: "1",
                   endTs,
                 },
@@ -384,7 +378,7 @@ export function createLaunchMachine(
                     $query: {
                       environmentKey,
                       session,
-                      path: GPS_STATE_SOURCE,
+                      path: GPS_STATE_PATH,
                       take: "1",
                       endTs,
                     },

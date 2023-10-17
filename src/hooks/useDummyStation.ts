@@ -4,13 +4,13 @@ import { useSearchParams } from "react-router-dom";
 import { api, catchError } from "@/lib/api";
 import {
   dummyToStateByte,
-  GPS_STATE_SOURCE,
+  GPS_STATE_PATH,
   parseRemoteStationState,
   remoteSetStationOpStateCommandSchema,
   type RemoteStationState,
   remoteStationStateSchema,
   SET_STATION_OP_STATE_TARGET,
-  STATION_STATE_SOURCE,
+  STATION_STATE_PATH,
   toRelayStatusByte,
 } from "@/lib/stationInterface";
 import { type GpsState, type StationOpState } from "@/lib/stationState";
@@ -47,7 +47,7 @@ class DummyStation {
       api.records.get({
         $query: {
           environmentKey: this.environmentKey,
-          path: STATION_STATE_SOURCE,
+          path: STATION_STATE_PATH,
           take: "1",
         },
       }),
@@ -116,14 +116,14 @@ class DummyStation {
       catchError(
         api.records.post({
           environmentKey: this.environmentKey,
-          path: STATION_STATE_SOURCE,
+          path: STATION_STATE_PATH,
           data: remoteStationState,
         }),
       ),
       catchError(
         api.records.post({
           environmentKey: this.environmentKey,
-          path: GPS_STATE_SOURCE,
+          path: GPS_STATE_PATH,
           data: gpsState,
         }),
       ),
