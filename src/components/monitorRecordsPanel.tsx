@@ -1,10 +1,10 @@
 import { memo, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 
+import { useEnvironmentKey } from "@/hooks/useEnvironmentKey";
 import { useReplayFromSeconds } from "@/hooks/useReplayFromSeconds";
-import { type Record } from "@/lib/api";
+import { useSession } from "@/hooks/useSession";
+import { api, catchError } from "@/lib/api";
 
-import { useApi } from "./apiProvider";
 import { CodeBlock } from "./design/codeBlock";
 import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
@@ -13,7 +13,9 @@ const SOURCES = ["FiringStation", "scientific", "IDA100"];
 
 const FETCH_INTERVAL = 1000;
 
-export interface RecordWithSource extends Record {
+export interface RecordWithSource {
+  ts: number;
+  data: unknown;
   source: string;
 }
 
@@ -24,12 +26,12 @@ interface Props {
 export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
   visible,
 }: Props) {
-  const api = useApi();
+  const environmentKey = useEnvironmentKey();
+  const session = useSession();
 
-  const params = useParams<{ sessionId: string }>();
-  const usingParamSessionId = params.sessionId != null;
+  const usingCustomSession = session != null;
 
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [activeSession, setActiveSession] = useState<string | null>(null);
 
   const replayFromSeconds = useReplayFromSeconds();
 
@@ -43,47 +45,53 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
   useEffect(() => {
     if (!visible) return;
 
-    async function fetchRecords(): Promise<(RecordWithSource | null)[]> {
+    async function fetchRecords(): Promise<RecordWithSource[]> {
       const curTimeMicros = Date.now() * 1000;
       const elapsedMicros = curTimeMicros - startTimeMicros;
 
-      const useRelativeTimestamps = replayFromSeconds != null;
-      const rangeEnd = useRelativeTimestamps
-        ? elapsedMicros + replayFromSeconds * 1e6
-        : undefined;
+      const endTs =
+        replayFromSeconds != null
+          ? String(elapsedMicros + replayFromSeconds * 1e6)
+          : undefined;
 
-      return await Promise.all(
+      const records: (RecordWithSource | null)[] = await Promise.all(
         SOURCES.map(async (source) => {
-          const record = await api.listRecords({
-            source,
-            take: 1,
-            useRelativeTimestamps,
-            rangeEnd,
-          });
-          if (record.length === 0) return null;
-          return { ...record[0], source };
+          const { records } = await catchError(
+            api.records.get({
+              $query: {
+                environmentKey,
+                session,
+                path: source,
+                take: "1",
+                endTs,
+              },
+            }),
+          );
+          if (records.length === 0) return null;
+          return { ...records[0], source };
         }),
+      );
+
+      return records.filter(
+        (record): record is RecordWithSource => record != null,
       );
     }
 
     const interval = setInterval(() => {
-      if (!usingParamSessionId) {
-        api
-          .getAllSessions()
+      if (!usingCustomSession) {
+        catchError(api.sessions.current.get({ $query: { environmentKey } }))
           .then((res) => {
-            setActiveSessionId(res.activeSessionId);
+            setActiveSession(res === "NONE" ? null : res.session);
           })
           .catch((error) => {
             console.error(error);
-            setActiveSessionId(null);
+            setActiveSession(null);
           });
       }
 
       fetchRecords()
         .then((records) => {
-          setRecords(
-            records.filter((record) => record !== null) as RecordWithSource[],
-          );
+          setRecords(records);
           setHasError(false);
         })
         .catch((error) => {
@@ -95,9 +103,16 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
     return () => {
       clearInterval(interval);
     };
-  }, [api, replayFromSeconds, startTimeMicros, usingParamSessionId, visible]);
+  }, [
+    environmentKey,
+    replayFromSeconds,
+    session,
+    startTimeMicros,
+    usingCustomSession,
+    visible,
+  ]);
 
-  const sessionId = usingParamSessionId ? params.sessionId : activeSessionId;
+  const currentSession = session ?? activeSession;
 
   return (
     <Panel className="px-0 grid grid-rows-[auto,auto,minmax(0,1fr)] gap-4">
@@ -112,15 +127,15 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
         )}
       </div>
       <div className="flex flex-col px-4 -mt-4 scrollable gap-3">
-        {sessionId != null && (
-          <CodeBlock>{`Current sessionId: ${sessionId}`}</CodeBlock>
+        {currentSession != null && (
+          <CodeBlock>{`Current session: ${currentSession}`}</CodeBlock>
         )}
         {records.map((record) => (
           <CodeBlock key={record.source}>
             {JSON.stringify(
               {
                 source: record.source,
-                timestamp: record.timestamp,
+                ts: record.ts,
                 data: record.data,
               },
               null,

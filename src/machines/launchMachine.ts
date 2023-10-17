@@ -1,6 +1,6 @@
 import { assign, createMachine } from "xstate";
 
-import { Api, Record as ApiRecord } from "@/lib/api";
+import { api, catchError } from "@/lib/api";
 import {
   ActivePanel,
   initialLaunchState,
@@ -94,8 +94,14 @@ export type LaunchMachineEvent =
       data: unknown;
     };
 
-export function createLaunchMachine(api: Api, canWrite = false, replayFromSeconds: number | null = null) {
+export function createLaunchMachine(
+  environmentKey: string,
+  session?: string,
+  readonly = false,
+  replayFromSeconds?: number,
+) {
   const startTimeMicros = Date.now() * 1000;
+  const canWrite = !readonly && session == null;
 
   return createMachine(
     {
@@ -113,7 +119,7 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
         services: {} as {
           fetchLaunchState: { data: LaunchState };
           mutateLaunchState: { data: LaunchState };
-          fetchStationRecord: { data: ApiRecord<MergedStationState> | null };
+          fetchStationRecord: { data: MergedStationState | null };
           mutateStationOpState: { data: SentMessage };
           sendManualMessage: { data: SentMessage };
         },
@@ -295,11 +301,11 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
           }),
         }),
         setStationState: assign((_context, event) => {
-          const newRecord = event.data;
-          if (!newRecord) {
+          const stationState = event.data;
+          if (!stationState) {
             return {};
           }
-          return { stationState: newRecord.data };
+          return { stationState };
         }),
         logNetworkError: (_, event) => {
           console.error("Launch machine network error", event);
@@ -312,115 +318,138 @@ export function createLaunchMachine(api: Api, canWrite = false, replayFromSecond
       },
       services: {
         fetchLaunchState: async () => {
-          const records = await api.listRecords(
-            {
-              source: LAUNCH_STATE_SOURCE,
-              take: 1,
-            },
-            launchStateSchema,
+          const { records } = await catchError(
+            api.records.get({
+              $query: {
+                environmentKey,
+                session,
+                path: LAUNCH_STATE_SOURCE,
+                take: "1",
+              },
+            }),
           );
           if (records.length === 0) {
             return initialLaunchState;
           }
-          return records[0].data;
+          return launchStateSchema.parse(records[0].data);
         },
         mutateLaunchState: async (context) => {
           // sanity check
           if (!context.pendingLaunchState) {
             throw new Error("No pending launch state");
           }
-          await api.createRecord({
-            source: LAUNCH_STATE_SOURCE,
-            data: context.pendingLaunchState,
-          });
+          await catchError(
+            api.records.post({
+              environmentKey,
+              path: LAUNCH_STATE_SOURCE,
+              data: context.pendingLaunchState,
+            }),
+          );
           return context.pendingLaunchState;
         },
         fetchStationRecord: async () => {
           const curTimeMicros = Date.now() * 1000;
           const elapsedMicros = curTimeMicros - startTimeMicros;
 
-          const useRelativeTimestamps = replayFromSeconds != null;
-          const rangeEnd = useRelativeTimestamps ? elapsedMicros + replayFromSeconds * 1e6 : undefined;
+          const endTs = replayFromSeconds != null ? String(elapsedMicros + replayFromSeconds * 1e6) : undefined;
 
           // merges different sources into one record
 
           const [remoteStationRecords, loadCellRecords, gpsRecords] = await Promise.all([
-            api.listRecords(
-              {
-                source: STATION_STATE_SOURCE,
-                take: 1,
-                useRelativeTimestamps,
-                rangeEnd,
-              },
-              remoteStationStateSchema,
+            catchError(
+              api.records.get({
+                $query: {
+                  environmentKey,
+                  session,
+                  path: STATION_STATE_SOURCE,
+                  take: "1",
+                  endTs,
+                },
+              }),
             ),
-            api.listRecords(
-              {
-                source: LOAD_CELL_STATE_SOURCE,
-                take: 1,
-                useRelativeTimestamps,
-                rangeEnd,
-              },
-              loadCellStateSchema,
+            catchError(
+              api.records.get({
+                $query: {
+                  environmentKey,
+                  session,
+                  path: LOAD_CELL_STATE_SOURCE,
+                  take: "1",
+                  endTs,
+                },
+              }),
             ),
             FETCH_GPS
-              ? await api.listRecords(
-                  {
-                    source: GPS_STATE_SOURCE,
-                    take: 1,
-                    useRelativeTimestamps,
-                    rangeEnd,
-                  },
-                  gpsStateSchema,
+              ? catchError(
+                  api.records.get({
+                    $query: {
+                      environmentKey,
+                      session,
+                      path: GPS_STATE_SOURCE,
+                      take: "1",
+                      endTs,
+                    },
+                  }),
                 )
-              : [],
+              : { records: [] },
           ]);
 
-          if (remoteStationRecords.length === 0) {
+          if (remoteStationRecords.records.length === 0) {
             return null;
           }
 
-          const timestamp = remoteStationRecords[0].timestamp;
+          const timestamp = remoteStationRecords.records[0].ts;
 
-          const stationState = parseRemoteStationState(remoteStationRecords[0].data);
-          const loadCellRecord = loadCellRecords.length > 0 ? loadCellRecords[0] : null;
-          const gpsRecord = gpsRecords.length > 0 ? gpsRecords[0] : null;
+          const stationState = parseRemoteStationState(
+            remoteStationStateSchema.parse(remoteStationRecords.records[0].data),
+          );
+          const loadCellRecord = loadCellRecords.records.length > 0 ? loadCellRecords.records[0] : null;
+          const gpsRecord = gpsRecords.records.length > 0 ? gpsRecords.records[0] : null;
 
           return {
             timestamp,
-            data: {
-              timestamp,
-              ...stationState,
-              loadCell: loadCellRecord?.data ?? null,
-              gps: gpsRecord?.data ?? null,
-            },
+            ...stationState,
+            loadCell: loadCellRecord ? loadCellStateSchema.parse(loadCellRecord.data) : null,
+            gps: gpsRecord ? gpsStateSchema.parse(gpsRecord.data) : null,
           };
         },
         mutateStationOpState: async (_context, event) => {
-          const message = {
+          const data =
+            event.type === "MUTATE_STATION_OP_STATE_CUSTOM"
+              ? toRemoteSetStationOpStateCommand({
+                  opState: "custom",
+                  relays: event.relays,
+                })
+              : toRemoteSetStationOpStateCommand({
+                  opState: event.value,
+                });
+          await catchError(
+            api.messages.post({
+              environmentKey,
+              path: SET_STATION_OP_STATE_TARGET,
+              data,
+            }),
+          );
+          console.log("Sent message", SET_STATION_OP_STATE_TARGET, data);
+          return {
+            timestamp: new Date(),
             target: SET_STATION_OP_STATE_TARGET,
-            data:
-              event.type === "MUTATE_STATION_OP_STATE_CUSTOM"
-                ? toRemoteSetStationOpStateCommand({
-                    opState: "custom",
-                    relays: event.relays,
-                  })
-                : toRemoteSetStationOpStateCommand({
-                    opState: event.value,
-                  }),
+            data,
           };
-          await api.createMessage(message);
-          console.log("Sent message", message);
-          return { ...message, timestamp: new Date() };
         },
         sendManualMessage: async (_, event) => {
-          const message = {
+          await catchError(
+            api.messages.post({
+              environmentKey,
+              path: event.target,
+              data: event.data,
+            }),
+          );
+          console.log("Sent message", event.target, event.data);
+          return {
+            timestamp: new Date(),
             target: event.target,
             data: event.data,
           };
-          await api.createMessage(message);
-          console.log("Sent message", message);
-          return { ...message, timestamp: new Date() };
         },
       },
       guards: {

@@ -1,8 +1,9 @@
 import { memo, useCallback, useState } from "react";
-import { useParams } from "react-router-dom";
-import { v4 as uuidv4 } from "uuid";
 
-import { useApi } from "./apiProvider";
+import { useEnvironmentKey } from "@/hooks/useEnvironmentKey";
+import { useSession } from "@/hooks/useSession";
+import { api, catchError } from "@/lib/api";
+
 import { Button } from "./design/button";
 import { Panel } from "./design/panel";
 import {
@@ -70,10 +71,10 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton({
 });
 
 const NewSessionButton = memo(function NewSessionButton() {
-  const params = useParams<{ sessionId: string }>();
-  const usingParamSessionId = params.sessionId != null;
+  const environmentKey = useEnvironmentKey();
+  const session = useSession();
 
-  const api = useApi();
+  const usingCustomSession = session != null;
 
   const [loading, setLoading] = useState(false);
 
@@ -82,22 +83,17 @@ const NewSessionButton = memo(function NewSessionButton() {
 
     setLoading(true);
 
-    api
-      .createSession({
-        name: uuidv4(),
-      })
-      .catch((error) => {
-        console.log(error);
-      })
+    catchError(api.sessions.create.post({ environmentKey }))
+      .catch(console.error)
       .finally(() => {
         setLoading(false);
       });
-  }, [api, loading]);
+  }, [environmentKey, loading]);
 
   return (
     <Button
       color="green"
-      disabled={usingParamSessionId || loading}
+      disabled={usingCustomSession || loading}
       onClick={handleClick}
     >
       NEW SESSION

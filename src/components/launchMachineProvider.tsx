@@ -2,24 +2,25 @@ import { createActorContext } from "@xstate/react";
 import { type ReactNode, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
+import { useEnvironmentKey } from "@/hooks/useEnvironmentKey";
 import { useReplayFromSeconds } from "@/hooks/useReplayFromSeconds";
-import { Api } from "@/lib/api";
+import { useSession } from "@/hooks/useSession";
 import { createLaunchMachine } from "@/machines/launchMachine";
 
-import { useApi } from "./apiProvider";
-
-const Context = createActorContext(createLaunchMachine(new Api("")));
+const Context = createActorContext(createLaunchMachine(""));
 
 export function LaunchMachineProvider({ children }: { children: ReactNode }) {
-  const api = useApi();
+  const environmentKey = useEnvironmentKey();
+  const session = useSession();
   const replayFromSeconds = useReplayFromSeconds();
 
   const [searchParams] = useSearchParams();
   const readonly = searchParams.has("readonly");
 
   const machine = useMemo(
-    () => createLaunchMachine(api, !readonly, replayFromSeconds),
-    [api, readonly, replayFromSeconds],
+    () =>
+      createLaunchMachine(environmentKey, session, readonly, replayFromSeconds),
+    [environmentKey, readonly, replayFromSeconds, session],
   );
 
   return <Context.Provider machine={machine}>{children}</Context.Provider>;

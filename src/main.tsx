@@ -15,11 +15,11 @@ const router = createBrowserRouter(
       element: <Root />,
     },
     {
-      path: "/:stationId",
+      path: "/:environmentKey",
       element: <Station />,
     },
     {
-      path: "/:stationId/:sessionId",
+      path: "/:environmentKey/:session",
       element: <Station />,
     },
   ],

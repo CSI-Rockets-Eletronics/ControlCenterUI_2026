@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { useApi } from "@/components/apiProvider";
-import { type Api } from "@/lib/api";
+import { api, catchError } from "@/lib/api";
 import {
   dummyToStateByte,
   GPS_STATE_SOURCE,
@@ -16,6 +15,9 @@ import {
 } from "@/lib/stationInterface";
 import { type GpsState, type StationOpState } from "@/lib/stationState";
 
+import { useEnvironmentKey } from "./useEnvironmentKey";
+import { useSession } from "./useSession";
+
 const TICK_INTERVAL = 1000;
 
 class DummyStation {
@@ -25,7 +27,7 @@ class DummyStation {
   private bootTime; // microseconds
   private opState: StationOpState | null = null;
 
-  constructor(private readonly api: Api) {
+  constructor(private readonly environmentKey: string) {
     this.bootTime = Date.now() * 1000;
 
     this.initOpState().catch((error) => {
@@ -41,18 +43,22 @@ class DummyStation {
   }
 
   private async initOpState() {
-    const records = await this.api.listRecords(
-      {
-        source: STATION_STATE_SOURCE,
-        take: 1,
-      },
-      remoteStationStateSchema,
+    const { records } = await catchError(
+      api.records.get({
+        $query: {
+          environmentKey: this.environmentKey,
+          path: STATION_STATE_SOURCE,
+          take: "1",
+        },
+      }),
     );
 
     if (this.destroyed) return;
 
     if (records.length > 0) {
-      this.opState = parseRemoteStationState(records[0].data).opState;
+      this.opState = parseRemoteStationState(
+        remoteStationStateSchema.parse(records[0].data),
+      ).opState;
     } else {
       this.opState = "standby";
     }
@@ -61,17 +67,21 @@ class DummyStation {
   private async tick() {
     if (this.opState == null) return;
 
-    const message = await this.api.getNextMessage(
-      {
-        target: SET_STATION_OP_STATE_TARGET,
-      },
-      remoteSetStationOpStateCommandSchema,
+    const message = await catchError(
+      api.messages.next.get({
+        $query: {
+          environmentKey: this.environmentKey,
+          path: SET_STATION_OP_STATE_TARGET,
+        },
+      }),
     );
 
     if (this.destroyed) return;
 
-    if (message) {
-      this.opState = message.data.command;
+    if (message !== "NONE") {
+      this.opState = remoteSetStationOpStateCommandSchema.parse(
+        message.data,
+      ).command;
     }
 
     const randBool = () => Math.random() > 0.5;
@@ -102,42 +112,50 @@ class DummyStation {
       alt: randRange(0, 10_000),
     };
 
-    this.api.createRecord({
-      source: STATION_STATE_SOURCE,
-      data: remoteStationState,
-    });
-
-    this.api.createRecord({
-      source: GPS_STATE_SOURCE,
-      data: gpsState,
-    });
+    await Promise.all([
+      catchError(
+        api.records.post({
+          environmentKey: this.environmentKey,
+          path: STATION_STATE_SOURCE,
+          data: remoteStationState,
+        }),
+      ),
+      catchError(
+        api.records.post({
+          environmentKey: this.environmentKey,
+          path: GPS_STATE_SOURCE,
+          data: gpsState,
+        }),
+      ),
+    ]);
   }
 }
 
 export function useDummyStation() {
+  const environmentKey = useEnvironmentKey();
+  const session = useSession();
+
   const [searchParams] = useSearchParams();
+  const enabled = searchParams.has("dummy") && session == null;
 
-  const api = useApi();
-
-  const enabled = searchParams.has("dummy");
-  const newSessionName = searchParams.get("session");
-
-  const lastCreatedSessionName = useRef<string | null>(null);
-
-  useEffect(() => {
-    // hack to prevent React's 2x effect call
-    if (newSessionName === lastCreatedSessionName.current) return;
-    lastCreatedSessionName.current = newSessionName;
-
-    if (newSessionName != null) {
-      void api.createSession({ name: newSessionName });
-    }
-  }, [api, newSessionName]);
+  const createdSession = useRef(false);
 
   useEffect(() => {
     if (!enabled) return;
 
-    const dummyStation = new DummyStation(api);
+    // hack to prevent React's 2x effect call
+    if (createdSession.current) return;
+    createdSession.current = true;
+
+    catchError(api.sessions.create.post({ environmentKey })).catch((error) => {
+      console.log("Failed to create session", error);
+    });
+  }, [enabled, environmentKey]);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    const dummyStation = new DummyStation(environmentKey);
     return () => dummyStation.destroy();
-  }, [api, enabled]);
+  }, [enabled, environmentKey]);
 }
