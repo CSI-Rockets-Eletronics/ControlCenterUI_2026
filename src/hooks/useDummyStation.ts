@@ -9,7 +9,7 @@ import {
   remoteSetStationOpStateCommandSchema,
   type RemoteStationState,
   remoteStationStateSchema,
-  SET_STATION_OP_STATE_TARGET,
+  SET_STATION_OP_STATE_PATH,
   STATION_STATE_PATH,
   toRelayStatusByte,
 } from "@/lib/stationInterface";
@@ -71,7 +71,7 @@ class DummyStation {
       api.messages.next.get({
         $query: {
           environmentKey: this.environmentKey,
-          path: SET_STATION_OP_STATE_TARGET,
+          path: SET_STATION_OP_STATE_PATH,
         },
       }),
     );

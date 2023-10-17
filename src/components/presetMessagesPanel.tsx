@@ -13,24 +13,24 @@ import {
 
 interface PresetMessage {
   label: string;
-  target: string;
+  path: string;
   data: unknown;
 }
 
 const PRESET_MESSAGES: PresetMessage[] = [
   {
     label: "FS RECALIBRATE",
-    target: "FiringStation",
+    path: "FiringStation",
     data: { command: "recalibrate" },
   },
   {
     label: "FS CLEAR CALIB.",
-    target: "FiringStation",
+    path: "FiringStation",
     data: { command: "clear-calibration" },
   },
   {
     label: "IDA100 RECALIBRATE",
-    target: "IDA100",
+    path: "IDA100",
     data: "calibrate",
   },
 ];
@@ -45,7 +45,7 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton({
   const canSendManualMessage = useLaunchMachineSelector((state) =>
     state.can({
       type: "SEND_MANUAL_MESSAGE",
-      target: "",
+      path: "",
       data: "",
     }),
   );
@@ -53,7 +53,7 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton({
   const handleClick = useCallback(() => {
     launchActorRef.send({
       type: "SEND_MANUAL_MESSAGE",
-      target: message.target,
+      path: message.path,
       data: message.data,
     });
   }, [launchActorRef, message]);

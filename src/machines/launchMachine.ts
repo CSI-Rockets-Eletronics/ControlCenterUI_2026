@@ -7,7 +7,7 @@ import {
   LOAD_CELL_STATE_PATH,
   parseRemoteStationState,
   remoteStationStateSchema,
-  SET_STATION_OP_STATE_TARGET,
+  SET_STATION_OP_STATE_PATH,
   STATION_STATE_PATH,
   toRemoteSetStationOpStateCommand,
 } from "@/lib/stationInterface";
@@ -84,7 +84,7 @@ export type LaunchMachineEvent =
     }
   | {
       type: "SEND_MANUAL_MESSAGE";
-      target: string;
+      path: string;
       data: unknown;
     };
 
@@ -419,14 +419,14 @@ export function createLaunchMachine(
           await catchError(
             api.messages.post({
               environmentKey,
-              path: SET_STATION_OP_STATE_TARGET,
+              path: SET_STATION_OP_STATE_PATH,
               data,
             }),
           );
-          console.log("Sent message", SET_STATION_OP_STATE_TARGET, data);
+          console.log("Sent message", SET_STATION_OP_STATE_PATH, data);
           return {
             ts: new Date(),
-            path: SET_STATION_OP_STATE_TARGET,
+            path: SET_STATION_OP_STATE_PATH,
             data,
           };
         },
@@ -434,14 +434,14 @@ export function createLaunchMachine(
           await catchError(
             api.messages.post({
               environmentKey,
-              path: event.target,
+              path: event.path,
               data: event.data,
             }),
           );
-          console.log("Sent message", event.target, event.data);
+          console.log("Sent message", event.path, event.data);
           return {
             ts: new Date(),
-            path: event.target,
+            path: event.path,
             data: event.data,
           };
         },
