@@ -2,7 +2,7 @@ import { createEdenTreaty } from "data-server-node/api";
 
 // const ORIGIN = "https://csiwiki.me.columbia.edu/rocketsdata";
 // const ORIGIN = "http://localhost:3000";
-const ORIGIN = "http://csiwiki.me.columbia.edu:3001";
+const ORIGIN = "https://csiwiki.me.columbia.edu:3001";
 
 export const api = createEdenTreaty(ORIGIN);
 
