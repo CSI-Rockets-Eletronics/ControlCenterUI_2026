@@ -25,6 +25,7 @@ class DummyStation {
   private destroyed = false;
 
   private bootTime; // microseconds
+  private lastMessageTs: number | null = null;
   private opState: StationOpState | null = null;
 
   constructor(private readonly environmentKey: string) {
@@ -72,6 +73,8 @@ class DummyStation {
         $query: {
           environmentKey: this.environmentKey,
           path: SET_STATION_OP_STATE_PATH,
+          afterTs:
+            this.lastMessageTs != null ? String(this.lastMessageTs) : undefined,
         },
       }),
     );
@@ -79,6 +82,7 @@ class DummyStation {
     if (this.destroyed) return;
 
     if (message !== "NONE") {
+      this.lastMessageTs = message.ts;
       this.opState = remoteSetStationOpStateCommandSchema.parse(
         message.data,
       ).command;
