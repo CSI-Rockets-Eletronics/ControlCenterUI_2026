@@ -38,7 +38,7 @@ export const StationChart = memo(function StationChart({
       return null;
     }
 
-    const seconds = state.context.stationState.timestamp / 1e6;
+    const seconds = state.context.stationState.ts / 1e6;
     const value = valueSelector(state.context.stationState);
 
     if (value === null) return null;
@@ -50,8 +50,8 @@ export const StationChart = memo(function StationChart({
     if (curEntry) {
       setData((data) =>
         [...data, curEntry].filter(
-          (entry) => entry.seconds > curEntry.seconds - retentionSeconds,
-        ),
+          (entry) => entry.seconds > curEntry.seconds - retentionSeconds
+        )
       );
     }
   }, [curEntry, retentionSeconds]);
@@ -72,7 +72,7 @@ export const StationChart = memo(function StationChart({
   const labelFormatter = useCallback((val: number) => val.toFixed(2), []);
   const valueFormatter = useCallback(
     (val: unknown) => Number(val).toFixed(valuePrecision),
-    [valuePrecision],
+    [valuePrecision]
   );
 
   return (

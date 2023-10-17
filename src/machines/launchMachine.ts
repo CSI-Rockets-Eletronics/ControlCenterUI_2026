@@ -45,12 +45,12 @@ export type MergedStationState = StationState & {
 } & {
   gps: GpsState | null;
 } & {
-  timestamp: number;
+  ts: number;
 };
 
 export interface SentMessage {
-  timestamp: Date;
-  target: string;
+  ts: Date;
+  path: string;
   data: unknown;
 }
 
@@ -397,7 +397,7 @@ export function createLaunchMachine(
             return null;
           }
 
-          const timestamp = remoteStationRecords.records[0].ts;
+          const ts = remoteStationRecords.records[0].ts;
 
           const stationState = parseRemoteStationState(
             remoteStationStateSchema.parse(remoteStationRecords.records[0].data),
@@ -406,7 +406,7 @@ export function createLaunchMachine(
           const gpsRecord = gpsRecords.records.length > 0 ? gpsRecords.records[0] : null;
 
           return {
-            timestamp,
+            ts,
             ...stationState,
             loadCell: loadCellRecord ? loadCellStateSchema.parse(loadCellRecord.data) : null,
             gps: gpsRecord ? gpsStateSchema.parse(gpsRecord.data) : null,
@@ -431,8 +431,8 @@ export function createLaunchMachine(
           );
           console.log("Sent message", SET_STATION_OP_STATE_TARGET, data);
           return {
-            timestamp: new Date(),
-            target: SET_STATION_OP_STATE_TARGET,
+            ts: new Date(),
+            path: SET_STATION_OP_STATE_TARGET,
             data,
           };
         },
@@ -446,8 +446,8 @@ export function createLaunchMachine(
           );
           console.log("Sent message", event.target, event.data);
           return {
-            timestamp: new Date(),
-            target: event.target,
+            ts: new Date(),
+            path: event.target,
             data: event.data,
           };
         },
