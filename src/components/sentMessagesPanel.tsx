@@ -28,8 +28,8 @@ export const SentMessagesPanel = memo(function SentMessagesPanel() {
           <CodeBlock key={index}>
             {JSON.stringify(
               {
-                path: message.path,
                 ts: message.ts,
+                path: message.path,
                 data: message.data,
               },
               null,
