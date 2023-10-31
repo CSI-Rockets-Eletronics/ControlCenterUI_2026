@@ -19,6 +19,7 @@
 
 @layer utilities {
   .scrollable {
+    overflow: scroll;
     @apply scrollbar-thin;
     @apply scrollbar-thumb-gray-solid;
     @apply hover:scrollbar-thumb-gray-solid-hover;
