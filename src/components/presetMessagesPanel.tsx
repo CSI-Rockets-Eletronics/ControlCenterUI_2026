@@ -20,12 +20,12 @@ interface PresetMessage {
 const PRESET_MESSAGES: PresetMessage[] = [
   {
     label: "FS RECALIBRATE",
-    path: "fs-pi/FiringStation",
+    path: "FiringStation",
     data: { command: "recalibrate" },
   },
   {
     label: "FS CLEAR CALIB.",
-    path: "fs-pi/FiringStation",
+    path: "FiringStation",
     data: { command: "clear-calibration" },
   },
   {
