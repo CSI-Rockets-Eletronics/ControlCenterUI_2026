@@ -7,11 +7,11 @@ import {
   type StationState,
 } from "./stationState";
 
-export const STATION_STATE_PATH = "FiringStation";
+export const STATION_STATE_PATH = "fs-pi/FiringStation";
 export const LOAD_CELL_STATE_PATH = "IDA100";
 export const GPS_STATE_PATH = "GpsState";
 
-export const SET_STATION_OP_STATE_PATH = "FiringStation";
+export const SET_STATION_OP_STATE_PATH = "fs-pi/FiringStation";
 
 /**
  * See generateJsonPostPayload() in

@@ -14,7 +14,7 @@ import {
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
 
-const PRESET_PATHS = ["FiringStation", "scientific", "IDA100"];
+const PRESET_PATHS = ["fs-pi/FiringStation", "scientific", "IDA100"];
 
 function isPathValid(path: string) {
   return (
