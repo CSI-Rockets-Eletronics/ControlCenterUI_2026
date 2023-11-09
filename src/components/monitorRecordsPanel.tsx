@@ -9,7 +9,7 @@ import { CodeBlock } from "./design/codeBlock";
 import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
-const PATHS = ["fs-pi/FiringStation", "scientific", "IDA100"];
+const PATHS = ["fs-pi/FiringStation", "fs-pi/scientific", "fs-pi/IDA100"];
 
 const FETCH_INTERVAL = 1000;
 
