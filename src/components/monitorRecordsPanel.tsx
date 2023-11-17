@@ -1,6 +1,7 @@
 import { memo, useEffect, useState } from "react";
 
 import { useEnvironmentKey } from "@/hooks/useEnvironmentKey";
+import { usePathList } from "@/hooks/usePaths";
 import { useReplayFromSeconds } from "@/hooks/useReplayFromSeconds";
 import { useSession } from "@/hooks/useSession";
 import { api, catchError } from "@/lib/api";
@@ -8,8 +9,6 @@ import { api, catchError } from "@/lib/api";
 import { CodeBlock } from "./design/codeBlock";
 import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
-
-const PATHS = ["fs-pi/FiringStation", "fs-pi/scientific", "fs-pi/IDA100"];
 
 const FETCH_INTERVAL = 1000;
 
@@ -28,6 +27,8 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
 }: Props) {
   const environmentKey = useEnvironmentKey();
   const session = useSession();
+
+  const pathList = usePathList();
 
   const usingCustomSession = session != null;
 
@@ -55,7 +56,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
           : undefined;
 
       const records: (RecordWithPath | null)[] = await Promise.all(
-        PATHS.map(async (path) => {
+        pathList.map(async (path) => {
           const { records } = await catchError(
             api.records.get({
               $query: {
@@ -105,6 +106,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
     };
   }, [
     environmentKey,
+    pathList,
     replayFromSeconds,
     session,
     startTimeMicros,

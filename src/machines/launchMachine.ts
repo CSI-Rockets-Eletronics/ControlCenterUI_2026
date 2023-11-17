@@ -1,14 +1,11 @@
 import { assign, createMachine } from "xstate";
 
+import { Paths } from "@/hooks/usePaths";
 import { api, catchError } from "@/lib/api";
 import { ActivePanel, initialLaunchState, LAUNCH_STATE_PATH, LaunchState, launchStateSchema } from "@/lib/launchState";
 import {
-  GPS_STATE_PATH,
-  LOAD_CELL_STATE_PATH,
   parseRemoteStationState,
   remoteStationStateSchema,
-  SET_STATION_OP_STATE_PATH,
-  STATION_STATE_PATH,
   toRemoteSetStationOpStateCommand,
 } from "@/lib/stationInterface";
 import {
@@ -90,7 +87,8 @@ export type LaunchMachineEvent =
 
 export function createLaunchMachine(
   environmentKey: string,
-  session?: string,
+  session: string | undefined,
+  paths: Paths,
   readonly = false,
   replayFromSeconds?: number,
 ) {
@@ -355,7 +353,7 @@ export function createLaunchMachine(
                 $query: {
                   environmentKey,
                   session,
-                  path: STATION_STATE_PATH,
+                  path: paths.firingStation,
                   take: "1",
                   endTs,
                 },
@@ -366,7 +364,7 @@ export function createLaunchMachine(
                 $query: {
                   environmentKey,
                   session,
-                  path: LOAD_CELL_STATE_PATH,
+                  path: paths.loadCell,
                   take: "1",
                   endTs,
                 },
@@ -378,7 +376,7 @@ export function createLaunchMachine(
                     $query: {
                       environmentKey,
                       session,
-                      path: GPS_STATE_PATH,
+                      path: paths.gps,
                       take: "1",
                       endTs,
                     },
@@ -419,14 +417,14 @@ export function createLaunchMachine(
           await catchError(
             api.messages.post({
               environmentKey,
-              path: SET_STATION_OP_STATE_PATH,
+              path: paths.firingStation,
               data,
             }),
           );
-          console.log("Sent message", SET_STATION_OP_STATE_PATH, data);
+          console.log("Sent message", paths.firingStation, data);
           return {
             ts: new Date(),
-            path: SET_STATION_OP_STATE_PATH,
+            path: paths.firingStation,
             data,
           };
         },

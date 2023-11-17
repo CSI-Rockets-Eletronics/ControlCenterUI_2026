@@ -7,14 +7,14 @@ import {
 } from "react";
 import { twMerge } from "tailwind-merge";
 
+import { usePathList } from "@/hooks/usePaths";
+
 import { Button } from "./design/button";
 import { Panel } from "./design/panel";
 import {
   useLaunchMachineActorRef,
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
-
-const PRESET_PATHS = ["FiringStation", "scientific", "IDA100"];
 
 function isPathValid(path: string) {
   return (
@@ -37,8 +37,10 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
   const [path, setPath] = useState("");
   const [data, setData] = useState("");
 
+  const pathList = usePathList();
+
   const pathIsValid = isPathValid(path);
-  const pathMatchesPreset = PRESET_PATHS.includes(path);
+  const pathMatchesPreset = pathList.includes(path);
 
   const dataIsValid = validateData(data);
 

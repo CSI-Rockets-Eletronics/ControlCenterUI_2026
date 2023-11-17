@@ -1,6 +1,7 @@
 import { memo, useCallback, useState } from "react";
 
 import { useEnvironmentKey } from "@/hooks/useEnvironmentKey";
+import { type Paths, usePaths } from "@/hooks/usePaths";
 import { useSession } from "@/hooks/useSession";
 import { api, catchError } from "@/lib/api";
 
@@ -17,20 +18,20 @@ interface PresetMessage {
   data: unknown;
 }
 
-const PRESET_MESSAGES: PresetMessage[] = [
+const getPresetMessages = (paths: Paths): PresetMessage[] => [
   {
     label: "FS RECALIBRATE",
-    path: "FiringStation",
+    path: paths.firingStation,
     data: { command: "recalibrate" },
   },
   {
     label: "FS CLEAR CALIB.",
-    path: "FiringStation",
+    path: paths.firingStation,
     data: { command: "clear-calibration" },
   },
   {
-    label: "IDA100 RECALIBRATE",
-    path: "IDA100",
+    label: "LOAD CELL RECALIBRATE",
+    path: paths.loadCell,
     data: "calibrate",
   },
 ];
@@ -102,12 +103,14 @@ const NewSessionButton = memo(function NewSessionButton() {
 });
 
 export const PresetMessagesPanel = memo(function PresetMessagesPanel() {
+  const paths = usePaths();
+
   return (
     <Panel className="flex flex-col gap-4">
       <p className="text-lg text-gray-text">Send Preset Message</p>
       <div className="flex flex-wrap gap-4">
         <NewSessionButton />
-        {PRESET_MESSAGES.map((message) => (
+        {getPresetMessages(paths).map((message) => (
           <SendPresetMessageButton key={message.label} message={message} />
         ))}
       </div>
