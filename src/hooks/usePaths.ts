@@ -19,8 +19,12 @@ export function usePaths(): Paths {
   const [searchParams] = useSearchParams();
 
   const paths = useMemo(() => {
-    const getPrefix = (name: string) =>
-      searchParams.get(`${name}-path-prefix`) ?? "";
+    // Ex: '?firing-station-path-prefix=fs-pi' to set the path prefix to 'fs-pi/'
+
+    const getPrefix = (name: string) => {
+      const pathPrefix = searchParams.get(`${name}-path-prefix`);
+      return pathPrefix ? pathPrefix + "/" : "";
+    };
 
     return {
       firingStation: getPrefix("firing-station") + STATION_STATE_PATH,
