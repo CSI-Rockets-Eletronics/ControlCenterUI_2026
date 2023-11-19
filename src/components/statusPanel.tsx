@@ -168,7 +168,7 @@ const OxidizerTankPressureDisplay = memo(
 
 const LoadCellDisplay = memo(function LoadCellDisplay() {
   const value = useLaunchMachineSelector((state) =>
-    (state.context.stationState?.loadCell?.data_converted ?? 0).toFixed(2),
+    (state.context.stationState?.loadCell ?? 0).toFixed(2),
   );
 
   const chartElement = useMemo(() => {
@@ -176,7 +176,7 @@ const LoadCellDisplay = memo(function LoadCellDisplay() {
       <ChartLoadingFallback>
         <StationChart
           // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          valueSelector={(state) => state.loadCell?.data_converted ?? null}
+          valueSelector={(state) => state.loadCell ?? null}
           valuePrecision={3}
           minY="dataMin - 2"
           maxY="dataMax + 2"

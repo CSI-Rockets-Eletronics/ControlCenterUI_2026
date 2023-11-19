@@ -48,9 +48,7 @@ export type StationState = {
   status: StationStatus;
 };
 
-export const loadCellStateSchema = z.object({
-  data_converted: z.number(),
-});
+export const loadCellStateSchema = z.number();
 
 export type LoadCellState = z.infer<typeof loadCellStateSchema>;
 
