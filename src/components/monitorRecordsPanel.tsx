@@ -127,7 +127,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
       </div>
       <div className="flex flex-col px-4 -mt-4 scrollable gap-3">
         {currentSession != null && (
-          <CodeBlock>{`Current session: ${currentSession}`}</CodeBlock>
+          <CodeBlock>{`Current session:\n${currentSession}`}</CodeBlock>
         )}
         {records.map((record) => (
           <CodeBlock key={record.device}>
