@@ -7,7 +7,7 @@ import {
 } from "react";
 import { twMerge } from "tailwind-merge";
 
-import { usePathList } from "@/hooks/usePaths";
+import { DEVICES } from "@/lib/stationInterface";
 
 import { Button } from "./design/button";
 import { Panel } from "./design/panel";
@@ -16,11 +16,11 @@ import {
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
 
-function isPathValid(path: string) {
+function isDeviceValid(device: string) {
   return (
-    path.length > 0 &&
-    // prevent mistake of wrapping path in quotes
-    !path.includes('"')
+    device.length > 0 &&
+    // prevent mistake of wrapping device in quotes
+    !device.includes('"')
   );
 }
 
@@ -34,19 +34,19 @@ function validateData(data: string) {
 }
 
 export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
-  const [path, setPath] = useState("");
+  const [device, setDevice] = useState("");
   const [data, setData] = useState("");
 
-  const pathList = usePathList();
+  const deviceIsValid = isDeviceValid(device);
 
-  const pathIsValid = isPathValid(path);
-  const pathMatchesPreset = pathList.includes(path);
+  const presetDevices = Object.values(DEVICES) as string[];
+  const deviceMatchesPreset = presetDevices.includes(device);
 
   const dataIsValid = validateData(data);
 
-  const handlePathChange = useCallback(
+  const handleDeviceChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      setPath(event.target.value);
+      setDevice(event.target.value);
     },
     [],
   );
@@ -63,7 +63,7 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
   const canSendManualMessage = useLaunchMachineSelector((state) =>
     state.can({
       type: "SEND_MANUAL_MESSAGE",
-      path: "",
+      device: "",
       data: "",
     }),
   );
@@ -73,12 +73,12 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
       event.preventDefault();
       launchActorRef.send({
         type: "SEND_MANUAL_MESSAGE",
-        path,
+        device,
         data: JSON.parse(data),
       });
       setData("");
     },
-    [data, launchActorRef, path],
+    [data, launchActorRef, device],
   );
 
   return (
@@ -86,22 +86,22 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
       <p className="text-lg text-gray-text">Send Manual Message</p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <label className="text-gray-text">
-          Path:
+          Device:
           <input
             className={twMerge(
               "font-mono block w-full px-3 py-2 mt-2 text-sm border-2 outline-none rounded-md focus:ring ring-yellow-border-hover",
-              path.length === 0 && "bg-gray-el-bg border-gray-border",
-              path.length > 0 &&
-                (pathMatchesPreset
+              device.length === 0 && "bg-gray-el-bg border-gray-border",
+              device.length > 0 &&
+                (deviceMatchesPreset
                   ? "bg-green-el-bg border-green-border"
-                  : pathIsValid
+                  : deviceIsValid
                   ? "bg-yellow-el-bg border-yellow-border"
                   : "bg-red-el-bg border-red-border"),
             )}
             type="text"
             spellCheck={false}
-            value={path}
-            onChange={handlePathChange}
+            value={device}
+            onChange={handleDeviceChange}
           />
         </label>
         <label className="text-gray-text">
@@ -123,7 +123,7 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
         <Button
           type="submit"
           color="green"
-          disabled={!canSendManualMessage || !pathIsValid || !dataIsValid}
+          disabled={!canSendManualMessage || !deviceIsValid || !dataIsValid}
         >
           SEND
         </Button>

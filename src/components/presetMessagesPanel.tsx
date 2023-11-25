@@ -1,9 +1,9 @@
 import { memo, useCallback, useState } from "react";
 
 import { useEnvironmentKey } from "@/hooks/useEnvironmentKey";
-import { type Paths, usePaths } from "@/hooks/usePaths";
-import { useSession } from "@/hooks/useSession";
+import { useSessionName } from "@/hooks/useSessionName";
 import { api, catchError } from "@/lib/api";
+import { DEVICES } from "@/lib/stationInterface";
 
 import { Button } from "./design/button";
 import { Panel } from "./design/panel";
@@ -14,24 +14,24 @@ import {
 
 interface PresetMessage {
   label: string;
-  path: string;
+  device: string;
   data: unknown;
 }
 
-const getPresetMessages = (paths: Paths): PresetMessage[] => [
+const PRESET_MESSAGES = [
   {
     label: "FS RECALIBRATE",
-    path: paths.firingStation,
+    device: DEVICES.firingStation,
     data: { command: "recalibrate" },
   },
   {
     label: "FS CLEAR CALIB.",
-    path: paths.firingStation,
+    device: DEVICES.firingStation,
     data: { command: "clear-calibration" },
   },
   {
     label: "LOAD CELL RECALIBRATE",
-    path: paths.loadCell,
+    device: DEVICES.loadCell,
     data: "calibrate",
   },
 ];
@@ -46,7 +46,7 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton({
   const canSendManualMessage = useLaunchMachineSelector((state) =>
     state.can({
       type: "SEND_MANUAL_MESSAGE",
-      path: "",
+      device: "",
       data: "",
     }),
   );
@@ -54,7 +54,7 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton({
   const handleClick = useCallback(() => {
     launchActorRef.send({
       type: "SEND_MANUAL_MESSAGE",
-      path: message.path,
+      device: message.device,
       data: message.data,
     });
   }, [launchActorRef, message]);
@@ -73,9 +73,9 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton({
 
 const NewSessionButton = memo(function NewSessionButton() {
   const environmentKey = useEnvironmentKey();
-  const session = useSession();
+  const sessionName = useSessionName();
 
-  const usingCustomSession = session != null;
+  const usingCustomSession = sessionName != null;
 
   const [loading, setLoading] = useState(false);
 
@@ -103,14 +103,12 @@ const NewSessionButton = memo(function NewSessionButton() {
 });
 
 export const PresetMessagesPanel = memo(function PresetMessagesPanel() {
-  const paths = usePaths();
-
   return (
     <Panel className="flex flex-col gap-4">
       <p className="text-lg text-gray-text">Send Preset Message</p>
       <div className="flex flex-wrap gap-4">
         <NewSessionButton />
-        {getPresetMessages(paths).map((message) => (
+        {PRESET_MESSAGES.map((message) => (
           <SendPresetMessageButton key={message.label} message={message} />
         ))}
       </div>

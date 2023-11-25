@@ -3,20 +3,15 @@ import { type ReactNode, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { useEnvironmentKey } from "@/hooks/useEnvironmentKey";
-import { type Paths, usePaths } from "@/hooks/usePaths";
 import { useReplayFromSeconds } from "@/hooks/useReplayFromSeconds";
-import { useSession } from "@/hooks/useSession";
+import { useSessionName } from "@/hooks/useSessionName";
 import { createLaunchMachine } from "@/machines/launchMachine";
 
-const Context = createActorContext(
-  createLaunchMachine("", undefined, {} as Paths),
-);
+const Context = createActorContext(createLaunchMachine(""));
 
 export function LaunchMachineProvider({ children }: { children: ReactNode }) {
   const environmentKey = useEnvironmentKey();
-  const session = useSession();
-
-  const paths = usePaths();
+  const sessionName = useSessionName();
 
   const replayFromSeconds = useReplayFromSeconds();
 
@@ -27,12 +22,11 @@ export function LaunchMachineProvider({ children }: { children: ReactNode }) {
     () =>
       createLaunchMachine(
         environmentKey,
-        session,
-        paths,
+        sessionName,
         readonly,
         replayFromSeconds,
       ),
-    [environmentKey, paths, readonly, replayFromSeconds, session],
+    [environmentKey, readonly, replayFromSeconds, sessionName],
   );
 
   return <Context.Provider machine={machine}>{children}</Context.Provider>;

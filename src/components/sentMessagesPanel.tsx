@@ -29,7 +29,7 @@ export const SentMessagesPanel = memo(function SentMessagesPanel() {
             {JSON.stringify(
               {
                 ts: message.ts,
-                path: message.path,
+                device: message.device,
                 data: message.data,
               },
               null,

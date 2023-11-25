@@ -1,9 +1,15 @@
 import { assign, createMachine } from "xstate";
 
-import { Paths } from "@/hooks/usePaths";
 import { api, catchError } from "@/lib/api";
-import { ActivePanel, initialLaunchState, LAUNCH_STATE_PATH, LaunchState, launchStateSchema } from "@/lib/launchState";
 import {
+  ActivePanel,
+  initialLaunchState,
+  LAUNCH_STATE_DEVICE,
+  LaunchState,
+  launchStateSchema,
+} from "@/lib/launchState";
+import {
+  DEVICES,
   parseRemoteStationState,
   remoteStationStateSchema,
   toRemoteSetStationOpStateCommand,
@@ -41,7 +47,7 @@ export type MergedStationState = StationState & {
 
 export interface SentMessage {
   ts: Date;
-  path: string;
+  device: string;
   data: unknown;
 }
 
@@ -81,19 +87,18 @@ export type LaunchMachineEvent =
     }
   | {
       type: "SEND_MANUAL_MESSAGE";
-      path: string;
+      device: string;
       data: unknown;
     };
 
 export function createLaunchMachine(
   environmentKey: string,
-  session: string | undefined,
-  paths: Paths,
+  sessionName?: string,
   readonly = false,
   replayFromSeconds?: number,
 ) {
   const startTimeMicros = Date.now() * 1000;
-  const canWrite = !readonly && session == null;
+  const canWrite = !readonly && sessionName == null;
 
   return createMachine(
     {
@@ -314,8 +319,8 @@ export function createLaunchMachine(
             api.records.get({
               $query: {
                 environmentKey,
-                session,
-                path: LAUNCH_STATE_PATH,
+                sessionName,
+                device: LAUNCH_STATE_DEVICE,
                 take: "1",
               },
             }),
@@ -333,7 +338,7 @@ export function createLaunchMachine(
           await catchError(
             api.records.post({
               environmentKey,
-              path: LAUNCH_STATE_PATH,
+              device: LAUNCH_STATE_DEVICE,
               data: context.pendingLaunchState,
             }),
           );
@@ -345,15 +350,15 @@ export function createLaunchMachine(
 
           const endTs = replayFromSeconds != null ? String(elapsedMicros + replayFromSeconds * 1e6) : undefined;
 
-          // merges different paths into one record
+          // merges different devices into one record
 
           const [remoteStationRecords, loadCellRecords, gpsRecords] = await Promise.all([
             catchError(
               api.records.get({
                 $query: {
                   environmentKey,
-                  session,
-                  path: paths.firingStation,
+                  sessionName,
+                  device: DEVICES.firingStation,
                   take: "1",
                   endTs,
                 },
@@ -363,8 +368,8 @@ export function createLaunchMachine(
               api.records.get({
                 $query: {
                   environmentKey,
-                  session,
-                  path: paths.loadCell,
+                  sessionName,
+                  device: DEVICES.loadCell,
                   take: "1",
                   endTs,
                 },
@@ -375,8 +380,8 @@ export function createLaunchMachine(
                   api.records.get({
                     $query: {
                       environmentKey,
-                      session,
-                      path: paths.gps,
+                      sessionName,
+                      device: DEVICES.gps,
                       take: "1",
                       endTs,
                     },
@@ -417,14 +422,14 @@ export function createLaunchMachine(
           await catchError(
             api.messages.post({
               environmentKey,
-              path: paths.firingStation,
+              device: DEVICES.firingStation,
               data,
             }),
           );
-          console.log("Sent message", paths.firingStation, data);
+          console.log("Sent message", DEVICES.firingStation, data);
           return {
             ts: new Date(),
-            path: paths.firingStation,
+            device: DEVICES.firingStation,
             data,
           };
         },
@@ -432,14 +437,14 @@ export function createLaunchMachine(
           await catchError(
             api.messages.post({
               environmentKey,
-              path: event.path,
+              device: event.device,
               data: event.data,
             }),
           );
-          console.log("Sent message", event.path, event.data);
+          console.log("Sent message", event.device, event.data);
           return {
             ts: new Date(),
-            path: event.path,
+            device: event.device,
             data: event.data,
           };
         },

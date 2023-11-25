@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 
 import { api, catchError } from "@/lib/api";
 import {
+  DEVICES,
   dummyToStateByte,
   parseRemoteStationState,
   remoteSetStationOpStateCommandSchema,
@@ -13,8 +14,7 @@ import {
 import { type GpsState, type StationOpState } from "@/lib/stationState";
 
 import { useEnvironmentKey } from "./useEnvironmentKey";
-import { type Paths, usePaths } from "./usePaths";
-import { useSession } from "./useSession";
+import { useSessionName } from "./useSessionName";
 
 const TICK_INTERVAL = 1000;
 
@@ -26,10 +26,7 @@ class DummyStation {
   private lastMessageTs: number | null = null;
   private opState: StationOpState | null = null;
 
-  constructor(
-    private readonly environmentKey: string,
-    private readonly paths: Paths,
-  ) {
+  constructor(private readonly environmentKey: string) {
     this.bootTime = Date.now() * 1000;
 
     this.initOpState().catch((error) => {
@@ -49,7 +46,7 @@ class DummyStation {
       api.records.get({
         $query: {
           environmentKey: this.environmentKey,
-          path: this.paths.firingStation,
+          device: DEVICES.firingStation,
           take: "1",
         },
       }),
@@ -73,7 +70,7 @@ class DummyStation {
       api.messages.next.get({
         $query: {
           environmentKey: this.environmentKey,
-          path: this.paths.firingStation,
+          device: DEVICES.firingStation,
           afterTs:
             this.lastMessageTs != null ? String(this.lastMessageTs) : undefined,
         },
@@ -121,14 +118,14 @@ class DummyStation {
       catchError(
         api.records.post({
           environmentKey: this.environmentKey,
-          path: this.paths.firingStation,
+          device: DEVICES.firingStation,
           data: remoteStationState,
         }),
       ),
       catchError(
         api.records.post({
           environmentKey: this.environmentKey,
-          path: this.paths.gps,
+          device: DEVICES.gps,
           data: gpsState,
         }),
       ),
@@ -138,12 +135,10 @@ class DummyStation {
 
 export function useDummyStation() {
   const environmentKey = useEnvironmentKey();
-  const session = useSession();
-
-  const paths = usePaths();
+  const sessionName = useSessionName();
 
   const [searchParams] = useSearchParams();
-  const enabled = searchParams.has("dummy") && session == null;
+  const enabled = searchParams.has("dummy") && sessionName == null;
 
   const createdSession = useRef(false);
 
@@ -162,7 +157,7 @@ export function useDummyStation() {
   useEffect(() => {
     if (!enabled) return;
 
-    const dummyStation = new DummyStation(environmentKey, paths);
+    const dummyStation = new DummyStation(environmentKey);
     return () => dummyStation.destroy();
-  }, [enabled, environmentKey, paths]);
+  }, [enabled, environmentKey]);
 }

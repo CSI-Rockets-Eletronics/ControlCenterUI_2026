@@ -19,7 +19,7 @@ const router = createBrowserRouter(
       element: <Station />,
     },
     {
-      path: "/:environmentKey/:session",
+      path: "/:environmentKey/:sessionName",
       element: <Station />,
     },
   ],

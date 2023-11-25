@@ -7,10 +7,12 @@ import {
   type StationState,
 } from "./stationState";
 
-export const STATION_STATE_PATH = "FiringStation";
-export const SCIENTIFIC_STATE_PATH = "Scientific";
-export const LOAD_CELL_STATE_PATH = "IDA100";
-export const GPS_STATE_PATH = "GpsState";
+export const DEVICES = {
+  firingStation: "FiringStation",
+  scientific: "Scientific",
+  loadCell: "IDA100",
+  gps: "GpsState",
+} as const;
 
 /**
  * See generateJsonPostPayload() in
