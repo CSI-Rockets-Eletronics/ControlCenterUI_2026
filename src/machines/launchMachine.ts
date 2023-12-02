@@ -27,7 +27,7 @@ import {
 const LAUNCH_STATE_FETCH_INTERVAL = 1000;
 const STATION_STATE_FETCH_INTERVAL = 0; // fetch as soon as the previous fetch completes
 
-const FETCH_GPS = false; // enable once we have GPS data
+const FETCH_GPS = true; // enable once we have GPS data
 
 function checklistIsComplete(checklist: Record<string, boolean>) {
   return Object.values(checklist).every(Boolean);

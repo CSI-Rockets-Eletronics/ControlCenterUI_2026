@@ -10,9 +10,9 @@ const INITIAL_ZOOM = 16;
 export const MapPanel = memo(function MapPanel() {
   const rocketAnchor: Point | undefined = useLaunchMachineSelector((state) => {
     const gpsState = state.context.stationState?.gps;
-    if (!gpsState) return;
-
-    return [gpsState.lat, gpsState.long];
+    if (gpsState && gpsState.latitude_fixed && gpsState.longitude_fixed) {
+      return [gpsState.latitude_fixed / 1e7, gpsState.longitude_fixed / 1e7];
+    }
   }, shallowEqual);
 
   const [localAnchor, setLocalAnchor] = useState<Point | undefined>();
