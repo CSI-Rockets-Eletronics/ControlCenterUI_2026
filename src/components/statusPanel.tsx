@@ -205,7 +205,7 @@ const LoadCellDisplay = memo(function LoadCellDisplay() {
 
 const AltitudeDisplay = memo(function AltitudeDisplay() {
   const value = useLaunchMachineSelector((state) =>
-    (state.context.stationState?.gps?.alt ?? 0).toFixed(1),
+    (state.context.stationState?.gps?.altitude ?? 0).toFixed(1),
   );
 
   return <StatusDisplay label="Altitude (ft)" color="green" value={value} />;

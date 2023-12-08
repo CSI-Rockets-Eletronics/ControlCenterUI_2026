@@ -109,9 +109,11 @@ class DummyStation {
     };
 
     const gpsState: GpsState = {
-      lat: randRange(0, 90),
-      long: randRange(-90, 0),
-      alt: randRange(0, 10_000),
+      fix: true,
+      fixquality: 1,
+      latitude_fixed: randRange(-90, 90) * 1e7,
+      longitude_fixed: randRange(-180, 180) * 1e7,
+      altitude: randRange(0, 30_000),
     };
 
     await Promise.all([
