@@ -56,7 +56,7 @@ export const gpsStateSchema = z.object({
   /** Have a fix? */
   fix: z.boolean(),
   /** Fix quality (0, 1, 2 = Invalid, GPS, DGPS). */
-  fixquality: z.number(),
+  fixquality: z.number().optional(),
   /** Fixed point latitude in decimal degrees. Divide by 10000000.0 to get a double. */
   latitude_fixed: z.number().optional(),
   /** Fixed point longitude in decimal degrees. Divide by 10000000.0 to get a double. */
