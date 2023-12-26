@@ -1,9 +1,9 @@
 import { memo, useEffect, useState } from "react";
 
+import { catchError, useApi } from "@/hooks/useApi";
 import { useEnvironmentKey } from "@/hooks/useEnvironmentKey";
 import { useReplayFromSeconds } from "@/hooks/useReplayFromSeconds";
 import { useSessionName } from "@/hooks/useSessionName";
-import { api, catchError } from "@/lib/api";
 import { DEVICES } from "@/lib/stationInterface";
 
 import { CodeBlock } from "./design/codeBlock";
@@ -25,6 +25,8 @@ interface Props {
 export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
   visible,
 }: Props) {
+  const api = useApi();
+
   const environmentKey = useEnvironmentKey();
   const sessionName = useSessionName();
 
@@ -103,6 +105,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
       clearInterval(interval);
     };
   }, [
+    api,
     environmentKey,
     replayFromSeconds,
     sessionName,

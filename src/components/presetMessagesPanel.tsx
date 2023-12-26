@@ -1,8 +1,8 @@
 import { memo, useCallback, useState } from "react";
 
+import { catchError, useApi } from "@/hooks/useApi";
 import { useEnvironmentKey } from "@/hooks/useEnvironmentKey";
 import { useSessionName } from "@/hooks/useSessionName";
-import { api, catchError } from "@/lib/api";
 import { DEVICES } from "@/lib/stationInterface";
 
 import { Button } from "./design/button";
@@ -72,6 +72,8 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton({
 });
 
 const NewSessionButton = memo(function NewSessionButton() {
+  const api = useApi();
+
   const environmentKey = useEnvironmentKey();
   const sessionName = useSessionName();
 
@@ -89,7 +91,7 @@ const NewSessionButton = memo(function NewSessionButton() {
       .finally(() => {
         setLoading(false);
       });
-  }, [environmentKey, loading]);
+  }, [api, environmentKey, loading]);
 
   return (
     <Button

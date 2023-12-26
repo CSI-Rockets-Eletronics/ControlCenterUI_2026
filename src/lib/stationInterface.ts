@@ -7,6 +7,8 @@ import {
   type StationState,
 } from "./stationState";
 
+export const DEFAULT_SERVER = "https://csiwiki.me.columbia.edu/rocketsdata2";
+
 export const DEVICES = {
   firingStation: "FiringStation",
   scientific: "Scientific",

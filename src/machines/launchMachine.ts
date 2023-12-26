@@ -1,6 +1,6 @@
 import { assign, createMachine } from "xstate";
 
-import { api, catchError } from "@/lib/api";
+import { Api, catchError } from "@/hooks/useApi";
 import {
   ActivePanel,
   initialLaunchState,
@@ -92,6 +92,7 @@ export type LaunchMachineEvent =
     };
 
 export function createLaunchMachine(
+  api: Api,
   environmentKey: string,
   sessionName?: string,
   readonly = false,

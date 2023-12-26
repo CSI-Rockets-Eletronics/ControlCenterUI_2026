@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { api, catchError } from "@/lib/api";
 import {
   DEVICES,
   dummyToStateByte,
@@ -13,6 +12,7 @@ import {
 } from "@/lib/stationInterface";
 import { type GpsState, type StationOpState } from "@/lib/stationState";
 
+import { type Api, catchError, useApi } from "./useApi";
 import { useEnvironmentKey } from "./useEnvironmentKey";
 import { useSessionName } from "./useSessionName";
 
@@ -26,7 +26,10 @@ class DummyStation {
   private lastMessageTs: number | null = null;
   private opState: StationOpState | null = null;
 
-  constructor(private readonly environmentKey: string) {
+  constructor(
+    private readonly api: Api,
+    private readonly environmentKey: string,
+  ) {
     this.bootTime = Date.now() * 1000;
 
     this.initOpState().catch((error) => {
@@ -43,7 +46,7 @@ class DummyStation {
 
   private async initOpState() {
     const { records } = await catchError(
-      api.records.get({
+      this.api.records.get({
         $query: {
           environmentKey: this.environmentKey,
           device: DEVICES.firingStation,
@@ -67,7 +70,7 @@ class DummyStation {
     if (this.opState == null) return;
 
     const message = await catchError(
-      api.messages.next.get({
+      this.api.messages.next.get({
         $query: {
           environmentKey: this.environmentKey,
           device: DEVICES.firingStation,
@@ -118,14 +121,14 @@ class DummyStation {
 
     await Promise.all([
       catchError(
-        api.records.post({
+        this.api.records.post({
           environmentKey: this.environmentKey,
           device: DEVICES.firingStation,
           data: remoteStationState,
         }),
       ),
       catchError(
-        api.records.post({
+        this.api.records.post({
           environmentKey: this.environmentKey,
           device: DEVICES.gps,
           data: gpsState,
@@ -136,6 +139,8 @@ class DummyStation {
 }
 
 export function useDummyStation() {
+  const api = useApi();
+
   const environmentKey = useEnvironmentKey();
   const sessionName = useSessionName();
 
@@ -154,12 +159,12 @@ export function useDummyStation() {
     catchError(api.sessions.create.post({ environmentKey })).catch((error) => {
       console.log("Failed to create session", error);
     });
-  }, [enabled, environmentKey]);
+  }, [api, enabled, environmentKey]);
 
   useEffect(() => {
     if (!enabled) return;
 
-    const dummyStation = new DummyStation(environmentKey);
+    const dummyStation = new DummyStation(api, environmentKey);
     return () => dummyStation.destroy();
-  }, [enabled, environmentKey]);
+  }, [api, enabled, environmentKey]);
 }
