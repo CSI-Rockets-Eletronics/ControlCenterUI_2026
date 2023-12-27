@@ -13,7 +13,7 @@ export const DEVICES = {
   firingStation: "FiringStation",
   scientific: "Scientific",
   loadCell: "IDA100",
-  gps: "GPS",
+  radioGround: "RadioGround",
 } as const;
 
 /**

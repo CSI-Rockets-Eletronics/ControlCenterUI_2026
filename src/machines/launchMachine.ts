@@ -15,10 +15,10 @@ import {
   toRemoteSetStationOpStateCommand,
 } from "@/lib/stationInterface";
 import {
-  GpsState,
-  gpsStateSchema,
   LoadCellState,
   loadCellStateSchema,
+  RadioGroundState,
+  radioGroundStateSchema,
   StationOpState,
   StationRelays,
   StationState,
@@ -26,8 +26,6 @@ import {
 
 const LAUNCH_STATE_FETCH_INTERVAL = 1000;
 const STATION_STATE_FETCH_INTERVAL = 0; // fetch as soon as the previous fetch completes
-
-const FETCH_GPS = true; // enable once we have GPS data
 
 function checklistIsComplete(checklist: Record<string, boolean>) {
   return Object.values(checklist).every(Boolean);
@@ -38,11 +36,9 @@ function armStatusIsComplete(armStatus: Record<string, boolean>) {
 }
 
 export type MergedStationState = StationState & {
-  loadCell: LoadCellState | null;
-} & {
-  gps: GpsState | null;
-} & {
   ts: number;
+  loadCell: LoadCellState | null;
+  radioGround: RadioGroundState | null;
 };
 
 export interface SentMessage {
@@ -353,7 +349,7 @@ export function createLaunchMachine(
 
           // merges different devices into one record
 
-          const [remoteStationRecords, loadCellRecords, gpsRecords] = await Promise.all([
+          const [remoteStationRecords, loadCellRecords, radioGroundRecords] = await Promise.all([
             catchError(
               api.records.get({
                 $query: {
@@ -376,19 +372,17 @@ export function createLaunchMachine(
                 },
               }),
             ),
-            FETCH_GPS
-              ? catchError(
-                  api.records.get({
-                    $query: {
-                      environmentKey,
-                      sessionName,
-                      device: DEVICES.gps,
-                      take: "1",
-                      endTs,
-                    },
-                  }),
-                )
-              : { records: [] },
+            catchError(
+              api.records.get({
+                $query: {
+                  environmentKey,
+                  sessionName,
+                  device: DEVICES.radioGround,
+                  take: "1",
+                  endTs,
+                },
+              }),
+            ),
           ]);
 
           if (remoteStationRecords.records.length === 0) {
@@ -401,13 +395,13 @@ export function createLaunchMachine(
             remoteStationStateSchema.parse(remoteStationRecords.records[0].data),
           );
           const loadCellRecord = loadCellRecords.records.length > 0 ? loadCellRecords.records[0] : null;
-          const gpsRecord = gpsRecords.records.length > 0 ? gpsRecords.records[0] : null;
+          const radioGroundRecord = radioGroundRecords.records.length > 0 ? radioGroundRecords.records[0] : null;
 
           return {
             ts,
             ...stationState,
             loadCell: loadCellRecord ? loadCellStateSchema.parse(loadCellRecord.data) : null,
-            gps: gpsRecord ? gpsStateSchema.parse(gpsRecord.data) : null,
+            radioGround: radioGroundRecord ? radioGroundStateSchema.parse(radioGroundRecord.data) : null,
           };
         },
         mutateStationOpState: async (_context, event) => {

@@ -10,7 +10,7 @@ import {
   remoteStationStateSchema,
   toRelayStatusByte,
 } from "@/lib/stationInterface";
-import { type GpsState, type StationOpState } from "@/lib/stationState";
+import { type RadioGroundState, type StationOpState } from "@/lib/stationState";
 
 import { type Api, catchError, useApi } from "./useApi";
 import { useEnvironmentKey } from "./useEnvironmentKey";
@@ -111,12 +111,14 @@ class DummyStation {
       timeSinceCalibration: curTime - this.bootTime,
     };
 
-    const gpsState: GpsState = {
-      fix: true,
-      fixquality: 1,
-      latitude_fixed: randRange(-90, 90) * 1e7,
-      longitude_fixed: randRange(-180, 180) * 1e7,
-      altitude: randRange(0, 30_000),
+    const radioGroundState: RadioGroundState = {
+      gps: {
+        fix: true,
+        fixquality: 1,
+        latitude_fixed: randRange(-90, 90) * 1e7,
+        longitude_fixed: randRange(-180, 180) * 1e7,
+        altitude: randRange(0, 30_000),
+      },
     };
 
     await Promise.all([
@@ -130,8 +132,8 @@ class DummyStation {
       catchError(
         this.api.records.post({
           environmentKey: this.environmentKey,
-          device: DEVICES.gps,
-          data: gpsState,
+          device: DEVICES.radioGround,
+          data: radioGroundState,
         }),
       ),
     ]);
