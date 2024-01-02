@@ -63,7 +63,7 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
             environmentKey,
             sessionName,
             devices: devices.join(","),
-            // TODO set endTs
+            endTs,
           },
         }),
       );
