@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "(tsc || echo 'ignoring tsc errors for now...') && vite build",
-    "build:rockets-ui": "(tsc || echo 'ignoring tsc errors for now...') && vite build --outDir dist-rockets-ui --base /rockets-ui/",
+    "build": "tsc && vite build",
+    "build:rockets-ui": "tsc && vite build --outDir dist-rockets-ui --base /rockets-ui/",
     "preview": "vite preview",
     "format": "prettier --write .",
     "lint": "eslint src",
