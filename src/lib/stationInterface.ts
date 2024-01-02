@@ -10,10 +10,15 @@ import {
 export const DEFAULT_SERVER = "https://csiwiki.me.columbia.edu/rocketsdata2";
 
 export const DEVICES = {
+  // ground station
   firingStation: "FiringStation",
   scientific: "Scientific",
   loadCell: "IDA100",
   radioGround: "RadioGround",
+  // in-rocket
+  gps: "GPS",
+  mpu: "MPU",
+  dht: "DHT",
 } as const;
 
 /**
