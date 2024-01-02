@@ -19,7 +19,7 @@ import { useSessionName } from "./useSessionName";
 const TICK_INTERVAL = 1000;
 
 class DummyStation {
-  private readonly intervalId: number;
+  private readonly intervalId: NodeJS.Timeout;
   private destroyed = false;
 
   private bootTime; // microseconds
