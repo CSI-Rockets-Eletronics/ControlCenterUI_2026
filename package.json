@@ -22,7 +22,7 @@
   "dependencies": {
     "@radix-ui/colors": "^0.1.8",
     "@xstate/react": "^3.2.2",
-    "data-server-node": "CSI-Rockets-Eletronics/data-server-node#b5bfec4",
+    "data-server-node": "CSI-Rockets-Eletronics/data-server-node#96add13",
     "pigeon-maps": "^0.21.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -43,6 +43,7 @@
     "@vitejs/plugin-react-swc": "^3.0.0",
     "@xstate/cli": "^0.5.5",
     "autoprefixer": "^10.4.13",
+    "bun-types": "latest",
     "eslint": "^8.33.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-import-resolver-typescript": "^3.5.3",
@@ -63,5 +64,8 @@
     "typescript": "^5.2.2",
     "vite": "^4.1.0",
     "vite-tsconfig-paths": "^4.0.5"
-  }
+  },
+  "trustedDependencies": [
+    "data-server-node"
+  ]
 }

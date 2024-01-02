@@ -21,6 +21,9 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
 
+    /* Bun type definitions */
+    "types": ["bun-types"],
+
     "paths": {
       "@/*": ["./src/*"]
     }
