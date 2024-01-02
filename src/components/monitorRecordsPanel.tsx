@@ -47,6 +47,8 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
     if (!visible) return;
 
     async function fetchRecords(): Promise<RecordWithDevice[]> {
+      const devices = Object.values(DEVICES);
+
       const curTimeMicros = Date.now() * 1000;
       const elapsedMicros = curTimeMicros - startTimeMicros;
 
@@ -55,27 +57,27 @@ export const MonitorRecordsPanel = memo(function MonitorRecordsPanel({
           ? String(elapsedMicros + replayFromSeconds * 1e6)
           : undefined;
 
-      const records: (RecordWithDevice | null)[] = await Promise.all(
-        Object.values(DEVICES).map(async (device) => {
-          const { records } = await catchError(
-            api.records.get({
-              $query: {
-                environmentKey,
-                sessionName,
-                device,
-                take: "1",
-                endTs,
-              },
-            }),
-          );
-          if (records.length === 0) return null;
-          return { ...records[0], device };
+      const multiDeviceResult = await catchError(
+        api.records.multiDevice.get({
+          $query: {
+            environmentKey,
+            sessionName,
+            devices: devices.join(","),
+            // TODO set endTs
+          },
         }),
       );
 
-      return records.filter(
-        (record): record is RecordWithDevice => record != null,
-      );
+      const records: RecordWithDevice[] = [];
+
+      devices.forEach((device) => {
+        const record = multiDeviceResult[device];
+        if (record) {
+          records.push({ device, ...record });
+        }
+      });
+
+      return records;
     }
 
     const interval = setInterval(() => {
