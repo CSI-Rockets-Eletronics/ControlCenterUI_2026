@@ -30,7 +30,7 @@ const Entry = memo(function Entry({
   spr: (pendingRelays: StationRelays) => void; // setPendingRelays
 }) {
   const checked = useLaunchMachineSelector(
-    (state) => !!state.context.stationState?.relays[field],
+    (state) => !!state.context.deviceStates.firingStation?.data.relays[field],
   );
 
   const hasPending = pendingRelays != null;

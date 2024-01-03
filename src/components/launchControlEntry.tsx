@@ -72,7 +72,8 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
 
   const isExecuting = useLaunchMachineSelector((state) =>
     rest.type === "opState"
-      ? state.context.stationState?.opState === rest.executeOpState
+      ? state.context.deviceStates.firingStation?.data.opState ===
+        rest.executeOpState
       : state.context.launchState.armStatus[rest.field],
   );
 
@@ -87,7 +88,9 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
   }, [launchActorRef, stopEvent]);
 
   const isInState = useLaunchMachineSelector(
-    (state) => state.context.stationState?.opState === rest.executeOpState,
+    (state) =>
+      state.context.deviceStates.firingStation?.data.opState ===
+      rest.executeOpState,
   );
 
   const fade = fadeIfDisabled && executeDisabled && !isInState;

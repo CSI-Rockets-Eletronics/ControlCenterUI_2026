@@ -35,10 +35,15 @@ function armStatusIsComplete(armStatus: Record<string, boolean>) {
   return Object.values(armStatus).every(Boolean);
 }
 
-export type MergedStationState = StationState & {
+type DeviceRecord<T> = {
   ts: number;
-  loadCell: LoadCellState | null;
-  radioGround: RadioGroundState | null;
+  data: T;
+};
+
+export type DeviceStates = {
+  firingStation: DeviceRecord<StationState> | null;
+  loadCell: DeviceRecord<LoadCellState> | null;
+  radioGround: DeviceRecord<RadioGroundState> | null;
 };
 
 export interface SentMessage {
@@ -107,13 +112,13 @@ export function createLaunchMachine(
           startTimeMicros: number;
           launchState: LaunchState;
           pendingLaunchState: LaunchState | null;
-          stationState: MergedStationState | null;
+          deviceStates: DeviceStates;
           sentMessages: SentMessage[];
         },
         services: {} as {
           fetchLaunchState: { data: LaunchState };
           mutateLaunchState: { data: LaunchState };
-          fetchStationRecord: { data: MergedStationState | null };
+          fetchDeviceStates: { data: DeviceStates };
           mutateStationOpState: { data: SentMessage };
           sendManualMessage: { data: SentMessage };
         },
@@ -123,7 +128,11 @@ export function createLaunchMachine(
         startTimeMicros,
         launchState: initialLaunchState,
         pendingLaunchState: null,
-        stationState: null,
+        deviceStates: {
+          firingStation: null,
+          loadCell: null,
+          radioGround: null,
+        },
         sentMessages: [],
       }),
       initial: "live",
@@ -189,10 +198,10 @@ export function createLaunchMachine(
               states: {
                 fetching: {
                   invoke: {
-                    src: "fetchStationRecord",
+                    src: "fetchDeviceStates",
                     onDone: {
                       target: "idle",
-                      actions: "setStationState",
+                      actions: "setDeviceStates",
                     },
                     onError: "#launch.networkError",
                   },
@@ -210,10 +219,10 @@ export function createLaunchMachine(
                     },
                     refetching: {
                       invoke: {
-                        src: "fetchStationRecord",
+                        src: "fetchDeviceStates",
                         onDone: {
                           target: "waitingToRefetch",
-                          actions: "setStationState",
+                          actions: "setDeviceStates",
                         },
                         onError: "#launch.networkError",
                       },
@@ -294,12 +303,8 @@ export function createLaunchMachine(
             rangePermit: { ...context.launchState.rangePermit, ...event.data },
           }),
         }),
-        setStationState: assign((_context, event) => {
-          const stationState = event.data;
-          if (!stationState) {
-            return {};
-          }
-          return { stationState };
+        setDeviceStates: assign((_context, event) => {
+          return { deviceStates: event.data };
         }),
         logNetworkError: (_, event) => {
           console.error("Launch machine network error", event);
@@ -341,67 +346,46 @@ export function createLaunchMachine(
           );
           return context.pendingLaunchState;
         },
-        fetchStationRecord: async () => {
+        fetchDeviceStates: async () => {
           const curTimeMicros = Date.now() * 1000;
           const elapsedMicros = curTimeMicros - startTimeMicros;
 
           const endTs = replayFromSeconds != null ? String(elapsedMicros + replayFromSeconds * 1e6) : undefined;
 
-          // merges different devices into one record
-
-          const [remoteStationRecords, loadCellRecords, radioGroundRecords] = await Promise.all([
-            catchError(
-              api.records.get({
-                $query: {
-                  environmentKey,
-                  sessionName,
-                  device: DEVICES.firingStation,
-                  take: "1",
-                  endTs,
-                },
-              }),
-            ),
-            catchError(
-              api.records.get({
-                $query: {
-                  environmentKey,
-                  sessionName,
-                  device: DEVICES.loadCell,
-                  take: "1",
-                  endTs,
-                },
-              }),
-            ),
-            catchError(
-              api.records.get({
-                $query: {
-                  environmentKey,
-                  sessionName,
-                  device: DEVICES.radioGround,
-                  take: "1",
-                  endTs,
-                },
-              }),
-            ),
-          ]);
-
-          if (remoteStationRecords.records.length === 0) {
-            return null;
-          }
-
-          const ts = remoteStationRecords.records[0].ts;
-
-          const stationState = parseRemoteStationState(
-            remoteStationStateSchema.parse(remoteStationRecords.records[0].data),
+          const records = await catchError(
+            api.records.multiDevice.get({
+              $query: {
+                environmentKey,
+                sessionName,
+                devices: [DEVICES.firingStation, DEVICES.loadCell, DEVICES.radioGround].join(","),
+                endTs,
+              },
+            }),
           );
-          const loadCellRecord = loadCellRecords.records.length > 0 ? loadCellRecords.records[0] : null;
-          const radioGroundRecord = radioGroundRecords.records.length > 0 ? radioGroundRecords.records[0] : null;
+
+          const firingStationRaw = records[DEVICES.firingStation];
+          const loadCellRaw = records[DEVICES.loadCell];
+          const radioGroundRaw = records[DEVICES.radioGround];
 
           return {
-            ts,
-            ...stationState,
-            loadCell: loadCellRecord ? loadCellStateSchema.parse(loadCellRecord.data) : null,
-            radioGround: radioGroundRecord ? radioGroundStateSchema.parse(radioGroundRecord.data) : null,
+            firingStation: firingStationRaw
+              ? {
+                  ts: firingStationRaw.ts,
+                  data: parseRemoteStationState(remoteStationStateSchema.parse(firingStationRaw.data)),
+                }
+              : null,
+            loadCell: loadCellRaw
+              ? {
+                  ts: loadCellRaw.ts,
+                  data: loadCellStateSchema.parse(loadCellRaw.data),
+                }
+              : null,
+            radioGround: radioGroundRaw
+              ? {
+                  ts: radioGroundRaw.ts,
+                  data: radioGroundStateSchema.parse(radioGroundRaw.data),
+                }
+              : null,
           };
         },
         mutateStationOpState: async (_context, event) => {
@@ -476,12 +460,12 @@ export function createLaunchMachine(
               return true;
             }
           } else {
-            if (event.value === context.stationState?.opState) {
+            if (event.value === context.deviceStates.firingStation?.data.opState) {
               return false;
             }
 
             if (event.value === "fire") {
-              const opState = context.stationState?.opState;
+              const opState = context.deviceStates.firingStation?.data.opState;
               const validFireSourceState = opState === "standby" || opState === "keep" || opState === "custom";
               return fireReqsComplete && validFireSourceState;
             } else if (event.value === "fire-manual-igniter" || event.value === "fire-manual-valve") {

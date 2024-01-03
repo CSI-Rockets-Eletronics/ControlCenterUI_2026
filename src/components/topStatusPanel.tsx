@@ -18,11 +18,16 @@ export const TopStatusPanel = memo(function TopStatusPanel({
   const { isDark, toggleDark } = useColorTheme();
 
   const timeSinceBoot = useLaunchMachineSelector((state) =>
-    (state.context.stationState?.status.timeSinceBoot ?? 0).toFixed(1),
+    (
+      state.context.deviceStates.firingStation?.data.status.timeSinceBoot ?? 0
+    ).toFixed(1),
   );
 
   const timeSinceCalibration = useLaunchMachineSelector((state) =>
-    (state.context.stationState?.status.timeSinceCalibration ?? 0).toFixed(1),
+    (
+      state.context.deviceStates.firingStation?.data.status
+        .timeSinceCalibration ?? 0
+    ).toFixed(1),
   );
 
   return (

@@ -24,7 +24,7 @@ const Entry = memo(function Entry({
   const launchActorRef = useLaunchMachineActorRef();
 
   const curOpState = useLaunchMachineSelector(
-    (state) => state.context.stationState?.opState,
+    (state) => state.context.deviceStates.firingStation?.data.opState,
   );
 
   const active = curOpState === opState;

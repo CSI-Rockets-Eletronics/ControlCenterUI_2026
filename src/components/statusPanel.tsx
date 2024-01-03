@@ -78,7 +78,9 @@ const ChartLoadingFallback = memo(function ChartLoadingFallback({
 
 const FillLineDisplay = memo(function FillLineDisplay() {
   const isConnected = useLaunchMachineSelector(
-    (state) => state.context.stationState?.status.fillLineConnected ?? false,
+    (state) =>
+      state.context.deviceStates.firingStation?.data.status.fillLineConnected ??
+      false,
   );
 
   return (
@@ -92,7 +94,10 @@ const FillLineDisplay = memo(function FillLineDisplay() {
 
 const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
   const value = useLaunchMachineSelector((state) =>
-    (state.context.stationState?.status.combustionPressure ?? 0).toFixed(1),
+    (
+      state.context.deviceStates.firingStation?.data.status
+        .combustionPressure ?? 0
+    ).toFixed(1),
   );
 
   const chartElement = useMemo(() => {
@@ -100,7 +105,14 @@ const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
       <ChartLoadingFallback>
         <StationChart
           // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          valueSelector={(state) => state.status.combustionPressure}
+          selector={({ firingStation }) =>
+            firingStation
+              ? {
+                  ts: firingStation.ts,
+                  value: firingStation.data.status.combustionPressure,
+                }
+              : null
+          }
           valuePrecision={1}
           minY={0}
           maxY="dataMax + 10"
@@ -130,7 +142,10 @@ const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
 const OxidizerTankPressureDisplay = memo(
   function OxidizerTankPressureDisplay() {
     const value = useLaunchMachineSelector((state) =>
-      (state.context.stationState?.status.oxidizerTankPressure ?? 0).toFixed(1),
+      (
+        state.context.deviceStates.firingStation?.data.status
+          .oxidizerTankPressure ?? 0
+      ).toFixed(1),
     );
 
     const chartElement = useMemo(() => {
@@ -138,7 +153,14 @@ const OxidizerTankPressureDisplay = memo(
         <ChartLoadingFallback>
           <StationChart
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-            valueSelector={(state) => state.status.oxidizerTankPressure}
+            selector={({ firingStation }) =>
+              firingStation
+                ? {
+                    ts: firingStation.ts,
+                    value: firingStation.data.status.oxidizerTankPressure,
+                  }
+                : null
+            }
             valuePrecision={1}
             minY={0}
             maxY="dataMax + 10"
@@ -168,7 +190,7 @@ const OxidizerTankPressureDisplay = memo(
 
 const LoadCellDisplay = memo(function LoadCellDisplay() {
   const value = useLaunchMachineSelector((state) =>
-    (state.context.stationState?.loadCell ?? 0).toFixed(2),
+    (state.context.deviceStates.loadCell?.data ?? 0).toFixed(2),
   );
 
   const chartElement = useMemo(() => {
@@ -176,7 +198,14 @@ const LoadCellDisplay = memo(function LoadCellDisplay() {
       <ChartLoadingFallback>
         <StationChart
           // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          valueSelector={(state) => state.loadCell ?? null}
+          selector={({ loadCell }) =>
+            loadCell
+              ? {
+                  ts: loadCell.ts,
+                  value: loadCell.data,
+                }
+              : null
+          }
           valuePrecision={3}
           minY="dataMin - 2"
           maxY="dataMax + 2"
@@ -205,7 +234,7 @@ const LoadCellDisplay = memo(function LoadCellDisplay() {
 
 const AltitudeDisplay = memo(function AltitudeDisplay() {
   const value = useLaunchMachineSelector((state) =>
-    (state.context.stationState?.radioGround?.gps.altitude ?? 0).toFixed(1),
+    (state.context.deviceStates.radioGround?.data.gps.altitude ?? 0).toFixed(1),
   );
 
   return <StatusDisplay label="Altitude (ft)" color="green" value={value} />;

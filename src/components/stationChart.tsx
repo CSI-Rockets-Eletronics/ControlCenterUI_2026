@@ -12,12 +12,12 @@ import {
 } from "recharts";
 import { type AxisDomainItem } from "recharts/types/util/types";
 
-import { type MergedStationState } from "@/machines/launchMachine";
+import { type DeviceStates } from "@/machines/launchMachine";
 
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
 interface Props {
-  valueSelector: (state: MergedStationState) => number | null;
+  selector: (state: DeviceStates) => { ts: number; value: number } | null;
   valuePrecision: number;
   retentionSeconds?: number;
   minY?: AxisDomainItem;
@@ -25,7 +25,7 @@ interface Props {
 }
 
 export const StationChart = memo(function StationChart({
-  valueSelector,
+  selector,
   valuePrecision,
   retentionSeconds = 2 * 60,
   minY = "auto",
@@ -34,16 +34,16 @@ export const StationChart = memo(function StationChart({
   const [data, setData] = useState<{ seconds: number; value: number }[]>([]);
 
   const curEntry = useLaunchMachineSelector((state) => {
-    if (!state.context.stationState) {
+    const result = selector(state.context.deviceStates);
+
+    if (!result) {
       return null;
     }
 
-    const seconds = state.context.stationState.ts / 1e6;
-    const value = valueSelector(state.context.stationState);
-
-    if (value === null) return null;
-
-    return { seconds, value };
+    return {
+      seconds: result.ts / 1e6,
+      value: result.value,
+    };
   }, shallowEqual);
 
   useEffect(() => {

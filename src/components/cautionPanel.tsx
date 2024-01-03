@@ -10,7 +10,7 @@ export const CautionPanel = memo(function CautionPanel() {
   );
 
   const isHazardous = useLaunchMachineSelector((state) => {
-    const opState = state.context.stationState?.opState;
+    const opState = state.context.deviceStates.firingStation?.data.opState;
     return opState != null && opState !== "standby" && opState !== "abort";
   });
 
@@ -22,7 +22,8 @@ export const CautionPanel = memo(function CautionPanel() {
   );
 
   const isFired = useLaunchMachineSelector(
-    (state) => state.context.stationState?.opState === "fire",
+    (state) =>
+      state.context.deviceStates.firingStation?.data.opState === "fire",
   );
 
   const message = isFired ? (
@@ -43,13 +44,13 @@ export const CautionPanel = memo(function CautionPanel() {
   const panelColor = isFired
     ? "green"
     : isHazardous || readyToFire
-    ? "red"
-    : "yellow";
+      ? "red"
+      : "yellow";
   const messageColor = isFired
     ? "text-green-text-dim"
     : isHazardous || readyToFire
-    ? "text-red-text-dim"
-    : "text-yellow-text-dim";
+      ? "text-red-text-dim"
+      : "text-yellow-text-dim";
   const pulse = isHazardous || readyToFire || isFired;
 
   return (
