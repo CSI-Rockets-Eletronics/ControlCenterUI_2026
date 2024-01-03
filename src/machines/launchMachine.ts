@@ -15,6 +15,8 @@ import {
   toRemoteSetStationOpStateCommand,
 } from "@/lib/stationInterface";
 import {
+  gpsSchema,
+  GpsState,
   LoadCellState,
   loadCellStateSchema,
   RadioGroundState,
@@ -44,6 +46,7 @@ export type DeviceStates = {
   firingStation: DeviceRecord<StationState> | null;
   loadCell: DeviceRecord<LoadCellState> | null;
   radioGround: DeviceRecord<RadioGroundState> | null;
+  gps: DeviceRecord<GpsState> | null;
 };
 
 export interface SentMessage {
@@ -132,6 +135,7 @@ export function createLaunchMachine(
           firingStation: null,
           loadCell: null,
           radioGround: null,
+          gps: null,
         },
         sentMessages: [],
       }),
@@ -357,7 +361,7 @@ export function createLaunchMachine(
               $query: {
                 environmentKey,
                 sessionName,
-                devices: [DEVICES.firingStation, DEVICES.loadCell, DEVICES.radioGround].join(","),
+                devices: [DEVICES.firingStation, DEVICES.loadCell, DEVICES.radioGround, DEVICES.gps].join(","),
                 endTs,
               },
             }),
@@ -366,6 +370,7 @@ export function createLaunchMachine(
           const firingStationRaw = records[DEVICES.firingStation];
           const loadCellRaw = records[DEVICES.loadCell];
           const radioGroundRaw = records[DEVICES.radioGround];
+          const gpsRaw = records[DEVICES.gps];
 
           return {
             firingStation: firingStationRaw
@@ -384,6 +389,12 @@ export function createLaunchMachine(
               ? {
                   ts: radioGroundRaw.ts,
                   data: radioGroundStateSchema.parse(radioGroundRaw.data),
+                }
+              : null,
+            gps: gpsRaw
+              ? {
+                  ts: gpsRaw.ts,
+                  data: gpsSchema.parse(gpsRaw.data),
                 }
               : null,
           };

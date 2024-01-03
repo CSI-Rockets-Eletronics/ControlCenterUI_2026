@@ -2,6 +2,8 @@ import { shallowEqual } from "@xstate/react";
 import { Map, Marker, Overlay, type Point, ZoomControl } from "pigeon-maps";
 import { memo, useCallback, useEffect, useState } from "react";
 
+import { type GpsState } from "@/lib/stationState";
+
 import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
@@ -9,7 +11,18 @@ const INITIAL_ZOOM = 16;
 
 export const MapPanel = memo(function MapPanel() {
   const rocketAnchor: Point | undefined = useLaunchMachineSelector((state) => {
-    const gpsState = state.context.deviceStates.radioGround?.data.gps;
+    function getGpsState(): GpsState | null {
+      const { radioGround, gps } = state.context.deviceStates;
+      if (radioGround && gps) {
+        return radioGround.ts > gps.ts ? radioGround.data.gps : gps.data;
+      }
+      if (!radioGround && gps) return gps.data;
+      if (radioGround && !gps) return radioGround.data.gps;
+      return null;
+    }
+
+    const gpsState = getGpsState();
+
     if (
       gpsState &&
       gpsState.latitude_fixed != null &&
