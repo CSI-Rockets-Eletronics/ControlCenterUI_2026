@@ -448,6 +448,10 @@ export function createLaunchMachine(
             return false;
           }
 
+          if (!context.deviceStates.firingStation) {
+            return false;
+          }
+
           const fireReqsComplete =
             checklistIsComplete(context.launchState.preFillChecklist) &&
             checklistIsComplete(context.launchState.goPoll) &&
@@ -460,12 +464,12 @@ export function createLaunchMachine(
               return true;
             }
           } else {
-            if (event.value === context.deviceStates.firingStation?.data.opState) {
+            if (event.value === context.deviceStates.firingStation.data.opState) {
               return false;
             }
 
             if (event.value === "fire") {
-              const opState = context.deviceStates.firingStation?.data.opState;
+              const opState = context.deviceStates.firingStation.data.opState;
               const validFireSourceState = opState === "standby" || opState === "keep" || opState === "custom";
               return fireReqsComplete && validFireSourceState;
             } else if (event.value === "fire-manual-igniter" || event.value === "fire-manual-valve") {
