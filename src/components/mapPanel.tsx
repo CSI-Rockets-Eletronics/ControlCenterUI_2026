@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useState } from "react";
 
 import { type GpsState } from "@/lib/stationState";
 
+import { Button } from "./design/button";
 import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
 
@@ -135,6 +136,23 @@ export const MapPanel = memo(function MapPanel() {
             </Overlay>
           )}
         </Map>
+      </div>
+
+      <div className="flex flex-col gap-4 md:flex-row">
+        <Button
+          color="green"
+          disabled={!localAnchor}
+          onClick={centerOnLocalAnchor}
+        >
+          CENTER ON ME
+        </Button>
+        <Button
+          color="green"
+          disabled={!rocketAnchor}
+          onClick={centerOnLocalAnchor}
+        >
+          CENTER ON ROCKET
+        </Button>
       </div>
     </Panel>
   );
