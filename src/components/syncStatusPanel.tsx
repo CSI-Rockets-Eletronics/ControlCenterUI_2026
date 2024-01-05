@@ -45,7 +45,7 @@ export const SyncStatusPanel = memo(function SyncStatusPanel() {
           disabled={dismissNetworkErrorDisabled}
           onClick={dismissNetworkError}
         >
-          Retry
+          RETRY
         </Button>
       </Panel>
     );
