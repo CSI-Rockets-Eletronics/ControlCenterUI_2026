@@ -153,7 +153,7 @@ export const MapPanel = memo(function MapPanel() {
         <Button
           color="green"
           disabled={!rocketAnchor}
-          onClick={centerOnLocalAnchor}
+          onClick={centerOnRocketAnchor}
         >
           CENTER ON ROCKET
         </Button>
