@@ -92,6 +92,10 @@ export const MapPanel = memo(function MapPanel() {
     }
   }, [rocketAnchor]);
 
+  const retryLocalLocation = useCallback(() => {
+    setHasLocationError(false);
+  }, []);
+
   return (
     <Panel className="flex flex-col gap-4">
       <p className="text-lg text-gray-text">Map</p>
@@ -153,6 +157,11 @@ export const MapPanel = memo(function MapPanel() {
         >
           CENTER ON ROCKET
         </Button>
+        {hasLocationError && (
+          <Button color="red" disabled={false} onClick={retryLocalLocation}>
+            FAILED TO GET YOUR LOCATION - CLICK TO RETRY
+          </Button>
+        )}
       </div>
     </Panel>
   );
