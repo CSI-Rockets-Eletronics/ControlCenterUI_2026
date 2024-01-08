@@ -113,6 +113,7 @@ class DummyStation {
 
     const radioGroundState: RadioGroundState = {
       gps: {
+        ts_tail: Math.floor(randRange(0, 256)),
         fix: true,
         fixquality: 1,
         latitude_fixed: randRange(-90, 90) * 1e7,

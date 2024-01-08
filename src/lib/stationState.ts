@@ -53,6 +53,11 @@ export const loadCellStateSchema = z.number();
 export type LoadCellState = z.infer<typeof loadCellStateSchema>;
 
 export const gpsSchema = z.object({
+  /**
+   * Last byte of microsecond timestamp of gps micro-controller, to detect if
+   * we're receiving fresh gps data.
+   */
+  ts_tail: z.number(),
   /** Have a fix? */
   fix: z.boolean(),
   /** Fix quality (0, 1, 2 = Invalid, GPS, DGPS). */
@@ -63,8 +68,6 @@ export const gpsSchema = z.object({
   longitude_fixed: z.number().optional(),
   /** Altitude in meters above MSL. */
   altitude: z.number().optional(),
-  /** Position Dilution of Precision */
-  PDOP: z.number().optional(),
 });
 
 export type GpsState = z.infer<typeof gpsSchema>;
