@@ -48,7 +48,10 @@ export type StationState = {
   status: StationStatus;
 };
 
-export const loadCellStateSchema = z.number();
+export const loadCellStateSchema = z.object({
+  lbs1: z.number(),
+  lbs2: z.number(),
+});
 
 export type LoadCellState = z.infer<typeof loadCellStateSchema>;
 

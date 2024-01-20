@@ -188,9 +188,9 @@ const OxidizerTankPressureDisplay = memo(
   },
 );
 
-const LoadCellDisplay = memo(function LoadCellDisplay() {
+const LoadCellDisplay1 = memo(function LoadCellDisplay1() {
   const value = useLaunchMachineSelector((state) =>
-    (state.context.deviceStates.loadCell?.data ?? 0).toFixed(2),
+    (state.context.deviceStates.loadCell?.data.lbs1 ?? 0).toFixed(2),
   );
 
   const chartElement = useMemo(() => {
@@ -202,7 +202,7 @@ const LoadCellDisplay = memo(function LoadCellDisplay() {
             loadCell
               ? {
                   ts: loadCell.ts,
-                  value: loadCell.data,
+                  value: loadCell.data.lbs1,
                 }
               : null
           }
@@ -222,7 +222,51 @@ const LoadCellDisplay = memo(function LoadCellDisplay() {
 
   return (
     <StatusDisplay
-      label="Load Cell (lbs)"
+      label="Load Cell 1 (lbs)"
+      color="green"
+      value={value}
+      overflowElement={showChart ? chartElement : undefined}
+      disabled={false}
+      onClick={handleClick}
+    />
+  );
+});
+
+const LoadCellDisplay2 = memo(function LoadCellDisplay2() {
+  const value = useLaunchMachineSelector((state) =>
+    (state.context.deviceStates.loadCell?.data.lbs2 ?? 0).toFixed(2),
+  );
+
+  const chartElement = useMemo(() => {
+    return (
+      <ChartLoadingFallback>
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          selector={({ loadCell }) =>
+            loadCell
+              ? {
+                  ts: loadCell.ts,
+                  value: loadCell.data.lbs2,
+                }
+              : null
+          }
+          valuePrecision={3}
+          minY="dataMin - 2"
+          maxY="dataMax + 2"
+        />
+      </ChartLoadingFallback>
+    );
+  }, []);
+
+  const [showChart, setShowChart] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setShowChart(!showChart);
+  }, [showChart]);
+
+  return (
+    <StatusDisplay
+      label="Load Cell 2 (lbs)"
       color="green"
       value={value}
       overflowElement={showChart ? chartElement : undefined}
@@ -286,7 +330,8 @@ export const StatusPanel = memo(function StatusPanel() {
           <FillLineDisplay />
           <CombustionPressureDisplay />
           <OxidizerTankPressureDisplay />
-          <LoadCellDisplay />
+          <LoadCellDisplay1 />
+          <LoadCellDisplay2 />
         </>
       )}
     </Panel>
