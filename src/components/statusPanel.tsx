@@ -266,6 +266,52 @@ const LoadCell2Display = memo(function LoadCell2Display() {
   );
 });
 
+const TotalLoadCellDisplay = memo(function TotalLoadCellDisplay() {
+  const value = useLaunchMachineSelector((state) => {
+    const { loadCell1, loadCell2 } = state.context.deviceStates;
+    const sum = loadCell1 && loadCell2 ? loadCell1.data + loadCell2.data : 0;
+    return sum.toFixed(2);
+  });
+
+  const chartElement = useMemo(() => {
+    return (
+      <ChartLoadingFallback>
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          selector={({ loadCell1, loadCell2 }) =>
+            loadCell1 && loadCell2
+              ? {
+                  ts: (loadCell1.ts + loadCell2.ts) / 2,
+                  value: loadCell1.data + loadCell2.data,
+                }
+              : null
+          }
+          valuePrecision={3}
+          minY="dataMin - 2"
+          maxY="dataMax + 2"
+        />
+      </ChartLoadingFallback>
+    );
+  }, []);
+
+  const [showChart, setShowChart] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setShowChart(!showChart);
+  }, [showChart]);
+
+  return (
+    <StatusDisplay
+      label="Total Load Cell (lbs)"
+      color="green"
+      value={value}
+      overflowElement={showChart ? chartElement : undefined}
+      disabled={false}
+      onClick={handleClick}
+    />
+  );
+});
+
 const AltitudeDisplay = memo(function AltitudeDisplay() {
   const value = useLaunchMachineSelector((state) =>
     (state.context.deviceStates.radioGround?.data.gps.altitude ?? 0).toFixed(1),
@@ -322,6 +368,7 @@ export const StatusPanel = memo(function StatusPanel() {
           <OxidizerTankPressureDisplay />
           <LoadCell1Display />
           <LoadCell2Display />
+          <TotalLoadCellDisplay />
         </>
       )}
     </Panel>
