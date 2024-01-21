@@ -30,8 +30,13 @@ const PRESET_MESSAGES = [
     data: { command: "clear-calibration" },
   },
   {
-    label: "LOAD CELL RECALIBRATE",
-    device: DEVICES.loadCell,
+    label: "LOAD CELL 1 RECALIBRATE",
+    device: DEVICES.loadCell1,
+    data: "calibrate",
+  },
+  {
+    label: "LOAD CELL 2 RECALIBRATE",
+    device: DEVICES.loadCell2,
     data: "calibrate",
   },
 ];

@@ -13,7 +13,8 @@ export const DEVICES = {
   // ground station
   firingStation: "FiringStation",
   scientific: "Scientific",
-  loadCell: "IDA100",
+  loadCell1: "LoadCell1",
+  loadCell2: "LoadCell2",
   radioGround: "RadioGround",
   // in-rocket
   gps: "GPS",

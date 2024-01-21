@@ -188,9 +188,9 @@ const OxidizerTankPressureDisplay = memo(
   },
 );
 
-const LoadCellDisplay1 = memo(function LoadCellDisplay1() {
+const LoadCell1Display = memo(function LoadCell1Display() {
   const value = useLaunchMachineSelector((state) =>
-    (state.context.deviceStates.loadCell?.data.lbs1 ?? 0).toFixed(2),
+    (state.context.deviceStates.loadCell1?.data ?? 0).toFixed(2),
   );
 
   const chartElement = useMemo(() => {
@@ -198,13 +198,8 @@ const LoadCellDisplay1 = memo(function LoadCellDisplay1() {
       <ChartLoadingFallback>
         <StationChart
           // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ loadCell }) =>
-            loadCell
-              ? {
-                  ts: loadCell.ts,
-                  value: loadCell.data.lbs1,
-                }
-              : null
+          selector={({ loadCell1 }) =>
+            loadCell1 ? { ts: loadCell1.ts, value: loadCell1.data } : null
           }
           valuePrecision={3}
           minY="dataMin - 2"
@@ -232,9 +227,9 @@ const LoadCellDisplay1 = memo(function LoadCellDisplay1() {
   );
 });
 
-const LoadCellDisplay2 = memo(function LoadCellDisplay2() {
+const LoadCell2Display = memo(function LoadCell2Display() {
   const value = useLaunchMachineSelector((state) =>
-    (state.context.deviceStates.loadCell?.data.lbs2 ?? 0).toFixed(2),
+    (state.context.deviceStates.loadCell2?.data ?? 0).toFixed(2),
   );
 
   const chartElement = useMemo(() => {
@@ -242,13 +237,8 @@ const LoadCellDisplay2 = memo(function LoadCellDisplay2() {
       <ChartLoadingFallback>
         <StationChart
           // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ loadCell }) =>
-            loadCell
-              ? {
-                  ts: loadCell.ts,
-                  value: loadCell.data.lbs2,
-                }
-              : null
+          selector={({ loadCell2 }) =>
+            loadCell2 ? { ts: loadCell2.ts, value: loadCell2.data } : null
           }
           valuePrecision={3}
           minY="dataMin - 2"
@@ -330,8 +320,8 @@ export const StatusPanel = memo(function StatusPanel() {
           <FillLineDisplay />
           <CombustionPressureDisplay />
           <OxidizerTankPressureDisplay />
-          <LoadCellDisplay1 />
-          <LoadCellDisplay2 />
+          <LoadCell1Display />
+          <LoadCell2Display />
         </>
       )}
     </Panel>

@@ -44,7 +44,8 @@ type DeviceRecord<T> = {
 
 export type DeviceStates = {
   firingStation: DeviceRecord<StationState> | null;
-  loadCell: DeviceRecord<LoadCellState> | null;
+  loadCell1: DeviceRecord<LoadCellState> | null;
+  loadCell2: DeviceRecord<LoadCellState> | null;
   radioGround: DeviceRecord<RadioGroundState> | null;
   gps: DeviceRecord<GpsState> | null;
 };
@@ -133,7 +134,8 @@ export function createLaunchMachine(
         pendingLaunchState: null,
         deviceStates: {
           firingStation: null,
-          loadCell: null,
+          loadCell1: null,
+          loadCell2: null,
           radioGround: null,
           gps: null,
         },
@@ -361,14 +363,21 @@ export function createLaunchMachine(
               $query: {
                 environmentKey,
                 sessionName,
-                devices: [DEVICES.firingStation, DEVICES.loadCell, DEVICES.radioGround, DEVICES.gps].join(","),
+                devices: [
+                  DEVICES.firingStation,
+                  DEVICES.loadCell1,
+                  DEVICES.loadCell2,
+                  DEVICES.radioGround,
+                  DEVICES.gps,
+                ].join(","),
                 endTs,
               },
             }),
           );
 
           const firingStationRaw = records[DEVICES.firingStation];
-          const loadCellRaw = records[DEVICES.loadCell];
+          const loadCell1Raw = records[DEVICES.loadCell1];
+          const loadCell2Raw = records[DEVICES.loadCell2];
           const radioGroundRaw = records[DEVICES.radioGround];
           const gpsRaw = records[DEVICES.gps];
 
@@ -379,10 +388,16 @@ export function createLaunchMachine(
                   data: parseRemoteStationState(remoteStationStateSchema.parse(firingStationRaw.data)),
                 }
               : null,
-            loadCell: loadCellRaw
+            loadCell1: loadCell1Raw
               ? {
-                  ts: loadCellRaw.ts,
-                  data: loadCellStateSchema.parse(loadCellRaw.data),
+                  ts: loadCell1Raw.ts,
+                  data: loadCellStateSchema.parse(loadCell1Raw.data),
+                }
+              : null,
+            loadCell2: loadCell2Raw
+              ? {
+                  ts: loadCell2Raw.ts,
+                  data: loadCellStateSchema.parse(loadCell2Raw.data),
                 }
               : null,
             radioGround: radioGroundRaw
