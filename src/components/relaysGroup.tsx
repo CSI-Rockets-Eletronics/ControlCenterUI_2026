@@ -13,9 +13,10 @@ import {
 const defaultPendingRelays: StationRelays = {
   fill: false,
   vent: false,
-  pyroValve: false,
+  abort: false,
   pyroCutter: false,
   igniter: false,
+  servoValve: false,
 };
 
 const Entry = memo(function Entry({
@@ -123,9 +124,10 @@ export const RelaysGroup = memo(function RelaysGroup() {
       <div className="flex flex-wrap items-center gap-4">
         <Entry label="Fill" field="fill" pr={pr} spr={spr} />
         <Entry label="Vent" field="vent" pr={pr} spr={spr} />
-        <Entry label="Servo Valve" field="pyroValve" pr={pr} spr={spr} />
+        <Entry label="Abort" field="abort" pr={pr} spr={spr} />
         <Entry label="Pyro Cutter" field="pyroCutter" pr={pr} spr={spr} />
         <Entry label="Igniter" field="igniter" pr={pr} spr={spr} />
+        <Entry label="Servo Valve" field="servoValve" pr={pr} spr={spr} />
       </div>
     </div>
   );

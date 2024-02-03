@@ -101,9 +101,10 @@ class DummyStation {
       relayStatusByte: toRelayStatusByte({
         fill: randBool(),
         vent: randBool(),
-        pyroValve: randBool(),
+        abort: randBool(),
         pyroCutter: randBool(),
         igniter: randBool(),
+        servoValve: randBool(),
       }),
       oxTankMPSI: randRange(0, 100),
       ccMPSI: randRange(0, 100),

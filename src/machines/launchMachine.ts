@@ -484,7 +484,7 @@ export function createLaunchMachine(
             armStatusIsComplete(context.launchState.armStatus);
 
           if (event.type === "MUTATE_STATION_OP_STATE_CUSTOM") {
-            if (event.relays.pyroValve || event.relays.pyroCutter || event.relays.igniter) {
+            if (event.relays.pyroCutter || event.relays.igniter || event.relays.servoValve) {
               return fireReqsComplete;
             } else {
               return true;

@@ -3,9 +3,10 @@ import { z } from "zod";
 const stationRelaysSchema = z.object({
   fill: z.boolean(),
   vent: z.boolean(),
-  pyroValve: z.boolean(),
+  abort: z.boolean(),
   pyroCutter: z.boolean(),
   igniter: z.boolean(),
+  servoValve: z.boolean(),
 });
 
 const stationStatusSchema = z.object({
