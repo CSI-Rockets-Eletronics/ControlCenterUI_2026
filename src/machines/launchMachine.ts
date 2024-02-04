@@ -15,8 +15,8 @@ import {
   toRemoteSetStationOpStateCommand,
 } from "@/lib/stationInterface";
 import {
-  gpsSchema,
   GpsState,
+  gpsStateSchema,
   LoadCellState,
   loadCellStateSchema,
   RadioGroundState,
@@ -409,7 +409,7 @@ export function createLaunchMachine(
             gps: gpsRaw
               ? {
                   ts: gpsRaw.ts,
-                  data: gpsSchema.parse(gpsRaw.data),
+                  data: gpsStateSchema.parse(gpsRaw.data),
                 }
               : null,
           };

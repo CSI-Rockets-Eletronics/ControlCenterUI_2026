@@ -53,7 +53,7 @@ export const loadCellStateSchema = z.number();
 
 export type LoadCellState = z.infer<typeof loadCellStateSchema>;
 
-export const gpsSchema = z.object({
+export const gpsStateSchema = z.object({
   /**
    * Last byte of microsecond timestamp of gps micro-controller, to detect if
    * we're receiving fresh gps data.
@@ -71,10 +71,10 @@ export const gpsSchema = z.object({
   altitude: z.number().optional(),
 });
 
-export type GpsState = z.infer<typeof gpsSchema>;
+export type GpsState = z.infer<typeof gpsStateSchema>;
 
 export const radioGroundStateSchema = z.object({
-  gps: gpsSchema,
+  gps: gpsStateSchema,
 });
 
 export type RadioGroundState = z.infer<typeof radioGroundStateSchema>;
