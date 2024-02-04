@@ -123,7 +123,7 @@ export const PresetMessagesPanel = memo(function PresetMessagesPanel() {
   return (
     <Panel className="flex flex-col gap-4">
       <p className="text-lg text-gray-text">Send Preset Message</p>
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4 md:max-h-60 scrollable">
         <NewSessionButton />
         {PRESET_MESSAGES.map((message) => (
           <SendPresetMessageButton key={message.label} message={message} />
