@@ -188,6 +188,102 @@ const OxidizerTankPressureDisplay = memo(
   },
 );
 
+const SmallTransducer1Display = memo(function CombustionPressureDisplay() {
+  const value = useLaunchMachineSelector((state) =>
+    // convert pressures to mPSI to PSI
+    (
+      (state.context.deviceStates.rocketScientific?.data.st1 ?? 0) / 1000
+    ).toFixed(1),
+  );
+
+  const chartElement = useMemo(() => {
+    return (
+      <ChartLoadingFallback>
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          selector={({ rocketScientific }) =>
+            rocketScientific
+              ? {
+                  ts: rocketScientific.ts,
+                  // convert pressures to mPSI to PSI
+                  value: rocketScientific.data.st1 / 1000,
+                }
+              : null
+          }
+          valuePrecision={1}
+          minY={0}
+          maxY="dataMax + 10"
+        />
+      </ChartLoadingFallback>
+    );
+  }, []);
+
+  const [showChart, setShowChart] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setShowChart(!showChart);
+  }, [showChart]);
+
+  return (
+    <StatusDisplay
+      label="Small Transducer 1 (PSI)"
+      color="green"
+      value={value}
+      overflowElement={showChart ? chartElement : undefined}
+      disabled={false}
+      onClick={handleClick}
+    />
+  );
+});
+
+const SmallTransducer2Display = memo(function CombustionPressureDisplay() {
+  const value = useLaunchMachineSelector((state) =>
+    // convert pressures to mPSI to PSI
+    (
+      (state.context.deviceStates.rocketScientific?.data.st2 ?? 0) / 1000
+    ).toFixed(1),
+  );
+
+  const chartElement = useMemo(() => {
+    return (
+      <ChartLoadingFallback>
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          selector={({ rocketScientific }) =>
+            rocketScientific
+              ? {
+                  ts: rocketScientific.ts,
+                  // convert pressures to mPSI to PSI
+                  value: rocketScientific.data.st2 / 1000,
+                }
+              : null
+          }
+          valuePrecision={1}
+          minY={0}
+          maxY="dataMax + 10"
+        />
+      </ChartLoadingFallback>
+    );
+  }, []);
+
+  const [showChart, setShowChart] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setShowChart(!showChart);
+  }, [showChart]);
+
+  return (
+    <StatusDisplay
+      label="Small Transducer 2 (PSI)"
+      color="green"
+      value={value}
+      overflowElement={showChart ? chartElement : undefined}
+      disabled={false}
+      onClick={handleClick}
+    />
+  );
+});
+
 const LoadCell1Display = memo(function LoadCell1Display() {
   const value = useLaunchMachineSelector((state) =>
     (state.context.deviceStates.loadCell1?.data ?? 0).toFixed(2),
@@ -366,6 +462,8 @@ export const StatusPanel = memo(function StatusPanel() {
           <FillLineDisplay />
           <CombustionPressureDisplay />
           <OxidizerTankPressureDisplay />
+          <SmallTransducer1Display />
+          <SmallTransducer2Display />
           <LoadCell1Display />
           <LoadCell2Display />
           <TotalLoadCellDisplay />

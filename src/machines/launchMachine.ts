@@ -21,6 +21,8 @@ import {
   loadCellStateSchema,
   RadioGroundState,
   radioGroundStateSchema,
+  RocketScientificState,
+  rocketScientificStateSchema,
   StationOpState,
   StationRelays,
   StationState,
@@ -44,6 +46,7 @@ type DeviceRecord<T> = {
 
 export type DeviceStates = {
   firingStation: DeviceRecord<StationState> | null;
+  rocketScientific: DeviceRecord<RocketScientificState> | null;
   loadCell1: DeviceRecord<LoadCellState> | null;
   loadCell2: DeviceRecord<LoadCellState> | null;
   radioGround: DeviceRecord<RadioGroundState> | null;
@@ -134,6 +137,7 @@ export function createLaunchMachine(
         pendingLaunchState: null,
         deviceStates: {
           firingStation: null,
+          rocketScientific: null,
           loadCell1: null,
           loadCell2: null,
           radioGround: null,
@@ -365,6 +369,7 @@ export function createLaunchMachine(
                 sessionName,
                 devices: [
                   DEVICES.firingStation,
+                  DEVICES.rocketScientific,
                   DEVICES.loadCell1,
                   DEVICES.loadCell2,
                   DEVICES.radioGround,
@@ -376,6 +381,7 @@ export function createLaunchMachine(
           );
 
           const firingStationRaw = records[DEVICES.firingStation];
+          const rocketScientificRaw = records[DEVICES.rocketScientific];
           const loadCell1Raw = records[DEVICES.loadCell1];
           const loadCell2Raw = records[DEVICES.loadCell2];
           const radioGroundRaw = records[DEVICES.radioGround];
@@ -386,6 +392,12 @@ export function createLaunchMachine(
               ? {
                   ts: firingStationRaw.ts,
                   data: parseRemoteStationState(remoteStationStateSchema.parse(firingStationRaw.data)),
+                }
+              : null,
+            rocketScientific: rocketScientificRaw
+              ? {
+                  ts: rocketScientificRaw.ts,
+                  data: rocketScientificStateSchema.parse(rocketScientificRaw.data),
                 }
               : null,
             loadCell1: loadCell1Raw

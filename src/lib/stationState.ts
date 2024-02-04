@@ -49,6 +49,13 @@ export type StationState = {
   status: StationStatus;
 };
 
+export const rocketScientificStateSchema = z.object({
+  st1: z.number(),
+  st2: z.number(),
+});
+
+export type RocketScientificState = z.infer<typeof rocketScientificStateSchema>;
+
 export const loadCellStateSchema = z.number();
 
 export type LoadCellState = z.infer<typeof loadCellStateSchema>;
