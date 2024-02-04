@@ -30,6 +30,16 @@ const PRESET_MESSAGES = [
     data: { command: "clear-calibration" },
   },
   {
+    label: "ROCKET RECALIBRATE",
+    device: DEVICES.rocketScientific,
+    data: { command: "cal" },
+  },
+  {
+    label: "ROCKET CLEAR CALIB.",
+    device: DEVICES.rocketScientific,
+    data: { command: "clear cal" },
+  },
+  {
     label: "LOAD CELL 1 RECALIBRATE",
     device: DEVICES.loadCell1,
     data: "calibrate",
