@@ -13,6 +13,7 @@ export const DEVICES = {
   // ground station
   firingStation: "FiringStation",
   scientific: "Scientific",
+  rocketScientific: "RocketScientific",
   loadCell1: "LoadCell1",
   loadCell2: "LoadCell2",
   radioGround: "RadioGround",
