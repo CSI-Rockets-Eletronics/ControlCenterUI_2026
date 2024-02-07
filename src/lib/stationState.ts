@@ -10,8 +10,8 @@ const stationRelaysSchema = z.object({
 });
 
 const stationStatusSchema = z.object({
-  combustionPressure: z.number(), // in PSI
-  oxidizerTankPressure: z.number(), // in PSI
+  smallTransd1Pressure: z.number(), // in PSI
+  smallTransd2Pressure: z.number(), // in PSI
   fillLineConnected: z.boolean(),
   timeSinceBoot: z.number(), // in seconds
   timeSinceCalibration: z.number(), // in seconds
@@ -50,8 +50,8 @@ export type StationState = {
 };
 
 export const rocketScientificStateSchema = z.object({
-  st1: z.number(),
-  st2: z.number(),
+  bt1: z.number(),
+  bt2: z.number(),
 });
 
 export type RocketScientificState = z.infer<typeof rocketScientificStateSchema>;

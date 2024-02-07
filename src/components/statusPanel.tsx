@@ -92,11 +92,11 @@ const FillLineDisplay = memo(function FillLineDisplay() {
   );
 });
 
-const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
+const OxTank1Display = memo(function OxTank1Display() {
   const value = useLaunchMachineSelector((state) =>
     (
       state.context.deviceStates.firingStation?.data.status
-        .combustionPressure ?? 0
+        .smallTransd1Pressure ?? 0
     ).toFixed(1),
   );
 
@@ -109,7 +109,7 @@ const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
             firingStation
               ? {
                   ts: firingStation.ts,
-                  value: firingStation.data.status.combustionPressure,
+                  value: firingStation.data.status.smallTransd1Pressure,
                 }
               : null
           }
@@ -129,7 +129,7 @@ const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
 
   return (
     <StatusDisplay
-      label="CC Pressure (PSI)"
+      label="Ox Tank 1 (PSI)"
       color="green"
       value={value}
       overflowElement={showChart ? chartElement : undefined}
@@ -139,60 +139,58 @@ const CombustionPressureDisplay = memo(function CombustionPressureDisplay() {
   );
 });
 
-const OxidizerTankPressureDisplay = memo(
-  function OxidizerTankPressureDisplay() {
-    const value = useLaunchMachineSelector((state) =>
-      (
-        state.context.deviceStates.firingStation?.data.status
-          .oxidizerTankPressure ?? 0
-      ).toFixed(1),
-    );
+const OxTank2Display = memo(function OxTank2Display() {
+  const value = useLaunchMachineSelector((state) =>
+    (
+      state.context.deviceStates.firingStation?.data.status
+        .smallTransd2Pressure ?? 0
+    ).toFixed(1),
+  );
 
-    const chartElement = useMemo(() => {
-      return (
-        <ChartLoadingFallback>
-          <StationChart
-            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-            selector={({ firingStation }) =>
-              firingStation
-                ? {
-                    ts: firingStation.ts,
-                    value: firingStation.data.status.oxidizerTankPressure,
-                  }
-                : null
-            }
-            valuePrecision={1}
-            minY={0}
-            maxY="dataMax + 10"
-          />
-        </ChartLoadingFallback>
-      );
-    }, []);
-
-    const [showChart, setShowChart] = useState(false);
-
-    const handleClick = useCallback(() => {
-      setShowChart(!showChart);
-    }, [showChart]);
-
+  const chartElement = useMemo(() => {
     return (
-      <StatusDisplay
-        label="Ox Tank Pressure (PSI)"
-        color="green"
-        value={value}
-        overflowElement={showChart ? chartElement : undefined}
-        disabled={false}
-        onClick={handleClick}
-      />
+      <ChartLoadingFallback>
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          selector={({ firingStation }) =>
+            firingStation
+              ? {
+                  ts: firingStation.ts,
+                  value: firingStation.data.status.smallTransd2Pressure,
+                }
+              : null
+          }
+          valuePrecision={1}
+          minY={0}
+          maxY="dataMax + 10"
+        />
+      </ChartLoadingFallback>
     );
-  },
-);
+  }, []);
 
-const SmallTransducer1Display = memo(function CombustionPressureDisplay() {
+  const [showChart, setShowChart] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setShowChart(!showChart);
+  }, [showChart]);
+
+  return (
+    <StatusDisplay
+      label="Ox Tank 2 (PSI)"
+      color="green"
+      value={value}
+      overflowElement={showChart ? chartElement : undefined}
+      disabled={false}
+      onClick={handleClick}
+    />
+  );
+});
+
+const CC1Display = memo(function CC1Display() {
   const value = useLaunchMachineSelector((state) =>
     // convert pressures to mPSI to PSI
     (
-      (state.context.deviceStates.rocketScientific?.data.st1 ?? 0) / 1000
+      (state.context.deviceStates.rocketScientific?.data.bt1 ?? 0) / 1000
     ).toFixed(1),
   );
 
@@ -206,7 +204,7 @@ const SmallTransducer1Display = memo(function CombustionPressureDisplay() {
               ? {
                   ts: rocketScientific.ts,
                   // convert pressures to mPSI to PSI
-                  value: rocketScientific.data.st1 / 1000,
+                  value: rocketScientific.data.bt1 / 1000,
                 }
               : null
           }
@@ -226,7 +224,7 @@ const SmallTransducer1Display = memo(function CombustionPressureDisplay() {
 
   return (
     <StatusDisplay
-      label="Small Transducer 1 (PSI)"
+      label="CC 1 (PSI)"
       color="green"
       value={value}
       overflowElement={showChart ? chartElement : undefined}
@@ -236,11 +234,11 @@ const SmallTransducer1Display = memo(function CombustionPressureDisplay() {
   );
 });
 
-const SmallTransducer2Display = memo(function CombustionPressureDisplay() {
+const CC2Display = memo(function CC2Display() {
   const value = useLaunchMachineSelector((state) =>
     // convert pressures to mPSI to PSI
     (
-      (state.context.deviceStates.rocketScientific?.data.st2 ?? 0) / 1000
+      (state.context.deviceStates.rocketScientific?.data.bt2 ?? 0) / 1000
     ).toFixed(1),
   );
 
@@ -254,7 +252,7 @@ const SmallTransducer2Display = memo(function CombustionPressureDisplay() {
               ? {
                   ts: rocketScientific.ts,
                   // convert pressures to mPSI to PSI
-                  value: rocketScientific.data.st2 / 1000,
+                  value: rocketScientific.data.bt2 / 1000,
                 }
               : null
           }
@@ -274,7 +272,7 @@ const SmallTransducer2Display = memo(function CombustionPressureDisplay() {
 
   return (
     <StatusDisplay
-      label="Small Transducer 2 (PSI)"
+      label="CC 2 (PSI)"
       color="green"
       value={value}
       overflowElement={showChart ? chartElement : undefined}
@@ -460,10 +458,10 @@ export const StatusPanel = memo(function StatusPanel() {
       ) : (
         <>
           <FillLineDisplay />
-          <CombustionPressureDisplay />
-          <OxidizerTankPressureDisplay />
-          <SmallTransducer1Display />
-          <SmallTransducer2Display />
+          <OxTank1Display />
+          <OxTank2Display />
+          <CC1Display />
+          <CC2Display />
           <LoadCell1Display />
           <LoadCell2Display />
           <TotalLoadCellDisplay />

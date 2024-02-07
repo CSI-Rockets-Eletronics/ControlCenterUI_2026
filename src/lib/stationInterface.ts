@@ -31,8 +31,8 @@ export const remoteStationStateSchema = z.object({
   // time: z.number(),
   stateByte: z.number(),
   relayStatusByte: z.number(),
-  oxTankMPSI: z.number(),
-  ccMPSI: z.number(),
+  st1MPSI: z.number(),
+  st2MPSI: z.number(),
   fillLineConnected: z.boolean().optional(),
   timeSinceBoot: z.number(),
   timeSinceCalibration: z.number(),
@@ -163,8 +163,8 @@ export function parseRemoteStationState(
       timeSinceBoot: remoteState.timeSinceBoot / 1e6,
       timeSinceCalibration: remoteState.timeSinceCalibration / 1e6,
       // convert pressures to mPSI to PSI
-      combustionPressure: remoteState.ccMPSI / 1000,
-      oxidizerTankPressure: remoteState.oxTankMPSI / 1000,
+      smallTransd1Pressure: remoteState.st1MPSI / 1000,
+      smallTransd2Pressure: remoteState.st2MPSI / 1000,
       fillLineConnected: remoteState.fillLineConnected ?? false,
     },
   };

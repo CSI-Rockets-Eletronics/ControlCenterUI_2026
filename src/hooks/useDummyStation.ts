@@ -106,8 +106,8 @@ class DummyStation {
         igniter: randBool(),
         servoValve: randBool(),
       }),
-      oxTankMPSI: randRange(0, 100),
-      ccMPSI: randRange(0, 100),
+      st1MPSI: randRange(0, 1e6),
+      st2MPSI: randRange(0, 1e6),
       timeSinceBoot: curTime - this.bootTime,
       timeSinceCalibration: curTime - this.bootTime,
     };
