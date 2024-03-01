@@ -1,3 +1,4 @@
 # xstate typegen
 dist
+public
 src/machines/**/*.typegen.ts

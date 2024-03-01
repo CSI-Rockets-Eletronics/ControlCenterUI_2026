@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 
+import { computeNitrousMass } from "@/lib/coolprop";
 import { type LaunchState } from "@/lib/launchState";
 
 import { Panel } from "./design/panel";
@@ -16,6 +17,14 @@ import {
   useLaunchMachineActorRef,
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
+
+function useTotalLoadCell() {
+  return useLaunchMachineSelector((state) => {
+    const { loadCell1, loadCell2 } = state.context.deviceStates;
+    const sum = loadCell1 && loadCell2 ? loadCell1.data + loadCell2.data : 0;
+    return sum;
+  });
+}
 
 const StationChart = lazy(() =>
   import("./stationChart").then((res) => ({ default: res.StationChart })),
@@ -361,11 +370,7 @@ const LoadCell2Display = memo(function LoadCell2Display() {
 });
 
 const TotalLoadCellDisplay = memo(function TotalLoadCellDisplay() {
-  const value = useLaunchMachineSelector((state) => {
-    const { loadCell1, loadCell2 } = state.context.deviceStates;
-    const sum = loadCell1 && loadCell2 ? loadCell1.data + loadCell2.data : 0;
-    return sum.toFixed(2);
-  });
+  const value = useTotalLoadCell().toFixed(2);
 
   const chartElement = useMemo(() => {
     return (
@@ -403,6 +408,37 @@ const TotalLoadCellDisplay = memo(function TotalLoadCellDisplay() {
       disabled={false}
       onClick={handleClick}
     />
+  );
+});
+
+const TotalNitrousDisplay = memo(function TotalNitrousDisplay() {
+  const totalLoadCell = useTotalLoadCell();
+  const totalMassLbs = -totalLoadCell; // tank mass pulls down on load cells
+
+  const vaporPressurePsi = useLaunchMachineSelector(
+    (state) =>
+      state.context.deviceStates.firingStation?.data.status
+        .smallTransd1Pressure ?? 0,
+  );
+
+  const { liquidMassLbs, vaporMassLbs } = useMemo(
+    () => computeNitrousMass(totalMassLbs, vaporPressurePsi),
+    [totalMassLbs, vaporPressurePsi],
+  );
+
+  return (
+    <>
+      <StatusDisplay
+        label="Liquid Nitrous (lbs)"
+        color="green"
+        value={liquidMassLbs.toFixed(2)}
+      />
+      <StatusDisplay
+        label="Vapor Nitrous (lbs)"
+        color="green"
+        value={vaporMassLbs.toFixed(2)}
+      />
+    </>
   );
 });
 
@@ -465,6 +501,7 @@ export const StatusPanel = memo(function StatusPanel() {
           <LoadCell1Display />
           <LoadCell2Display />
           <TotalLoadCellDisplay />
+          <TotalNitrousDisplay />
         </>
       )}
     </Panel>

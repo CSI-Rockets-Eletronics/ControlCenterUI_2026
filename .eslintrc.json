@@ -57,7 +57,7 @@
       "version": "detect"
     }
   },
-  "ignorePatterns": ["src/machines/**/*.typegen.ts"],
+  "ignorePatterns": ["public", "src/machines/**/*.typegen.ts"],
   "overrides": [
     {
       "files": ["src/machines/**/*.ts"],
