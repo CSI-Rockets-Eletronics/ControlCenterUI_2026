@@ -412,8 +412,7 @@ const TotalLoadCellDisplay = memo(function TotalLoadCellDisplay() {
 });
 
 const TotalNitrousDisplay = memo(function TotalNitrousDisplay() {
-  const totalLoadCell = useTotalLoadCell();
-  const totalMassLbs = -totalLoadCell; // tank mass pulls down on load cells
+  const totalMassLbs = useTotalLoadCell();
 
   const vaporPressurePsi = useLaunchMachineSelector(
     (state) =>
