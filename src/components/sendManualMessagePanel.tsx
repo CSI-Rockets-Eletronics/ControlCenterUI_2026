@@ -95,8 +95,8 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
                 (deviceMatchesPreset
                   ? "bg-green-el-bg border-green-border"
                   : deviceIsValid
-                  ? "bg-yellow-el-bg border-yellow-border"
-                  : "bg-red-el-bg border-red-border"),
+                    ? "bg-yellow-el-bg border-yellow-border"
+                    : "bg-red-el-bg border-red-border"),
             )}
             type="text"
             spellCheck={false}
