@@ -60,11 +60,10 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
 
   const launchActorRef = useLaunchMachineActorRef();
 
-  const canSendManualMessage = useLaunchMachineSelector((state) =>
+  const canSendManualMessages = useLaunchMachineSelector((state) =>
     state.can({
-      type: "SEND_MANUAL_MESSAGE",
-      device: "",
-      data: "",
+      type: "SEND_MANUAL_MESSAGES",
+      messages: [],
     }),
   );
 
@@ -72,9 +71,8 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
     (event: FormEvent) => {
       event.preventDefault();
       launchActorRef.send({
-        type: "SEND_MANUAL_MESSAGE",
-        device,
-        data: JSON.parse(data),
+        type: "SEND_MANUAL_MESSAGES",
+        messages: [{ device, data: JSON.parse(data) }],
       });
       setData("");
     },
@@ -123,7 +121,7 @@ export const SendManualMessagePanel = memo(function SendManualMessagePanel() {
         <Button
           type="submit"
           color="green"
-          disabled={!canSendManualMessage || !deviceIsValid || !dataIsValid}
+          disabled={!canSendManualMessages || !deviceIsValid || !dataIsValid}
         >
           SEND
         </Button>

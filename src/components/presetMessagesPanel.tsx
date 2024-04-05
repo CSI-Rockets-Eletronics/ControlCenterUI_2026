@@ -63,11 +63,10 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton(
 ) {
   const launchActorRef = useLaunchMachineActorRef();
 
-  const canSendManualMessage = useLaunchMachineSelector((state) =>
+  const canSendManualMessages = useLaunchMachineSelector((state) =>
     state.can({
-      type: "SEND_MANUAL_MESSAGE",
-      device: "",
-      data: "",
+      type: "SEND_MANUAL_MESSAGES",
+      messages: [],
     }),
   );
 
@@ -81,12 +80,12 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton(
   }, [messageOrMessages]);
 
   const handleClick = useCallback(() => {
-    messages.forEach((message) => {
-      launchActorRef.send({
-        type: "SEND_MANUAL_MESSAGE",
+    launchActorRef.send({
+      type: "SEND_MANUAL_MESSAGES",
+      messages: messages.map((message) => ({
         device: message.device,
         data: message.data,
-      });
+      })),
     });
   }, [launchActorRef, messages]);
 
@@ -94,7 +93,7 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton(
     <Button
       key={label}
       color="green"
-      disabled={!canSendManualMessage}
+      disabled={!canSendManualMessages}
       onClick={handleClick}
     >
       {label}

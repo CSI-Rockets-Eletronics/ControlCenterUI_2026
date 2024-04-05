@@ -53,6 +53,11 @@ export type DeviceStates = {
   gps: DeviceRecord<GpsState> | null;
 };
 
+export interface PendingMessage {
+  device: string;
+  data: unknown;
+}
+
 export interface SentMessage {
   ts: Date;
   device: string;
@@ -94,9 +99,8 @@ export type LaunchMachineEvent =
       relays: StationRelays;
     }
   | {
-      type: "SEND_MANUAL_MESSAGE";
-      device: string;
-      data: unknown;
+      type: "SEND_MANUAL_MESSAGES";
+      messages: PendingMessage[];
     };
 
 export function createLaunchMachine(
@@ -126,8 +130,8 @@ export function createLaunchMachine(
           fetchLaunchState: { data: LaunchState };
           mutateLaunchState: { data: LaunchState };
           fetchDeviceStates: { data: DeviceStates };
-          mutateStationOpState: { data: SentMessage };
-          sendManualMessage: { data: SentMessage };
+          mutateStationOpState: { data: SentMessage[] };
+          sendManualMessages: { data: SentMessage[] };
         },
       },
       id: "launch",
@@ -220,7 +224,7 @@ export function createLaunchMachine(
                   on: {
                     MUTATE_STATION_OP_STATE: { target: "mutatingOpState", cond: "canMutateOpState" },
                     MUTATE_STATION_OP_STATE_CUSTOM: { target: "mutatingOpState", cond: "canMutateOpState" },
-                    SEND_MANUAL_MESSAGE: { target: "sendingManualMessage", cond: "canWrite" },
+                    SEND_MANUAL_MESSAGES: { target: "sendingManualMessages", cond: "canWrite" },
                   },
                   initial: "waitingToRefetch",
                   states: {
@@ -244,17 +248,17 @@ export function createLaunchMachine(
                     src: "mutateStationOpState",
                     onDone: {
                       target: "idle.refetching",
-                      actions: "addSentMessage",
+                      actions: "addSentMessages",
                     },
                     onError: "#launch.networkError",
                   },
                 },
-                sendingManualMessage: {
+                sendingManualMessages: {
                   invoke: {
-                    src: "sendManualMessage",
+                    src: "sendManualMessages",
                     onDone: {
                       target: "idle.refetching",
-                      actions: "addSentMessage",
+                      actions: "addSentMessages",
                     },
                     onError: "#launch.networkError",
                   },
@@ -319,9 +323,9 @@ export function createLaunchMachine(
         logNetworkError: (_, event) => {
           console.error("Launch machine network error", event);
         },
-        addSentMessage: assign((context, event) => {
+        addSentMessages: assign((context, event) => {
           return {
-            sentMessages: [...context.sentMessages, event.data],
+            sentMessages: [...context.sentMessages, ...event.data],
           };
         }),
       },
@@ -444,26 +448,33 @@ export function createLaunchMachine(
             }),
           );
           console.log("Sent message", DEVICES.firingStation, data);
-          return {
-            ts: new Date(),
-            device: DEVICES.firingStation,
-            data,
-          };
+          return [
+            {
+              ts: new Date(),
+              device: DEVICES.firingStation,
+              data,
+            },
+          ];
         },
-        sendManualMessage: async (_, event) => {
-          await catchError(
-            api.messages.post({
-              environmentKey,
-              device: event.device,
-              data: event.data,
+        sendManualMessages: async (_, event) => {
+          await Promise.all(
+            event.messages.map(async (message) => {
+              await catchError(
+                api.messages.post({
+                  environmentKey,
+                  device: message.device,
+                  data: message.data,
+                }),
+              );
+              console.log("Sent message", message.device, message.data);
             }),
           );
-          console.log("Sent message", event.device, event.data);
-          return {
-            ts: new Date(),
-            device: event.device,
-            data: event.data,
-          };
+          const ts = new Date();
+          return event.messages.map((message) => ({
+            ts,
+            device: message.device,
+            data: message.data,
+          }));
         },
       },
       guards: {
