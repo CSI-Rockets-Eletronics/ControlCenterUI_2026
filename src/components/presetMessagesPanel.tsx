@@ -1,4 +1,4 @@
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 
 import { catchError, useApi } from "@/hooks/useApi";
 import { useEnvironmentKey } from "@/hooks/useEnvironmentKey";
@@ -18,7 +18,7 @@ interface PresetMessage {
   data: unknown;
 }
 
-const PRESET_MESSAGES = [
+const RECALIBRATE_MESSAGES: PresetMessage[] = [
   {
     label: "FS RECALIBRATE",
     device: DEVICES.firingStation,
@@ -51,11 +51,16 @@ const PRESET_MESSAGES = [
   },
 ];
 
-const SendPresetMessageButton = memo(function SendPresetMessageButton({
-  message,
-}: {
-  message: PresetMessage;
-}) {
+const PRESET_MESSAGES: PresetMessage[] = [
+  ...RECALIBRATE_MESSAGES,
+  // possibly other messages...
+];
+
+const SendPresetMessageButton = memo(function SendPresetMessageButton(
+  props:
+    | { message: PresetMessage }
+    | { label: string; messages: PresetMessage[] },
+) {
   const launchActorRef = useLaunchMachineActorRef();
 
   const canSendManualMessage = useLaunchMachineSelector((state) =>
@@ -66,22 +71,33 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton({
     }),
   );
 
+  const label = "label" in props ? props.label : props.message.label;
+  const messageOrMessages = "message" in props ? props.message : props.messages;
+
+  const messages = useMemo(() => {
+    return Array.isArray(messageOrMessages)
+      ? messageOrMessages
+      : [messageOrMessages];
+  }, [messageOrMessages]);
+
   const handleClick = useCallback(() => {
-    launchActorRef.send({
-      type: "SEND_MANUAL_MESSAGE",
-      device: message.device,
-      data: message.data,
+    messages.forEach((message) => {
+      launchActorRef.send({
+        type: "SEND_MANUAL_MESSAGE",
+        device: message.device,
+        data: message.data,
+      });
     });
-  }, [launchActorRef, message]);
+  }, [launchActorRef, messages]);
 
   return (
     <Button
-      key={message.label}
+      key={label}
       color="green"
       disabled={!canSendManualMessage}
       onClick={handleClick}
     >
-      {message.label}
+      {label}
     </Button>
   );
 });
@@ -125,6 +141,10 @@ export const PresetMessagesPanel = memo(function PresetMessagesPanel() {
       <p className="text-lg text-gray-text">Send Preset Message</p>
       <div className="flex flex-wrap gap-4 md:max-h-60 scrollable">
         <NewSessionButton />
+        <SendPresetMessageButton
+          label="RECALIBRATE ALL"
+          messages={RECALIBRATE_MESSAGES}
+        />
         {PRESET_MESSAGES.map((message) => (
           <SendPresetMessageButton key={message.label} message={message} />
         ))}
