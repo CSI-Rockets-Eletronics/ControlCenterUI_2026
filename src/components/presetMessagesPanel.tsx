@@ -61,9 +61,10 @@ const PRESET_MESSAGES: PresetMessage[] = [
 ];
 
 const SendPresetMessageButton = memo(function SendPresetMessageButton(
-  props:
+  props: { color: "green" | "gray" } & (
     | { message: PresetMessage }
-    | { label: string; messages: PresetMessage[] },
+    | { label: string; messages: PresetMessage[] }
+  ),
 ) {
   const launchActorRef = useLaunchMachineActorRef();
 
@@ -95,8 +96,7 @@ const SendPresetMessageButton = memo(function SendPresetMessageButton(
 
   return (
     <Button
-      key={label}
-      color="green"
+      color={props.color}
       disabled={!canSendManualMessages}
       onClick={handleClick}
     >
@@ -145,11 +145,16 @@ export const PresetMessagesPanel = memo(function PresetMessagesPanel() {
       <div className="flex flex-wrap gap-4 md:max-h-60 scrollable">
         <NewSessionButton />
         <SendPresetMessageButton
+          color="green"
           label="RECALIBRATE ALL"
           messages={RECALIBRATE_MESSAGES}
         />
         {PRESET_MESSAGES.map((message) => (
-          <SendPresetMessageButton key={message.label} message={message} />
+          <SendPresetMessageButton
+            key={message.label}
+            color="gray"
+            message={message}
+          />
         ))}
       </div>
     </Panel>
