@@ -24,20 +24,11 @@ const RECALIBRATE_MESSAGES: PresetMessage[] = [
     device: DEVICES.firingStation,
     data: { command: "recalibrate" },
   },
-  {
-    label: "FS CLEAR CALIB.",
-    device: DEVICES.firingStation,
-    data: { command: "clear-calibration" },
-  },
+
   {
     label: "ROCKET RECALIBRATE",
     device: DEVICES.rocketScientific,
     data: "cal",
-  },
-  {
-    label: "ROCKET CLEAR CALIB.",
-    device: DEVICES.rocketScientific,
-    data: "clear cal",
   },
   {
     label: "LOAD CELL 1 RECALIBRATE",
@@ -51,9 +42,22 @@ const RECALIBRATE_MESSAGES: PresetMessage[] = [
   },
 ];
 
+const OTHER_MESSAGES: PresetMessage[] = [
+  {
+    label: "FS CLEAR CALIB.",
+    device: DEVICES.firingStation,
+    data: { command: "clear-calibration" },
+  },
+  {
+    label: "ROCKET CLEAR CALIB.",
+    device: DEVICES.rocketScientific,
+    data: "clear cal",
+  },
+];
+
 const PRESET_MESSAGES: PresetMessage[] = [
   ...RECALIBRATE_MESSAGES,
-  // possibly other messages...
+  ...OTHER_MESSAGES,
 ];
 
 const SendPresetMessageButton = memo(function SendPresetMessageButton(
