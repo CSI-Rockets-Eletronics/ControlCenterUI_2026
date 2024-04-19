@@ -33,6 +33,8 @@ export const remoteStationStateSchema = z.object({
   relayStatusByte: z.number(),
   st1MPSI: z.number(),
   st2MPSI: z.number(),
+  thermo1C: z.number(),
+  thermo2C: z.number(),
   fillLineConnected: z.boolean().optional(),
   timeSinceBoot: z.number(),
   timeSinceCalibration: z.number(),
@@ -165,6 +167,8 @@ export function parseRemoteStationState(
       // convert pressures to mPSI to PSI
       smallTransd1Pressure: remoteState.st1MPSI / 1000,
       smallTransd2Pressure: remoteState.st2MPSI / 1000,
+      thermo1Celsius: remoteState.thermo1C,
+      thermo2Celsius: remoteState.thermo2C,
       fillLineConnected: remoteState.fillLineConnected ?? false,
     },
   };
