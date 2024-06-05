@@ -7,6 +7,7 @@ const stationRelaysSchema = z.object({
   pyroCutter: z.boolean(),
   igniter: z.boolean(),
   pValve: z.boolean(),
+  fillServoClosed: z.boolean(),
 });
 
 const stationStatusSchema = z.object({

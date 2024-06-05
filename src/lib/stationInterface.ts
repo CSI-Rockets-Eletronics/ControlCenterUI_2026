@@ -136,6 +136,7 @@ function parseRelayStatusByte(byte: number): StationRelays {
     pyroCutter: (byte & 8) === 8,
     igniter: (byte & 16) === 16,
     pValve: (byte & 32) === 32,
+    fillServoClosed: (byte & 64) === 64,
   };
 }
 
@@ -147,7 +148,8 @@ export function toRelayStatusByte(relays: StationRelays): number {
     (relays.abort ? 4 : 0) |
     (relays.pyroCutter ? 8 : 0) |
     (relays.igniter ? 16 : 0) |
-    (relays.pValve ? 32 : 0)
+    (relays.pValve ? 32 : 0) |
+    (relays.fillServoClosed ? 64 : 0)
   );
 }
 
