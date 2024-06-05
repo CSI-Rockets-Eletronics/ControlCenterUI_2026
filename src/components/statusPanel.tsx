@@ -142,10 +142,12 @@ const OxTank1Display = memo(function OxTank1Display() {
 });
 
 const OxTank2Display = memo(function OxTank2Display() {
+  // convert pressures to mPSI to PSI
+  const psiSelector = (state: DeviceRecord<RocketScientificState> | null) =>
+    (state?.data.t1 ?? 0) / 1000;
+
   const value = useLaunchMachineSelector((state) =>
-    (
-      state.context.deviceStates.firingStation?.data.status.transd2Pressure ?? 0
-    ).toFixed(1),
+    psiSelector(state.context.deviceStates.rocketScientific).toFixed(1),
   );
 
   const chartElement = useMemo(() => {
@@ -153,11 +155,11 @@ const OxTank2Display = memo(function OxTank2Display() {
       <ChartLoadingFallback>
         <StationChart
           // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ firingStation }) =>
-            firingStation
+          selector={({ rocketScientific }) =>
+            rocketScientific
               ? {
-                  ts: firingStation.ts,
-                  value: firingStation.data.status.transd2Pressure,
+                  ts: rocketScientific.ts,
+                  value: psiSelector(rocketScientific),
                 }
               : null
           }
@@ -189,11 +191,11 @@ const OxTank2Display = memo(function OxTank2Display() {
 
 const CC1Display = memo(function CC1Display() {
   // convert pressures to mPSI to PSI
-  const t1PsiSelector = (state: DeviceRecord<RocketScientificState> | null) =>
-    (state?.data.t1 ?? 0) / 1000;
+  const psiSelector = (state: DeviceRecord<RocketScientificState> | null) =>
+    (state?.data.t3 ?? 0) / 1000;
 
   const value = useLaunchMachineSelector((state) =>
-    t1PsiSelector(state.context.deviceStates.rocketScientific).toFixed(1),
+    psiSelector(state.context.deviceStates.rocketScientific).toFixed(1),
   );
 
   const chartElement = useMemo(() => {
@@ -205,7 +207,7 @@ const CC1Display = memo(function CC1Display() {
             rocketScientific
               ? {
                   ts: rocketScientific.ts,
-                  value: t1PsiSelector(rocketScientific),
+                  value: psiSelector(rocketScientific),
                 }
               : null
           }
@@ -235,57 +237,11 @@ const CC1Display = memo(function CC1Display() {
   );
 });
 
-const CC3Display = memo(function CC2Display() {
-  // convert pressures to mPSI to PSI
-  const t3PsiSelector = (state: DeviceRecord<RocketScientificState> | null) =>
-    (state?.data.t3 ?? 0) / 1000;
-
-  const value = useLaunchMachineSelector((state) =>
-    t3PsiSelector(state.context.deviceStates.rocketScientific).toFixed(1),
-  );
-
-  const chartElement = useMemo(() => {
-    return (
-      <ChartLoadingFallback>
-        <StationChart
-          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ rocketScientific }) =>
-            rocketScientific
-              ? {
-                  ts: rocketScientific.ts,
-                  value: t3PsiSelector(rocketScientific),
-                }
-              : null
-          }
-          valuePrecision={1}
-          minY={0}
-          maxY="dataMax + 10"
-        />
-      </ChartLoadingFallback>
-    );
-  }, []);
-
-  const [showChart, setShowChart] = useState(false);
-
-  const handleClick = useCallback(() => {
-    setShowChart(!showChart);
-  }, [showChart]);
-
-  return (
-    <StatusDisplay
-      label="CC 3 (PSI)"
-      color="green"
-      value={value}
-      overflowElement={showChart ? chartElement : undefined}
-      disabled={false}
-      onClick={handleClick}
-    />
-  );
-});
-
 const LoadCellDisplay = memo(function LoadCell1Display() {
   const value = useLaunchMachineSelector((state) =>
-    (state.context.deviceStates.loadCell?.data ?? 0).toFixed(2),
+    (
+      state.context.deviceStates.firingStation?.data.status.transd2LBS ?? 0
+    ).toFixed(2),
   );
 
   const chartElement = useMemo(() => {
@@ -293,8 +249,13 @@ const LoadCellDisplay = memo(function LoadCell1Display() {
       <ChartLoadingFallback>
         <StationChart
           // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ loadCell }) =>
-            loadCell ? { ts: loadCell.ts, value: loadCell.data } : null
+          selector={({ firingStation }) =>
+            firingStation
+              ? {
+                  ts: firingStation.ts,
+                  value: firingStation.data.status.transd2LBS,
+                }
+              : null
           }
           valuePrecision={3}
           minY="dataMin - 2"
@@ -501,7 +462,6 @@ export const StatusPanel = memo(function StatusPanel() {
           <OxTank1Display />
           <OxTank2Display />
           <CC1Display />
-          <CC3Display />
           <LoadCellDisplay />
           <TotalNitrousDisplay />
           <Thermo1Display />
