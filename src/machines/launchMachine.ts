@@ -26,6 +26,8 @@ import {
   StationOpState,
   StationRelays,
   StationState,
+  TrajectoryState,
+  trajectoryStateSchema,
 } from "@/lib/stationState";
 
 const LAUNCH_STATE_FETCH_INTERVAL = 1000;
@@ -39,18 +41,18 @@ function armStatusIsComplete(armStatus: Record<string, boolean>) {
   return Object.values(armStatus).every(Boolean);
 }
 
-type DeviceRecord<T> = {
+export type DeviceRecord<T> = {
   ts: number;
   data: T;
 };
 
 export type DeviceStates = {
   firingStation: DeviceRecord<StationState> | null;
-  rocketScientific: DeviceRecord<RocketScientificState> | null;
-  loadCell1: DeviceRecord<LoadCellState> | null;
-  loadCell2: DeviceRecord<LoadCellState> | null;
+  loadCell: DeviceRecord<LoadCellState> | null;
   radioGround: DeviceRecord<RadioGroundState> | null;
   gps: DeviceRecord<GpsState> | null;
+  trajectory: DeviceRecord<TrajectoryState> | null;
+  rocketScientific: DeviceRecord<RocketScientificState> | null;
 };
 
 export interface PendingMessage {
@@ -141,11 +143,11 @@ export function createLaunchMachine(
         pendingLaunchState: null,
         deviceStates: {
           firingStation: null,
-          rocketScientific: null,
-          loadCell1: null,
-          loadCell2: null,
+          loadCell: null,
           radioGround: null,
           gps: null,
+          trajectory: null,
+          rocketScientific: null,
         },
         sentMessages: [],
       }),
@@ -373,11 +375,11 @@ export function createLaunchMachine(
                 sessionName,
                 devices: [
                   DEVICES.firingStation,
-                  DEVICES.rocketScientific,
-                  DEVICES.loadCell1,
-                  DEVICES.loadCell2,
+                  DEVICES.loadCell,
                   DEVICES.radioGround,
                   DEVICES.gps,
+                  DEVICES.trajectory,
+                  DEVICES.rocketScientific,
                 ].join(","),
                 endTs,
               },
@@ -385,11 +387,11 @@ export function createLaunchMachine(
           );
 
           const firingStationRaw = records[DEVICES.firingStation];
-          const rocketScientificRaw = records[DEVICES.rocketScientific];
-          const loadCell1Raw = records[DEVICES.loadCell1];
-          const loadCell2Raw = records[DEVICES.loadCell2];
+          const loadCellRaw = records[DEVICES.loadCell];
           const radioGroundRaw = records[DEVICES.radioGround];
           const gpsRaw = records[DEVICES.gps];
+          const trajectoryRaw = records[DEVICES.trajectory];
+          const rocketScientificRaw = records[DEVICES.rocketScientific];
 
           return {
             firingStation: firingStationRaw
@@ -398,22 +400,10 @@ export function createLaunchMachine(
                   data: parseRemoteStationState(remoteStationStateSchema.parse(firingStationRaw.data)),
                 }
               : null,
-            rocketScientific: rocketScientificRaw
+            loadCell: loadCellRaw
               ? {
-                  ts: rocketScientificRaw.ts,
-                  data: rocketScientificStateSchema.parse(rocketScientificRaw.data),
-                }
-              : null,
-            loadCell1: loadCell1Raw
-              ? {
-                  ts: loadCell1Raw.ts,
-                  data: loadCellStateSchema.parse(loadCell1Raw.data),
-                }
-              : null,
-            loadCell2: loadCell2Raw
-              ? {
-                  ts: loadCell2Raw.ts,
-                  data: loadCellStateSchema.parse(loadCell2Raw.data),
+                  ts: loadCellRaw.ts,
+                  data: loadCellStateSchema.parse(loadCellRaw.data),
                 }
               : null,
             radioGround: radioGroundRaw
@@ -426,6 +416,18 @@ export function createLaunchMachine(
               ? {
                   ts: gpsRaw.ts,
                   data: gpsStateSchema.parse(gpsRaw.data),
+                }
+              : null,
+            trajectory: trajectoryRaw
+              ? {
+                  ts: trajectoryRaw.ts,
+                  data: trajectoryStateSchema.parse(trajectoryRaw.data),
+                }
+              : null,
+            rocketScientific: rocketScientificRaw
+              ? {
+                  ts: rocketScientificRaw.ts,
+                  data: rocketScientificStateSchema.parse(rocketScientificRaw.data),
                 }
               : null,
           };

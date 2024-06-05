@@ -31,14 +31,14 @@ const RECALIBRATE_MESSAGES: PresetMessage[] = [
     data: "cal",
   },
   {
-    label: "LOAD CELL 1 RECALIBRATE",
-    device: DEVICES.loadCell1,
+    label: "LOAD CELL RECALIBRATE",
+    device: DEVICES.loadCell,
     data: "calibrate",
   },
   {
-    label: "LOAD CELL 2 RECALIBRATE",
-    device: DEVICES.loadCell2,
-    data: "calibrate",
+    label: "TRAJECTORY RECALIBRATE",
+    device: DEVICES.trajectory,
+    data: "CALIBRATE",
   },
 ];
 

@@ -10,7 +10,11 @@ import {
   remoteStationStateSchema,
   toRelayStatusByte,
 } from "@/lib/stationInterface";
-import { type RadioGroundState, type StationOpState } from "@/lib/stationState";
+import {
+  type LoadCellState,
+  type RadioGroundState,
+  type StationOpState,
+} from "@/lib/stationState";
 
 import { type Api, catchError, useApi } from "./useApi";
 import { useEnvironmentKey } from "./useEnvironmentKey";
@@ -106,15 +110,21 @@ class DummyStation {
         igniter: randBool(),
         servoValve: randBool(),
       }),
-      st1MPSI: randRange(0, 1e6),
-      st2MPSI: randRange(0, 1e6),
+      t1MPSI: randRange(0, 1e6),
+      t2MPSI: randRange(0, 1e6),
       thermo1C: randRange(0, 200),
       thermo2C: randRange(0, 200),
       timeSinceBoot: curTime - this.bootTime,
       timeSinceCalibration: curTime - this.bootTime,
     };
 
+    const loadCellState: LoadCellState = randRange(-30, 1000);
+
     const radioGroundState: RadioGroundState = {
+      rocketScientific: {
+        t1: randRange(0, 1e6),
+        t3: randRange(0, 1e6),
+      },
       gps: {
         ts_tail: Math.floor(randRange(0, 256)),
         fix: true,
@@ -122,6 +132,11 @@ class DummyStation {
         latitude_fixed: randRange(-90, 90) * 1e7,
         longitude_fixed: randRange(-180, 180) * 1e7,
         altitude: randRange(0, 30_000),
+      },
+      trajectory: {
+        z: randRange(0, 10_000),
+        vz: randRange(-500, 500),
+        az: randRange(-100, 100),
       },
     };
 
@@ -131,6 +146,13 @@ class DummyStation {
           environmentKey: this.environmentKey,
           device: DEVICES.firingStation,
           data: remoteStationState,
+        }),
+      ),
+      catchError(
+        this.api.records.post({
+          environmentKey: this.environmentKey,
+          device: DEVICES.loadCell,
+          data: loadCellState,
         }),
       ),
       catchError(

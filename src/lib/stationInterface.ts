@@ -13,14 +13,14 @@ export const DEVICES = {
   // ground station
   firingStation: "FiringStation",
   scientific: "Scientific",
-  rocketScientific: "RocketScientific",
-  loadCell1: "LoadCell1",
-  loadCell2: "LoadCell2",
+  loadCell: "LoadCell",
   radioGround: "RadioGround",
   // in-rocket
+  rocketScientific: "RocketScientific",
   gps: "GPS",
   mpu: "MPU",
   dht: "DHT",
+  trajectory: "Trajectory",
 } as const;
 
 /**
@@ -31,8 +31,8 @@ export const remoteStationStateSchema = z.object({
   // time: z.number(),
   stateByte: z.number(),
   relayStatusByte: z.number(),
-  st1MPSI: z.number(),
-  st2MPSI: z.number(),
+  t1MPSI: z.number(),
+  t2MPSI: z.number(),
   thermo1C: z.number(),
   thermo2C: z.number(),
   fillLineConnected: z.boolean().optional(),
@@ -165,8 +165,8 @@ export function parseRemoteStationState(
       timeSinceBoot: remoteState.timeSinceBoot / 1e6,
       timeSinceCalibration: remoteState.timeSinceCalibration / 1e6,
       // convert pressures to mPSI to PSI
-      smallTransd1Pressure: remoteState.st1MPSI / 1000,
-      smallTransd2Pressure: remoteState.st2MPSI / 1000,
+      transd1Pressure: remoteState.t1MPSI / 1000,
+      transd2Pressure: remoteState.t2MPSI / 1000,
       thermo1Celsius: remoteState.thermo1C,
       thermo2Celsius: remoteState.thermo2C,
       fillLineConnected: remoteState.fillLineConnected ?? false,

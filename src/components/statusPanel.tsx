@@ -10,6 +10,8 @@ import {
 
 import { computeNitrousMass } from "@/lib/coolprop";
 import { type LaunchState } from "@/lib/launchState";
+import { type RocketScientificState } from "@/lib/stationState";
+import { type DeviceRecord } from "@/machines/launchMachine";
 
 import { Panel } from "./design/panel";
 import { StatusDisplay } from "./design/statusDisplay";
@@ -17,14 +19,6 @@ import {
   useLaunchMachineActorRef,
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
-
-function useTotalLoadCell() {
-  return useLaunchMachineSelector((state) => {
-    const { loadCell1, loadCell2 } = state.context.deviceStates;
-    const sum = loadCell1 && loadCell2 ? loadCell1.data + loadCell2.data : 0;
-    return sum;
-  });
-}
 
 const StationChart = lazy(() =>
   import("./stationChart").then((res) => ({ default: res.StationChart })),
@@ -104,8 +98,7 @@ const FillLineDisplay = memo(function FillLineDisplay() {
 const OxTank1Display = memo(function OxTank1Display() {
   const value = useLaunchMachineSelector((state) =>
     (
-      state.context.deviceStates.firingStation?.data.status
-        .smallTransd1Pressure ?? 0
+      state.context.deviceStates.firingStation?.data.status.transd1Pressure ?? 0
     ).toFixed(1),
   );
 
@@ -118,7 +111,7 @@ const OxTank1Display = memo(function OxTank1Display() {
             firingStation
               ? {
                   ts: firingStation.ts,
-                  value: firingStation.data.status.smallTransd1Pressure,
+                  value: firingStation.data.status.transd1Pressure,
                 }
               : null
           }
@@ -151,8 +144,7 @@ const OxTank1Display = memo(function OxTank1Display() {
 const OxTank2Display = memo(function OxTank2Display() {
   const value = useLaunchMachineSelector((state) =>
     (
-      state.context.deviceStates.firingStation?.data.status
-        .smallTransd2Pressure ?? 0
+      state.context.deviceStates.firingStation?.data.status.transd2Pressure ?? 0
     ).toFixed(1),
   );
 
@@ -165,7 +157,7 @@ const OxTank2Display = memo(function OxTank2Display() {
             firingStation
               ? {
                   ts: firingStation.ts,
-                  value: firingStation.data.status.smallTransd2Pressure,
+                  value: firingStation.data.status.transd2Pressure,
                 }
               : null
           }
@@ -196,11 +188,12 @@ const OxTank2Display = memo(function OxTank2Display() {
 });
 
 const CC1Display = memo(function CC1Display() {
+  // convert pressures to mPSI to PSI
+  const t1PsiSelector = (state: DeviceRecord<RocketScientificState> | null) =>
+    (state?.data.t1 ?? 0) / 1000;
+
   const value = useLaunchMachineSelector((state) =>
-    // convert pressures to mPSI to PSI
-    (
-      (state.context.deviceStates.rocketScientific?.data.bt1 ?? 0) / 1000
-    ).toFixed(1),
+    t1PsiSelector(state.context.deviceStates.rocketScientific).toFixed(1),
   );
 
   const chartElement = useMemo(() => {
@@ -212,8 +205,7 @@ const CC1Display = memo(function CC1Display() {
             rocketScientific
               ? {
                   ts: rocketScientific.ts,
-                  // convert pressures to mPSI to PSI
-                  value: rocketScientific.data.bt1 / 1000,
+                  value: t1PsiSelector(rocketScientific),
                 }
               : null
           }
@@ -243,12 +235,13 @@ const CC1Display = memo(function CC1Display() {
   );
 });
 
-const CC2Display = memo(function CC2Display() {
+const CC3Display = memo(function CC2Display() {
+  // convert pressures to mPSI to PSI
+  const t3PsiSelector = (state: DeviceRecord<RocketScientificState> | null) =>
+    (state?.data.t3 ?? 0) / 1000;
+
   const value = useLaunchMachineSelector((state) =>
-    // convert pressures to mPSI to PSI
-    (
-      (state.context.deviceStates.rocketScientific?.data.bt2 ?? 0) / 1000
-    ).toFixed(1),
+    t3PsiSelector(state.context.deviceStates.rocketScientific).toFixed(1),
   );
 
   const chartElement = useMemo(() => {
@@ -260,8 +253,7 @@ const CC2Display = memo(function CC2Display() {
             rocketScientific
               ? {
                   ts: rocketScientific.ts,
-                  // convert pressures to mPSI to PSI
-                  value: rocketScientific.data.bt2 / 1000,
+                  value: t3PsiSelector(rocketScientific),
                 }
               : null
           }
@@ -281,7 +273,7 @@ const CC2Display = memo(function CC2Display() {
 
   return (
     <StatusDisplay
-      label="CC 2 (PSI)"
+      label="CC 3 (PSI)"
       color="green"
       value={value}
       overflowElement={showChart ? chartElement : undefined}
@@ -291,9 +283,9 @@ const CC2Display = memo(function CC2Display() {
   );
 });
 
-const LoadCell1Display = memo(function LoadCell1Display() {
+const LoadCellDisplay = memo(function LoadCell1Display() {
   const value = useLaunchMachineSelector((state) =>
-    (state.context.deviceStates.loadCell1?.data ?? 0).toFixed(2),
+    (state.context.deviceStates.loadCell?.data ?? 0).toFixed(2),
   );
 
   const chartElement = useMemo(() => {
@@ -301,8 +293,8 @@ const LoadCell1Display = memo(function LoadCell1Display() {
       <ChartLoadingFallback>
         <StationChart
           // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ loadCell1 }) =>
-            loadCell1 ? { ts: loadCell1.ts, value: loadCell1.data } : null
+          selector={({ loadCell }) =>
+            loadCell ? { ts: loadCell.ts, value: loadCell.data } : null
           }
           valuePrecision={3}
           minY="dataMin - 2"
@@ -320,88 +312,7 @@ const LoadCell1Display = memo(function LoadCell1Display() {
 
   return (
     <StatusDisplay
-      label="Load Cell 1 (lbs)"
-      color="green"
-      value={value}
-      overflowElement={showChart ? chartElement : undefined}
-      disabled={false}
-      onClick={handleClick}
-    />
-  );
-});
-
-const LoadCell2Display = memo(function LoadCell2Display() {
-  const value = useLaunchMachineSelector((state) =>
-    (state.context.deviceStates.loadCell2?.data ?? 0).toFixed(2),
-  );
-
-  const chartElement = useMemo(() => {
-    return (
-      <ChartLoadingFallback>
-        <StationChart
-          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ loadCell2 }) =>
-            loadCell2 ? { ts: loadCell2.ts, value: loadCell2.data } : null
-          }
-          valuePrecision={3}
-          minY="dataMin - 2"
-          maxY="dataMax + 2"
-        />
-      </ChartLoadingFallback>
-    );
-  }, []);
-
-  const [showChart, setShowChart] = useState(false);
-
-  const handleClick = useCallback(() => {
-    setShowChart(!showChart);
-  }, [showChart]);
-
-  return (
-    <StatusDisplay
-      label="Load Cell 2 (lbs)"
-      color="green"
-      value={value}
-      overflowElement={showChart ? chartElement : undefined}
-      disabled={false}
-      onClick={handleClick}
-    />
-  );
-});
-
-const TotalLoadCellDisplay = memo(function TotalLoadCellDisplay() {
-  const value = useTotalLoadCell().toFixed(2);
-
-  const chartElement = useMemo(() => {
-    return (
-      <ChartLoadingFallback>
-        <StationChart
-          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ loadCell1, loadCell2 }) =>
-            loadCell1 && loadCell2
-              ? {
-                  ts: (loadCell1.ts + loadCell2.ts) / 2,
-                  value: loadCell1.data + loadCell2.data,
-                }
-              : null
-          }
-          valuePrecision={3}
-          minY="dataMin - 2"
-          maxY="dataMax + 2"
-        />
-      </ChartLoadingFallback>
-    );
-  }, []);
-
-  const [showChart, setShowChart] = useState(false);
-
-  const handleClick = useCallback(() => {
-    setShowChart(!showChart);
-  }, [showChart]);
-
-  return (
-    <StatusDisplay
-      label="Total Load Cell (lbs)"
+      label="Load Cell (lbs)"
       color="green"
       value={value}
       overflowElement={showChart ? chartElement : undefined}
@@ -412,12 +323,14 @@ const TotalLoadCellDisplay = memo(function TotalLoadCellDisplay() {
 });
 
 const TotalNitrousDisplay = memo(function TotalNitrousDisplay() {
-  const totalMassLbs = useTotalLoadCell();
+  const totalMassLbs = useLaunchMachineSelector(
+    (state) => state.context.deviceStates.loadCell?.data ?? 0,
+  );
 
   const vaporPressurePsi = useLaunchMachineSelector(
     (state) =>
-      state.context.deviceStates.firingStation?.data.status
-        .smallTransd1Pressure ?? 0,
+      state.context.deviceStates.firingStation?.data.status.transd1Pressure ??
+      0,
   );
 
   const { liquidMassLbs, vaporMassLbs } = useMemo(
@@ -588,10 +501,8 @@ export const StatusPanel = memo(function StatusPanel() {
           <OxTank1Display />
           <OxTank2Display />
           <CC1Display />
-          <CC2Display />
-          <LoadCell1Display />
-          <LoadCell2Display />
-          <TotalLoadCellDisplay />
+          <CC3Display />
+          <LoadCellDisplay />
           <TotalNitrousDisplay />
           <Thermo1Display />
           <Thermo2Display />

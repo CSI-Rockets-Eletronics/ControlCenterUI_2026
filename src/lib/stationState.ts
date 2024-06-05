@@ -10,8 +10,8 @@ const stationRelaysSchema = z.object({
 });
 
 const stationStatusSchema = z.object({
-  smallTransd1Pressure: z.number(), // in PSI
-  smallTransd2Pressure: z.number(), // in PSI
+  transd1Pressure: z.number(), // in PSI
+  transd2Pressure: z.number(), // in PSI
   thermo1Celsius: z.number(),
   thermo2Celsius: z.number(),
   fillLineConnected: z.boolean(),
@@ -51,16 +51,18 @@ export type StationState = {
   status: StationStatus;
 };
 
-export const rocketScientificStateSchema = z.object({
-  bt1: z.number(),
-  bt2: z.number(),
-});
-
-export type RocketScientificState = z.infer<typeof rocketScientificStateSchema>;
-
 export const loadCellStateSchema = z.number();
 
 export type LoadCellState = z.infer<typeof loadCellStateSchema>;
+
+export const rocketScientificStateSchema = z.object({
+  /** Transducer 1 MPSI. */
+  t1: z.number(),
+  /** Transducer 3 MPSI. */
+  t3: z.number(),
+});
+
+export type RocketScientificState = z.infer<typeof rocketScientificStateSchema>;
 
 export const gpsStateSchema = z.object({
   /**
@@ -82,8 +84,21 @@ export const gpsStateSchema = z.object({
 
 export type GpsState = z.infer<typeof gpsStateSchema>;
 
+export const trajectoryStateSchema = z.object({
+  /** z position, in meters. */
+  z: z.number(),
+  /** z velocity, in meters per second. */
+  vz: z.number(),
+  /** z acceleration, in meters per second squared. */
+  az: z.number(),
+});
+
+export type TrajectoryState = z.infer<typeof trajectoryStateSchema>;
+
 export const radioGroundStateSchema = z.object({
+  rocketScientific: rocketScientificStateSchema,
   gps: gpsStateSchema,
+  trajectory: trajectoryStateSchema,
 });
 
 export type RadioGroundState = z.infer<typeof radioGroundStateSchema>;
