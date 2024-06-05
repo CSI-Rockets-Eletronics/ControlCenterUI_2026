@@ -108,7 +108,7 @@ class DummyStation {
         abort: randBool(),
         pyroCutter: randBool(),
         igniter: randBool(),
-        servoValve: randBool(),
+        pValve: randBool(),
       }),
       t1MPSI: randRange(0, 1e6),
       t2MPSI: randRange(0, 1e6),

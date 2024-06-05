@@ -16,7 +16,7 @@ const defaultPendingRelays: StationRelays = {
   abort: false,
   pyroCutter: false,
   igniter: false,
-  servoValve: false,
+  pValve: false,
 };
 
 const Entry = memo(function Entry({
@@ -127,7 +127,7 @@ export const RelaysGroup = memo(function RelaysGroup() {
         <Entry label="Abort" field="abort" pr={pr} spr={spr} />
         <Entry label="Pyro Cutter" field="pyroCutter" pr={pr} spr={spr} />
         <Entry label="Igniter" field="igniter" pr={pr} spr={spr} />
-        <Entry label="Servo Valve" field="servoValve" pr={pr} spr={spr} />
+        <Entry label="P-Valve" field="pValve" pr={pr} spr={spr} />
       </div>
     </div>
   );
