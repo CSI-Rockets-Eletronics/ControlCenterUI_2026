@@ -10,16 +10,6 @@ import {
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
 
-const defaultPendingRelays: StationRelays = {
-  fill: false,
-  vent: false,
-  abort: false,
-  pyroCutter: false,
-  igniter: false,
-  pValve: false,
-  fillServoClosed: false,
-};
-
 const Entry = memo(function Entry({
   label,
   field,
@@ -31,9 +21,11 @@ const Entry = memo(function Entry({
   pr: StationRelays | null; // pendingRelays
   spr: (pendingRelays: StationRelays) => void; // setPendingRelays
 }) {
-  const checked = useLaunchMachineSelector(
-    (state) => !!state.context.deviceStates.firingStation?.data.relays[field],
+  const curRelays = useLaunchMachineSelector(
+    (state) => state.context.deviceStates.firingStation?.data.relays,
   );
+
+  const checked = !!curRelays?.[field];
 
   const hasPending = pendingRelays != null;
 
@@ -43,10 +35,10 @@ const Entry = memo(function Entry({
         ...pendingRelays,
         [field]: !pendingRelays[field],
       });
-    } else {
-      setPendingRelays(defaultPendingRelays);
+    } else if (curRelays) {
+      setPendingRelays(curRelays);
     }
-  }, [field, hasPending, pendingRelays, setPendingRelays]);
+  }, [curRelays, field, hasPending, pendingRelays, setPendingRelays]);
 
   return (
     <div
@@ -64,7 +56,7 @@ const Entry = memo(function Entry({
         }
         label={label}
         checked={checked}
-        disabled={false}
+        disabled={!curRelays}
         onChange={handleChange}
       />
     </div>
