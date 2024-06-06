@@ -55,9 +55,9 @@ export const loadCellStateSchema = z.number();
 export type LoadCellState = z.infer<typeof loadCellStateSchema>;
 
 export const rocketScientificStateSchema = z.object({
-  /** Transducer 1 MPSI. */
+  /** Transducer 1 PSI. */
   t1: z.number(),
-  /** Transducer 3 MPSI. */
+  /** Transducer 3 PSI. */
   t3: z.number(),
 });
 

@@ -121,8 +121,8 @@ class DummyStation {
 
     const radioGroundState: RadioGroundState = {
       rocketScientific: {
-        t1: randRange(0, 1e6),
-        t3: randRange(0, 1e6),
+        t1: randRange(0, 1e3),
+        t3: randRange(0, 1e3),
       },
       gps: {
         ts_tail: Math.floor(randRange(0, 256)),

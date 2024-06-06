@@ -144,7 +144,7 @@ const OxTank1Display = memo(function OxTank1Display() {
 const OxTank2Display = memo(function OxTank2Display() {
   // convert pressures to mPSI to PSI
   const psiSelector = (state: DeviceRecord<RocketScientificState> | null) =>
-    (state?.data.t1 ?? 0) / 1000;
+    state?.data.t1 ?? 0;
 
   const value = useLaunchMachineSelector((state) =>
     psiSelector(state.context.deviceStates.rocketScientific).toFixed(1),
@@ -180,54 +180,6 @@ const OxTank2Display = memo(function OxTank2Display() {
   return (
     <StatusDisplay
       label="Ox Tank 2 (PSI)"
-      color="green"
-      value={value}
-      overflowElement={showChart ? chartElement : undefined}
-      disabled={false}
-      onClick={handleClick}
-    />
-  );
-});
-
-const CC1Display = memo(function CC1Display() {
-  // convert pressures to mPSI to PSI
-  const psiSelector = (state: DeviceRecord<RocketScientificState> | null) =>
-    (state?.data.t3 ?? 0) / 1000;
-
-  const value = useLaunchMachineSelector((state) =>
-    psiSelector(state.context.deviceStates.rocketScientific).toFixed(1),
-  );
-
-  const chartElement = useMemo(() => {
-    return (
-      <ChartLoadingFallback>
-        <StationChart
-          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ rocketScientific }) =>
-            rocketScientific
-              ? {
-                  ts: rocketScientific.ts,
-                  value: psiSelector(rocketScientific),
-                }
-              : null
-          }
-          valuePrecision={1}
-          minY={0}
-          maxY="dataMax + 10"
-        />
-      </ChartLoadingFallback>
-    );
-  }, []);
-
-  const [showChart, setShowChart] = useState(false);
-
-  const handleClick = useCallback(() => {
-    setShowChart(!showChart);
-  }, [showChart]);
-
-  return (
-    <StatusDisplay
-      label="CC 1 (PSI)"
       color="green"
       value={value}
       overflowElement={showChart ? chartElement : undefined}
@@ -369,7 +321,6 @@ export const StatusPanel = memo(function StatusPanel() {
           <FillLineDisplay />
           <OxTank1Display />
           <OxTank2Display />
-          <CC1Display />
           <LoadCellDisplay />
           <TotalNitrousDisplay />
         </>
