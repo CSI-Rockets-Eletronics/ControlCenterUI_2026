@@ -13,8 +13,6 @@ const stationRelaysSchema = z.object({
 const stationStatusSchema = z.object({
   transd1Pressure: z.number(), // in PSI
   transd2LBS: z.number(), // in PSI
-  thermo1Celsius: z.number(),
-  thermo2Celsius: z.number(),
   fillLineConnected: z.boolean(),
   timeSinceBoot: z.number(), // in seconds
   timeSinceCalibration: z.number(), // in seconds

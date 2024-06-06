@@ -35,8 +35,6 @@ export const remoteStationStateSchema = z.object({
   t1: z.number(),
   /** Load cell LBS. */
   t2: z.number(),
-  thermo1C: z.number(),
-  thermo2C: z.number(),
   fillLineConnected: z.boolean().optional(),
   timeSinceBoot: z.number(),
   timeSinceCalibration: z.number(),
@@ -171,8 +169,6 @@ export function parseRemoteStationState(
       // convert pressures to mPSI to PSI
       transd1Pressure: remoteState.t1 / 1000,
       transd2LBS: remoteState.t2,
-      thermo1Celsius: remoteState.thermo1C,
-      thermo2Celsius: remoteState.thermo2C,
       fillLineConnected: remoteState.fillLineConnected ?? false,
     },
   };

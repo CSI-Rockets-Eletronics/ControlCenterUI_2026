@@ -315,98 +315,6 @@ const TotalNitrousDisplay = memo(function TotalNitrousDisplay() {
   );
 });
 
-const Thermo1Display = memo(function Thermo1Display() {
-  const value = useLaunchMachineSelector((state) =>
-    (
-      state.context.deviceStates.firingStation?.data.status.thermo1Celsius ?? 0
-    ).toFixed(2),
-  );
-
-  const chartElement = useMemo(() => {
-    return (
-      <ChartLoadingFallback>
-        <StationChart
-          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ firingStation }) =>
-            firingStation
-              ? {
-                  ts: firingStation.ts,
-                  value: firingStation.data.status.thermo1Celsius,
-                }
-              : null
-          }
-          valuePrecision={2}
-          minY="dataMin - 2"
-          maxY="dataMax + 2"
-        />
-      </ChartLoadingFallback>
-    );
-  }, []);
-
-  const [showChart, setShowChart] = useState(false);
-
-  const handleClick = useCallback(() => {
-    setShowChart(!showChart);
-  }, [showChart]);
-
-  return (
-    <StatusDisplay
-      label="Thermo 1 (Celsius)"
-      color="green"
-      value={value}
-      overflowElement={showChart ? chartElement : undefined}
-      disabled={false}
-      onClick={handleClick}
-    />
-  );
-});
-
-const Thermo2Display = memo(function Thermo2Display() {
-  const value = useLaunchMachineSelector((state) =>
-    (
-      state.context.deviceStates.firingStation?.data.status.thermo2Celsius ?? 0
-    ).toFixed(2),
-  );
-
-  const chartElement = useMemo(() => {
-    return (
-      <ChartLoadingFallback>
-        <StationChart
-          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ firingStation }) =>
-            firingStation
-              ? {
-                  ts: firingStation.ts,
-                  value: firingStation.data.status.thermo2Celsius,
-                }
-              : null
-          }
-          valuePrecision={2}
-          minY="dataMin - 2"
-          maxY="dataMax + 2"
-        />
-      </ChartLoadingFallback>
-    );
-  }, []);
-
-  const [showChart, setShowChart] = useState(false);
-
-  const handleClick = useCallback(() => {
-    setShowChart(!showChart);
-  }, [showChart]);
-
-  return (
-    <StatusDisplay
-      label="Thermo 2 (Celsius)"
-      color="green"
-      value={value}
-      overflowElement={showChart ? chartElement : undefined}
-      disabled={false}
-      onClick={handleClick}
-    />
-  );
-});
-
 const AltitudeDisplay = memo(function AltitudeDisplay() {
   const value = useLaunchMachineSelector((state) =>
     (state.context.deviceStates.radioGround?.data.gps.altitude ?? 0).toFixed(1),
@@ -464,8 +372,6 @@ export const StatusPanel = memo(function StatusPanel() {
           <CC1Display />
           <LoadCellDisplay />
           <TotalNitrousDisplay />
-          <Thermo1Display />
-          <Thermo2Display />
         </>
       )}
     </Panel>

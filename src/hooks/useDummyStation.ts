@@ -113,8 +113,6 @@ class DummyStation {
       }),
       t1: randRange(0, 1e6),
       t2: randRange(0, 1e6),
-      thermo1C: randRange(0, 200),
-      thermo2C: randRange(0, 200),
       timeSinceBoot: curTime - this.bootTime,
       timeSinceCalibration: curTime - this.bootTime,
     };
