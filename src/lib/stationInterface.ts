@@ -33,7 +33,7 @@ export const remoteStationStateSchema = z.object({
   relayStatusByte: z.number(),
   /** Transducer MPSI. */
   t1: z.number(),
-  /** Load cell LBS. */
+  /** Load cell Milli-LBS. */
   t2: z.number(),
   fillLineConnected: z.boolean().optional(),
   timeSinceBoot: z.number(),
@@ -168,7 +168,8 @@ export function parseRemoteStationState(
       timeSinceCalibration: remoteState.timeSinceCalibration / 1e6,
       // convert pressures to mPSI to PSI
       transd1Pressure: remoteState.t1 / 1000,
-      transd2LBS: remoteState.t2,
+      // convert from milli-LBS to LBS
+      transd2LBS: remoteState.t2 / 1000,
       fillLineConnected: remoteState.fillLineConnected ?? false,
     },
   };
