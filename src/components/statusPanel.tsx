@@ -272,18 +272,90 @@ const AltitudeDisplay = memo(function AltitudeDisplay() {
     (state.context.deviceStates.radioGround?.data.gps_altitude ?? 0).toFixed(1),
   );
 
-  return <StatusDisplay label="Altitude (ft)" color="green" value={value} />;
+  const chartElement = useMemo(() => {
+    return (
+      <ChartLoadingFallback>
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          selector={({ radioGround }) =>
+            radioGround?.data.gps_altitude != null
+              ? {
+                  ts: radioGround.ts,
+                  value: radioGround.data.gps_altitude,
+                }
+              : null
+          }
+          valuePrecision={1}
+          minY={0}
+          maxY="dataMax + 10"
+        />
+      </ChartLoadingFallback>
+    );
+  }, []);
+
+  const [showChart, setShowChart] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setShowChart(!showChart);
+  }, [showChart]);
+
+  return (
+    <StatusDisplay
+      label="Altitude (ft)"
+      color="green"
+      value={value}
+      overflowElement={showChart ? chartElement : undefined}
+      disabled={false}
+      onClick={handleClick}
+    />
+  );
 });
 
 const AccelerationDisplay = memo(function AccelerationDisplay() {
+  // calibrated to 1g on the ground
+  const G_PER_RAW = 1 / 2140;
+
   const raw_value = useLaunchMachineSelector(
     (state) => state.context.deviceStates.radioGround?.data.imu_az ?? 0,
   );
-  // calibrated to 1g on the ground
-  const value = (raw_value / 2140).toFixed(3);
+  const value = (raw_value * G_PER_RAW).toFixed(3);
+
+  const chartElement = useMemo(() => {
+    return (
+      <ChartLoadingFallback>
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          selector={({ radioGround }) =>
+            radioGround
+              ? {
+                  ts: radioGround.ts,
+                  value: radioGround.data.imu_az * G_PER_RAW,
+                }
+              : null
+          }
+          valuePrecision={3}
+          minY="dataMin - 0.2"
+          maxY="dataMax + 0.2"
+        />
+      </ChartLoadingFallback>
+    );
+  }, [G_PER_RAW]);
+
+  const [showChart, setShowChart] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setShowChart(!showChart);
+  }, [showChart]);
 
   return (
-    <StatusDisplay label="Z Acceleration (Gs)" color="green" value={value} />
+    <StatusDisplay
+      label="Z Acceleration (Gs)"
+      color="green"
+      value={value}
+      overflowElement={showChart ? chartElement : undefined}
+      disabled={false}
+      onClick={handleClick}
+    />
   );
 });
 
