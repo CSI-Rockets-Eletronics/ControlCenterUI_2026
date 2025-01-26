@@ -120,23 +120,14 @@ class DummyStation {
     const loadCellState: LoadCellState = randRange(-30, 1000);
 
     const radioGroundState: RadioGroundState = {
-      rocketScientific: {
-        t1: randRange(0, 1e3),
-        t3: randRange(0, 1e3),
-      },
-      gps: {
-        ts_tail: Math.floor(randRange(0, 256)),
-        fix: true,
-        fixquality: 1,
-        latitude_fixed: randRange(-90, 90) * 1e7,
-        longitude_fixed: randRange(-180, 180) * 1e7,
-        altitude: randRange(0, 30_000),
-      },
-      trajectory: {
-        z: randRange(0, 10_000),
-        vz: randRange(-500, 500),
-        az: randRange(-100, 100),
-      },
+      gps_ts_tail: Math.floor(randRange(0, 256)),
+      gps_fix: true,
+      gps_fixquality: 1,
+      gps_satellites: Math.floor(randRange(0, 6)),
+      gps_latitude_fixed: randRange(-90, 90) * 1e7,
+      gps_longitude_fixed: randRange(-180, 180) * 1e7,
+      gps_altitude: randRange(0, 30_000),
+      imu_az: randRange(-2e4, 2e4),
     };
 
     await Promise.all([

@@ -15,8 +15,6 @@ import {
   toRemoteSetStationOpStateCommand,
 } from "@/lib/stationInterface";
 import {
-  GpsState,
-  gpsStateSchema,
   LoadCellState,
   loadCellStateSchema,
   RadioGroundState,
@@ -26,8 +24,6 @@ import {
   StationOpState,
   StationRelays,
   StationState,
-  TrajectoryState,
-  trajectoryStateSchema,
 } from "@/lib/stationState";
 
 const LAUNCH_STATE_FETCH_INTERVAL = 1000;
@@ -50,8 +46,6 @@ export type DeviceStates = {
   firingStation: DeviceRecord<StationState> | null;
   loadCell: DeviceRecord<LoadCellState> | null;
   radioGround: DeviceRecord<RadioGroundState> | null;
-  gps: DeviceRecord<GpsState> | null;
-  trajectory: DeviceRecord<TrajectoryState> | null;
   rocketScientific: DeviceRecord<RocketScientificState> | null;
 };
 
@@ -145,8 +139,6 @@ export function createLaunchMachine(
           firingStation: null,
           loadCell: null,
           radioGround: null,
-          gps: null,
-          trajectory: null,
           rocketScientific: null,
         },
         sentMessages: [],
@@ -373,14 +365,9 @@ export function createLaunchMachine(
               $query: {
                 environmentKey,
                 sessionName,
-                devices: [
-                  DEVICES.firingStation,
-                  DEVICES.loadCell,
-                  DEVICES.radioGround,
-                  DEVICES.gps,
-                  DEVICES.trajectory,
-                  DEVICES.rocketScientific,
-                ].join(","),
+                devices: [DEVICES.firingStation, DEVICES.loadCell, DEVICES.radioGround, DEVICES.rocketScientific].join(
+                  ",",
+                ),
                 endTs,
               },
             }),
@@ -389,8 +376,6 @@ export function createLaunchMachine(
           const firingStationRaw = records[DEVICES.firingStation];
           const loadCellRaw = records[DEVICES.loadCell];
           const radioGroundRaw = records[DEVICES.radioGround];
-          const gpsRaw = records[DEVICES.gps];
-          const trajectoryRaw = records[DEVICES.trajectory];
           const rocketScientificRaw = records[DEVICES.rocketScientific];
 
           return {
@@ -410,18 +395,6 @@ export function createLaunchMachine(
               ? {
                   ts: radioGroundRaw.ts,
                   data: radioGroundStateSchema.parse(radioGroundRaw.data),
-                }
-              : null,
-            gps: gpsRaw
-              ? {
-                  ts: gpsRaw.ts,
-                  data: gpsStateSchema.parse(gpsRaw.data),
-                }
-              : null,
-            trajectory: trajectoryRaw
-              ? {
-                  ts: trajectoryRaw.ts,
-                  data: trajectoryStateSchema.parse(trajectoryRaw.data),
                 }
               : null,
             rocketScientific: rocketScientificRaw

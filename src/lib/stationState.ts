@@ -95,9 +95,22 @@ export const trajectoryStateSchema = z.object({
 export type TrajectoryState = z.infer<typeof trajectoryStateSchema>;
 
 export const radioGroundStateSchema = z.object({
-  rocketScientific: rocketScientificStateSchema,
-  gps: gpsStateSchema,
-  trajectory: trajectoryStateSchema,
+  /** Last byte of ts, to detect fresh data. */
+  gps_ts_tail: z.number(),
+  /** Have a fix? */
+  gps_fix: z.boolean(),
+  /** Fix quality (0, 1, 2 = Invalid, GPS, DGPS). */
+  gps_fixquality: z.number().optional(),
+  /** Number of satellites in use. */
+  gps_satellites: z.number().optional(),
+  /** Fixed point latitude in decimal degrees. Divide by 10000000.0 to get a double. */
+  gps_latitude_fixed: z.number().optional(),
+  /** Fixed point longitude in decimal degrees. Divide by 10000000.0 to get a double. */
+  gps_longitude_fixed: z.number().optional(),
+  /** Altitude in meters above MSL. */
+  gps_altitude: z.number().optional(),
+  /** Raw IMU z acceleration. Depends on the configured scale. */
+  imu_az: z.number(),
 });
 
 export type RadioGroundState = z.infer<typeof radioGroundStateSchema>;

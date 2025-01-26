@@ -17,10 +17,6 @@ export const DEVICES = {
   radioGround: "RadioGround",
   // in-rocket
   rocketScientific: "RocketScientific",
-  gps: "GPS",
-  mpu: "MPU",
-  dht: "DHT",
-  trajectory: "Trajectory",
 } as const;
 
 /**

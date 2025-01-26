@@ -269,7 +269,7 @@ const TotalNitrousDisplay = memo(function TotalNitrousDisplay() {
 
 const AltitudeDisplay = memo(function AltitudeDisplay() {
   const value = useLaunchMachineSelector((state) =>
-    (state.context.deviceStates.radioGround?.data.gps.altitude ?? 0).toFixed(1),
+    (state.context.deviceStates.radioGround?.data.gps_altitude ?? 0).toFixed(1),
   );
 
   return <StatusDisplay label="Altitude (ft)" color="green" value={value} />;
