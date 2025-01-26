@@ -2,8 +2,6 @@ import { shallowEqual } from "@xstate/react";
 import { Map, Marker, Overlay, type Point, ZoomControl } from "pigeon-maps";
 import { memo, useCallback, useEffect, useState } from "react";
 
-import { type GpsState } from "@/lib/stationState";
-
 import { Button } from "./design/button";
 import { Panel } from "./design/panel";
 import { useLaunchMachineSelector } from "./launchMachineProvider";
@@ -12,24 +10,17 @@ const INITIAL_ZOOM = 16;
 
 export const MapPanel = memo(function MapPanel() {
   const rocketAnchor: Point | undefined = useLaunchMachineSelector((state) => {
-    function getGpsState(): GpsState | null {
-      const { radioGround, gps } = state.context.deviceStates;
-      if (radioGround && gps) {
-        return radioGround.ts > gps.ts ? radioGround.data.gps : gps.data;
-      }
-      if (!radioGround && gps) return gps.data;
-      if (radioGround && !gps) return radioGround.data.gps;
-      return null;
-    }
-
-    const gpsState = getGpsState();
+    const { radioGround } = state.context.deviceStates;
 
     if (
-      gpsState &&
-      gpsState.latitude_fixed != null &&
-      gpsState.longitude_fixed != null
+      radioGround &&
+      radioGround.data.gps_latitude_fixed != null &&
+      radioGround.data.gps_longitude_fixed != null
     ) {
-      return [gpsState.latitude_fixed / 1e7, gpsState.longitude_fixed / 1e7];
+      return [
+        radioGround.data.gps_latitude_fixed / 1e7,
+        radioGround.data.gps_longitude_fixed / 1e7,
+      ];
     }
   }, shallowEqual);
 

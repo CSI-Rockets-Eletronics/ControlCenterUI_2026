@@ -35,11 +35,6 @@ const RECALIBRATE_MESSAGES: PresetMessage[] = [
     device: DEVICES.loadCell,
     data: "calibrate",
   },
-  {
-    label: "TRAJECTORY RECALIBRATE",
-    device: DEVICES.trajectory,
-    data: "CALIBRATE",
-  },
 ];
 
 const OTHER_MESSAGES: PresetMessage[] = [
