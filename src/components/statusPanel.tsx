@@ -275,6 +275,18 @@ const AltitudeDisplay = memo(function AltitudeDisplay() {
   return <StatusDisplay label="Altitude (ft)" color="green" value={value} />;
 });
 
+const AccelerationDisplay = memo(function AccelerationDisplay() {
+  const raw_value = useLaunchMachineSelector(
+    (state) => state.context.deviceStates.radioGround?.data.imu_az ?? 0,
+  );
+  // calibrated to 1g on the ground
+  const value = (raw_value / 2140).toFixed(3);
+
+  return (
+    <StatusDisplay label="Z Acceleration (Gs)" color="green" value={value} />
+  );
+});
+
 export const StatusPanel = memo(function StatusPanel() {
   const isRecovery = useLaunchMachineSelector(
     (state) => state.context.launchState.activePanel === "recovery",
@@ -315,7 +327,10 @@ export const StatusPanel = memo(function StatusPanel() {
       />
 
       {isRecovery ? (
-        <AltitudeDisplay />
+        <>
+          <AltitudeDisplay />
+          <AccelerationDisplay />
+        </>
       ) : (
         <>
           <FillLineDisplay />
