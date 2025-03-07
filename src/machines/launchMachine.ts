@@ -1,4 +1,5 @@
 import { assign, createMachine } from "xstate";
+import { z } from "zod";
 
 import { Api, catchError } from "@/hooks/useApi";
 import {
@@ -10,21 +11,21 @@ import {
 } from "@/lib/launchState";
 import {
   DEVICES,
-  parseRemoteStationState,
-  remoteStationStateSchema,
-  toRemoteSetStationOpStateCommand,
-} from "@/lib/stationInterface";
-import {
-  LoadCellState,
-  loadCellStateSchema,
-  RadioGroundState,
-  radioGroundStateSchema,
-  RocketScientificState,
-  rocketScientificStateSchema,
-  StationOpState,
-  StationRelays,
-  StationState,
-} from "@/lib/stationState";
+  FsCommandMessage,
+  FsInjectorTransducersRecord,
+  fsInjectorTransducersRecordSchema,
+  FsLoxGn2TransducersRecord,
+  fsLoxGn2TransducersRecordSchema,
+  FsStateRecord,
+  fsStateRecordSchema,
+  FsThermocouplesRecord,
+  fsThermocouplesRecordSchema,
+  LoadCellRecord,
+  loadCellRecordSchema,
+  RadioGroundRecord,
+  radioGroundRecordSchema,
+} from "@/lib/serverSchemas";
+import { fsStateToCommand } from "@/lib/serverSchemaUtils";
 
 const LAUNCH_STATE_FETCH_INTERVAL = 1000;
 const STATION_STATE_FETCH_INTERVAL = 0; // fetch as soon as the previous fetch completes
@@ -43,10 +44,13 @@ export type DeviceRecord<T> = {
 };
 
 export type DeviceStates = {
-  firingStation: DeviceRecord<StationState> | null;
-  loadCell: DeviceRecord<LoadCellState> | null;
-  radioGround: DeviceRecord<RadioGroundState> | null;
-  rocketScientific: DeviceRecord<RocketScientificState> | null;
+  fsState: DeviceRecord<FsStateRecord> | null;
+  fsLoxGn2Transducers: DeviceRecord<FsLoxGn2TransducersRecord> | null;
+  fsInjectorTransducers: DeviceRecord<FsInjectorTransducersRecord> | null;
+  fsThermocouples: DeviceRecord<FsThermocouplesRecord> | null;
+  loadCell1: DeviceRecord<LoadCellRecord> | null;
+  loadCell2: DeviceRecord<LoadCellRecord> | null;
+  radioGround: DeviceRecord<RadioGroundRecord> | null;
 };
 
 export interface PendingMessage {
@@ -87,12 +91,8 @@ export type LaunchMachineEvent =
       data: Partial<LaunchState["rangePermit"]>;
     }
   | {
-      type: "MUTATE_STATION_OP_STATE";
-      value: Exclude<StationOpState, "custom">;
-    }
-  | {
-      type: "MUTATE_STATION_OP_STATE_CUSTOM";
-      relays: StationRelays;
+      type: "SEND_FS_COMMAND";
+      value: FsCommandMessage;
     }
   | {
       type: "SEND_MANUAL_MESSAGES";
@@ -126,7 +126,7 @@ export function createLaunchMachine(
           fetchLaunchState: { data: LaunchState };
           mutateLaunchState: { data: LaunchState };
           fetchDeviceStates: { data: DeviceStates };
-          mutateStationOpState: { data: SentMessage[] };
+          sendFsCommand: { data: SentMessage[] };
           sendManualMessages: { data: SentMessage[] };
         },
       },
@@ -136,10 +136,13 @@ export function createLaunchMachine(
         launchState: initialLaunchState,
         pendingLaunchState: null,
         deviceStates: {
-          firingStation: null,
-          loadCell: null,
+          fsState: null,
+          fsLoxGn2Transducers: null,
+          fsInjectorTransducers: null,
+          fsThermocouples: null,
+          loadCell1: null,
+          loadCell2: null,
           radioGround: null,
-          rocketScientific: null,
         },
         sentMessages: [],
       }),
@@ -216,8 +219,7 @@ export function createLaunchMachine(
                 },
                 idle: {
                   on: {
-                    MUTATE_STATION_OP_STATE: { target: "mutatingOpState", cond: "canMutateOpState" },
-                    MUTATE_STATION_OP_STATE_CUSTOM: { target: "mutatingOpState", cond: "canMutateOpState" },
+                    SEND_FS_COMMAND: { target: "sendingFsCommand", cond: "canSendFsCommand" },
                     SEND_MANUAL_MESSAGES: { target: "sendingManualMessages", cond: "canWrite" },
                   },
                   initial: "waitingToRefetch",
@@ -237,9 +239,9 @@ export function createLaunchMachine(
                     },
                   },
                 },
-                mutatingOpState: {
+                sendingFsCommand: {
                   invoke: {
-                    src: "mutateStationOpState",
+                    src: "sendFsCommand",
                     onDone: {
                       target: "idle.refetching",
                       actions: "addSentMessages",
@@ -365,69 +367,56 @@ export function createLaunchMachine(
               $query: {
                 environmentKey,
                 sessionName,
-                devices: [DEVICES.firingStation, DEVICES.loadCell, DEVICES.radioGround, DEVICES.rocketScientific].join(
-                  ",",
-                ),
+                devices: [
+                  DEVICES.fsState,
+                  DEVICES.fsLoxGn2Transducers,
+                  DEVICES.fsInjectorTransducers,
+                  DEVICES.fsThermocouples,
+                  DEVICES.loadCell1,
+                  DEVICES.loadCell2,
+                  DEVICES.radioGround,
+                ].join(","),
                 endTs,
               },
             }),
           );
 
-          const firingStationRaw = records[DEVICES.firingStation];
-          const loadCellRaw = records[DEVICES.loadCell];
+          const fsStateRaw = records[DEVICES.fsState];
+          const fsLoxGn2TransducersRaw = records[DEVICES.fsLoxGn2Transducers];
+          const fsInjectorTransducersRaw = records[DEVICES.fsInjectorTransducers];
+          const fsThermocouplesRaw = records[DEVICES.fsThermocouples];
+          const loadCell1Raw = records[DEVICES.loadCell1];
+          const loadCell2Raw = records[DEVICES.loadCell2];
           const radioGroundRaw = records[DEVICES.radioGround];
-          const rocketScientificRaw = records[DEVICES.rocketScientific];
+
+          const parseRecord = <T>(schema: z.ZodType<T>, record: DeviceRecord<unknown> | null) => {
+            return record ? { ts: record.ts, data: schema.parse(record.data) } : null;
+          };
 
           return {
-            firingStation: firingStationRaw
-              ? {
-                  ts: firingStationRaw.ts,
-                  data: parseRemoteStationState(remoteStationStateSchema.parse(firingStationRaw.data)),
-                }
-              : null,
-            loadCell: loadCellRaw
-              ? {
-                  ts: loadCellRaw.ts,
-                  data: loadCellStateSchema.parse(loadCellRaw.data),
-                }
-              : null,
-            radioGround: radioGroundRaw
-              ? {
-                  ts: radioGroundRaw.ts,
-                  data: radioGroundStateSchema.parse(radioGroundRaw.data),
-                }
-              : null,
-            rocketScientific: rocketScientificRaw
-              ? {
-                  ts: rocketScientificRaw.ts,
-                  data: rocketScientificStateSchema.parse(rocketScientificRaw.data),
-                }
-              : null,
+            fsState: parseRecord(fsStateRecordSchema, fsStateRaw),
+            fsLoxGn2Transducers: parseRecord(fsLoxGn2TransducersRecordSchema, fsLoxGn2TransducersRaw),
+            fsInjectorTransducers: parseRecord(fsInjectorTransducersRecordSchema, fsInjectorTransducersRaw),
+            fsThermocouples: parseRecord(fsThermocouplesRecordSchema, fsThermocouplesRaw),
+            loadCell1: parseRecord(loadCellRecordSchema, loadCell1Raw),
+            loadCell2: parseRecord(loadCellRecordSchema, loadCell2Raw),
+            radioGround: parseRecord(radioGroundRecordSchema, radioGroundRaw),
           };
         },
-        mutateStationOpState: async (_context, event) => {
-          const data =
-            event.type === "MUTATE_STATION_OP_STATE_CUSTOM"
-              ? toRemoteSetStationOpStateCommand({
-                  opState: "custom",
-                  relays: event.relays,
-                })
-              : toRemoteSetStationOpStateCommand({
-                  opState: event.value,
-                });
+        sendFsCommand: async (_context, event) => {
           await catchError(
             api.messages.post({
               environmentKey,
               device: DEVICES.firingStation,
-              data,
+              data: event.value,
             }),
           );
-          console.log("Sent message", DEVICES.firingStation, data);
+          console.log("Sent message", DEVICES.firingStation, event.value);
           return [
             {
               ts: new Date(),
               device: DEVICES.firingStation,
-              data,
+              data: event.value,
             },
           ];
         },
@@ -467,12 +456,15 @@ export function createLaunchMachine(
             newArmStatus.abortControl !== oldArmStatus.abortControl
           );
         },
-        canMutateOpState: (context, event) => {
+        canSendFsCommand: (context, event) => {
           if (!canWrite) {
             return false;
           }
 
-          if (!context.deviceStates.firingStation) {
+          const fsState = context.deviceStates.fsState;
+          const command = event.value;
+
+          if (!fsState) {
             return false;
           }
 
@@ -481,22 +473,27 @@ export function createLaunchMachine(
             checklistIsComplete(context.launchState.goPoll) &&
             armStatusIsComplete(context.launchState.armStatus);
 
-          if (event.type === "MUTATE_STATION_OP_STATE_CUSTOM") {
-            if (event.relays.pyroCutter || event.relays.igniter || event.relays.pValve) {
+          if (command.command === "STATE_CUSTOM") {
+            if (command.dome_pilot_open || command.run || command.water_suppression || command.igniter) {
               return fireReqsComplete;
             } else {
               return true;
             }
           } else {
-            if (event.value === context.deviceStates.firingStation.data.opState) {
+            if (command.command === fsStateToCommand(fsState.data.state)) {
               return false;
             }
 
-            if (event.value === "fire") {
-              const opState = context.deviceStates.firingStation.data.opState;
-              const validFireSourceState = opState === "standby" || opState === "keep" || opState === "custom";
+            if (command.command === "STATE_FIRE") {
+              const state = fsState.data.state;
+              const validFireSourceState = state === "GN2_STANDBY" || state === "CUSTOM";
               return fireReqsComplete && validFireSourceState;
-            } else if (event.value === "fire-manual-igniter" || event.value === "fire-manual-valve") {
+            } else if (
+              command.command === "STATE_FIRE_MANUAL_DOME_PILOT_OPEN" ||
+              command.command === "STATE_FIRE_MANUAL_DOME_PILOT_CLOSE" ||
+              command.command === "STATE_FIRE_MANUAL_IGNITER" ||
+              command.command === "STATE_FIRE_MANUAL_RUN"
+            ) {
               return fireReqsComplete;
             } else {
               return true;

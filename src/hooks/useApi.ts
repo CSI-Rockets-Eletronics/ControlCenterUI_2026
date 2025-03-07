@@ -2,7 +2,7 @@ import { createEdenTreaty } from "data-server-node/api";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { DEFAULT_SERVER } from "@/lib/stationInterface";
+import { DEFAULT_SERVER } from "@/lib/serverSchemas";
 
 export type Api = ReturnType<typeof createEdenTreaty>;
 

@@ -10,8 +10,6 @@ import {
 
 import { computeNitrousMass } from "@/lib/coolprop";
 import { type LaunchState } from "@/lib/launchState";
-import { type RocketScientificState } from "@/lib/stationState";
-import { type DeviceRecord } from "@/machines/launchMachine";
 
 import { Panel } from "./design/panel";
 import { StatusDisplay } from "./design/statusDisplay";
@@ -79,26 +77,10 @@ const ChartLoadingFallback = memo(function ChartLoadingFallback({
   );
 });
 
-const FillLineDisplay = memo(function FillLineDisplay() {
-  const isConnected = useLaunchMachineSelector(
-    (state) =>
-      state.context.deviceStates.firingStation?.data.status.fillLineConnected ??
-      false,
-  );
-
-  return (
-    <StatusDisplay
-      label="Fill Line"
-      color={isConnected ? "yellow" : "green"}
-      value={isConnected ? "Connected" : "Cut"}
-    />
-  );
-});
-
-const OxTank1Display = memo(function OxTank1Display() {
+const LoxTankUpperDisplay = memo(function LoxTankUpperDisplay() {
   const value = useLaunchMachineSelector((state) =>
     (
-      state.context.deviceStates.firingStation?.data.status.transd1Pressure ?? 0
+      state.context.deviceStates.fsLoxGn2Transducers?.data.lox_upper ?? 0
     ).toFixed(1),
   );
 
@@ -107,11 +89,11 @@ const OxTank1Display = memo(function OxTank1Display() {
       <ChartLoadingFallback>
         <StationChart
           // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ firingStation }) =>
-            firingStation
+          selector={({ fsLoxGn2Transducers }) =>
+            fsLoxGn2Transducers
               ? {
-                  ts: firingStation.ts,
-                  value: firingStation.data.status.transd1Pressure,
+                  ts: fsLoxGn2Transducers.ts,
+                  value: fsLoxGn2Transducers.data.lox_upper,
                 }
               : null
           }
@@ -131,7 +113,7 @@ const OxTank1Display = memo(function OxTank1Display() {
 
   return (
     <StatusDisplay
-      label="Ox Tank 1 (PSI)"
+      label="Lox Upper (PSI)"
       color="green"
       value={value}
       overflowElement={showChart ? chartElement : undefined}
@@ -141,59 +123,11 @@ const OxTank1Display = memo(function OxTank1Display() {
   );
 });
 
-const OxTank2Display = memo(function OxTank2Display() {
-  // convert pressures to mPSI to PSI
-  const psiSelector = (state: DeviceRecord<RocketScientificState> | null) =>
-    state?.data.t1 ?? 0;
-
-  const value = useLaunchMachineSelector((state) =>
-    psiSelector(state.context.deviceStates.rocketScientific).toFixed(1),
-  );
-
-  const chartElement = useMemo(() => {
-    return (
-      <ChartLoadingFallback>
-        <StationChart
-          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ rocketScientific }) =>
-            rocketScientific
-              ? {
-                  ts: rocketScientific.ts,
-                  value: psiSelector(rocketScientific),
-                }
-              : null
-          }
-          valuePrecision={1}
-          minY={0}
-          maxY="dataMax + 10"
-        />
-      </ChartLoadingFallback>
-    );
-  }, []);
-
-  const [showChart, setShowChart] = useState(false);
-
-  const handleClick = useCallback(() => {
-    setShowChart(!showChart);
-  }, [showChart]);
-
-  return (
-    <StatusDisplay
-      label="Ox Tank 2 (PSI)"
-      color="green"
-      value={value}
-      overflowElement={showChart ? chartElement : undefined}
-      disabled={false}
-      onClick={handleClick}
-    />
-  );
-});
-
-const LoadCellDisplay = memo(function LoadCell1Display() {
+const LoxTankLowerDisplay = memo(function LoxTankLowerDisplay() {
   const value = useLaunchMachineSelector((state) =>
     (
-      state.context.deviceStates.firingStation?.data.status.transd2LBS ?? 0
-    ).toFixed(2),
+      state.context.deviceStates.fsLoxGn2Transducers?.data.lox_lower ?? 0
+    ).toFixed(1),
   );
 
   const chartElement = useMemo(() => {
@@ -201,11 +135,55 @@ const LoadCellDisplay = memo(function LoadCell1Display() {
       <ChartLoadingFallback>
         <StationChart
           // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ firingStation }) =>
-            firingStation
+          selector={({ fsLoxGn2Transducers }) =>
+            fsLoxGn2Transducers
               ? {
-                  ts: firingStation.ts,
-                  value: firingStation.data.status.transd2LBS,
+                  ts: fsLoxGn2Transducers.ts,
+                  value: fsLoxGn2Transducers.data.lox_lower,
+                }
+              : null
+          }
+          valuePrecision={1}
+          minY={0}
+          maxY="dataMax + 10"
+        />
+      </ChartLoadingFallback>
+    );
+  }, []);
+
+  const [showChart, setShowChart] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setShowChart(!showChart);
+  }, [showChart]);
+
+  return (
+    <StatusDisplay
+      label="Lox Lower (PSI)"
+      color="green"
+      value={value}
+      overflowElement={showChart ? chartElement : undefined}
+      disabled={false}
+      onClick={handleClick}
+    />
+  );
+});
+
+const LoadCell1Display = memo(function LoadCell1Display() {
+  const value = useLaunchMachineSelector((state) =>
+    (state.context.deviceStates.loadCell1?.data ?? 0).toFixed(2),
+  );
+
+  const chartElement = useMemo(() => {
+    return (
+      <ChartLoadingFallback>
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          selector={({ loadCell1 }) =>
+            loadCell1
+              ? {
+                  ts: loadCell1.ts,
+                  value: loadCell1.data,
                 }
               : null
           }
@@ -225,7 +203,7 @@ const LoadCellDisplay = memo(function LoadCell1Display() {
 
   return (
     <StatusDisplay
-      label="Load Cell (lbs)"
+      label="Load Cell 1 (lbs)"
       color="green"
       value={value}
       overflowElement={showChart ? chartElement : undefined}
@@ -235,15 +213,106 @@ const LoadCellDisplay = memo(function LoadCell1Display() {
   );
 });
 
-const TotalNitrousDisplay = memo(function TotalNitrousDisplay() {
-  const totalMassLbs = useLaunchMachineSelector(
-    (state) => state.context.deviceStates.loadCell?.data ?? 0,
+const LoadCell2Display = memo(function LoadCell2Display() {
+  const value = useLaunchMachineSelector((state) =>
+    (state.context.deviceStates.loadCell2?.data ?? 0).toFixed(2),
   );
+
+  const chartElement = useMemo(() => {
+    return (
+      <ChartLoadingFallback>
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          selector={({ loadCell2 }) =>
+            loadCell2
+              ? {
+                  ts: loadCell2.ts,
+                  value: loadCell2.data,
+                }
+              : null
+          }
+          valuePrecision={3}
+          minY="dataMin - 2"
+          maxY="dataMax + 2"
+        />
+      </ChartLoadingFallback>
+    );
+  }, []);
+
+  const [showChart, setShowChart] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setShowChart(!showChart);
+  }, [showChart]);
+
+  return (
+    <StatusDisplay
+      label="Load Cell 2 (lbs)"
+      color="green"
+      value={value}
+      overflowElement={showChart ? chartElement : undefined}
+      disabled={false}
+      onClick={handleClick}
+    />
+  );
+});
+
+function useTotalLoadCellValue() {
+  const value = useLaunchMachineSelector((state) => {
+    const { loadCell1, loadCell2 } = state.context.deviceStates;
+    return loadCell1 && loadCell2 ? loadCell1.data + loadCell2.data : 0;
+  });
+  return { value, valueStr: value.toFixed(2) };
+}
+
+const TotalLoadCellDisplay = memo(function TotalLoadCellDisplay() {
+  const { valueStr } = useTotalLoadCellValue();
+
+  const chartElement = useMemo(() => {
+    return (
+      <ChartLoadingFallback>
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          selector={({ loadCell1, loadCell2 }) =>
+            loadCell1 && loadCell2
+              ? {
+                  ts: (loadCell1.ts + loadCell2.ts) / 2,
+                  value: loadCell1.data + loadCell2.data,
+                }
+              : null
+          }
+          valuePrecision={3}
+          minY="dataMin - 2"
+          maxY="dataMax + 2"
+        />
+      </ChartLoadingFallback>
+    );
+  }, []);
+
+  const [showChart, setShowChart] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setShowChart(!showChart);
+  }, [showChart]);
+
+  return (
+    <StatusDisplay
+      label="Total Load Cell (lbs)"
+      color="green"
+      value={valueStr}
+      overflowElement={showChart ? chartElement : undefined}
+      disabled={false}
+      onClick={handleClick}
+    />
+  );
+});
+
+const TotalNitrousDisplay = memo(function TotalNitrousDisplay() {
+  const { value: totalMassLbs } = useTotalLoadCellValue();
 
   const vaporPressurePsi = useLaunchMachineSelector(
     (state) =>
-      state.context.deviceStates.firingStation?.data.status.transd1Pressure ??
-      0,
+      state.context.deviceStates.fsLoxGn2Transducers?.data.lox_upper ?? 0,
   );
 
   const { liquidMassLbs, vaporMassLbs } = useMemo(
@@ -405,10 +474,11 @@ export const StatusPanel = memo(function StatusPanel() {
         </>
       ) : (
         <>
-          <FillLineDisplay />
-          <OxTank1Display />
-          <OxTank2Display />
-          <LoadCellDisplay />
+          <LoxTankUpperDisplay />
+          <LoxTankLowerDisplay />
+          <LoadCell1Display />
+          <LoadCell2Display />
+          <TotalLoadCellDisplay />
           <TotalNitrousDisplay />
         </>
       )}

@@ -2,7 +2,8 @@ import { memo, useCallback, useMemo } from "react";
 import { twMerge } from "tailwind-merge";
 
 import { type LaunchState } from "@/lib/launchState";
-import { type StationOpState } from "@/lib/stationState";
+import { type FsCommand } from "@/lib/serverSchemas";
+import { fsStateToCommand } from "@/lib/serverSchemaUtils";
 import { type LaunchMachineEvent } from "@/machines/launchMachine";
 
 import { StatusButton } from "./design/statusButton";
@@ -23,15 +24,15 @@ type Props = {
   fadeIfDisabled?: boolean;
 } & (
   | {
-      type: "opState";
-      executeOpState: Exclude<StationOpState, "custom">;
-      stopOpState: Exclude<StationOpState, "custom"> | null;
+      type: "fs-command";
+      executeCommand: Exclude<FsCommand, "STATE_CUSTOM">;
+      stopCommand: Exclude<FsCommand, "STATE_CUSTOM"> | null;
       field?: undefined;
     }
   | {
       type: "arm";
-      executeOpState?: undefined;
-      stopOpState?: undefined;
+      executeCommand?: undefined;
+      stopCommand?: undefined;
       field: keyof LaunchState["armStatus"];
     }
 );
@@ -46,20 +47,20 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
 
   const executeEvent = useMemo<LaunchMachineEvent>(
     () =>
-      rest.type === "opState"
-        ? { type: "MUTATE_STATION_OP_STATE", value: rest.executeOpState }
+      rest.type === "fs-command"
+        ? { type: "SEND_FS_COMMAND", value: { command: rest.executeCommand } }
         : { type: "UPDATE_ARM_STATUS", data: { [rest.field]: true } },
-    [rest.executeOpState, rest.field, rest.type],
+    [rest.executeCommand, rest.field, rest.type],
   );
 
   const stopEvent = useMemo<LaunchMachineEvent | null>(
     () =>
-      rest.type === "opState"
-        ? rest.stopOpState != null
-          ? { type: "MUTATE_STATION_OP_STATE", value: rest.stopOpState }
+      rest.type === "fs-command"
+        ? rest.stopCommand != null
+          ? { type: "SEND_FS_COMMAND", value: { command: rest.stopCommand } }
           : null
         : { type: "UPDATE_ARM_STATUS", data: { [rest.field]: false } },
-    [rest.stopOpState, rest.field, rest.type],
+    [rest.field, rest.stopCommand, rest.type],
   );
 
   const executeDisabled = useLaunchMachineSelector(
@@ -71,9 +72,10 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
   );
 
   const isExecuting = useLaunchMachineSelector((state) =>
-    rest.type === "opState"
-      ? state.context.deviceStates.firingStation?.data.opState ===
-        rest.executeOpState
+    rest.type === "fs-command"
+      ? !!state.context.deviceStates.fsState &&
+        fsStateToCommand(state.context.deviceStates.fsState.data.state) ===
+          rest.executeCommand
       : state.context.launchState.armStatus[rest.field],
   );
 
@@ -89,8 +91,9 @@ export const LaunchControlEntry = memo(function LaunchControlEntry({
 
   const isInState = useLaunchMachineSelector(
     (state) =>
-      state.context.deviceStates.firingStation?.data.opState ===
-      rest.executeOpState,
+      !!state.context.deviceStates.fsState &&
+      fsStateToCommand(state.context.deviceStates.fsState.data.state) ===
+        rest.executeCommand,
   );
 
   const fade = fadeIfDisabled && executeDisabled && !isInState;

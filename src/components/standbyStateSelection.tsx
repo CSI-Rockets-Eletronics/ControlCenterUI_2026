@@ -1,7 +1,8 @@
 import { memo, type ReactNode, useCallback } from "react";
 import { twMerge } from "tailwind-merge";
 
-import { type StationOpState } from "@/lib/stationState";
+import { type FsCommand } from "@/lib/serverSchemas";
+import { fsStateToCommand } from "@/lib/serverSchemaUtils";
 
 import { Panel } from "./design/panel";
 import { StatusButton } from "./design/statusButton";
@@ -12,40 +13,34 @@ import {
 
 const Entry = memo(function Entry({
   label,
-  opState,
+  command,
   inRow = false,
   onlyIfActive = false,
 }: {
   label: string;
-  opState: StationOpState;
+  command: FsCommand;
   inRow?: boolean;
   onlyIfActive?: boolean;
 }) {
   const launchActorRef = useLaunchMachineActorRef();
 
-  const curOpState = useLaunchMachineSelector(
-    (state) => state.context.deviceStates.firingStation?.data.opState,
+  const curState = useLaunchMachineSelector(
+    (state) => state.context.deviceStates.fsState?.data.state,
   );
 
-  const active = curOpState === opState;
+  const active = !!curState && fsStateToCommand(curState) === command;
 
   const disabled = useLaunchMachineSelector(
     (state) =>
-      opState === "custom" ||
-      !state.can({
-        type: "MUTATE_STATION_OP_STATE",
-        value: opState,
-      }),
+      command === "STATE_CUSTOM" ||
+      !state.can({ type: "SEND_FS_COMMAND", value: { command } }),
   );
 
   const handleClick = useCallback(() => {
-    if (opState === "custom") return;
+    if (command === "STATE_CUSTOM") return;
 
-    launchActorRef.send({
-      type: "MUTATE_STATION_OP_STATE",
-      value: opState,
-    });
-  }, [launchActorRef, opState]);
+    launchActorRef.send({ type: "SEND_FS_COMMAND", value: { command } });
+  }, [command, launchActorRef]);
 
   if (onlyIfActive && !active) {
     return null;
@@ -84,33 +79,35 @@ export const StandbyStateSelection = memo(function StandbyStateSelection() {
     <Panel className="flex flex-col h-full gap-4 md:scrollable md:min-w-min">
       <p className="text-lg text-gray-text">State Selection</p>
 
-      <Entry label="STANDBY" opState="standby" />
-      <Entry label="KEEP" opState="keep" />
-      <Entry label="FILL" opState="fill" />
-      <Entry label="PURGE" opState="purge" />
+      <Entry label="IDLE STANDBY" command="STATE_STANDBY" />
+      <Entry label="GN2 STANDBY" command="STATE_GN2_STANDBY" />
+      <Entry label="GN2 FILL" command="STATE_GN2_FILL" />
 
-      <Entry onlyIfActive label="FIRE" opState="fire" />
-      <Entry onlyIfActive label="FIRE IGNITER" opState="fire-manual-igniter" />
-      <Entry onlyIfActive label="FIRE VALVE" opState="fire-manual-valve" />
-      <Entry onlyIfActive label="ABORT" opState="abort" />
-      <Entry onlyIfActive label="CUSTOM" opState="custom" />
+      <Entry onlyIfActive label="FIRE" command="STATE_FIRE" />
+      <Entry
+        onlyIfActive
+        label="FIRE DOME PILOT OPEN"
+        command="STATE_FIRE_MANUAL_DOME_PILOT_OPEN"
+      />
+      <Entry
+        onlyIfActive
+        label="FIRE DOME PILOT CLOSE"
+        command="STATE_FIRE_MANUAL_DOME_PILOT_CLOSE"
+      />
+      <Entry
+        onlyIfActive
+        label="FIRE IGNITER"
+        command="STATE_FIRE_MANUAL_IGNITER"
+      />
+      <Entry onlyIfActive label="FIRE RUN" command="STATE_FIRE_MANUAL_RUN" />
+
+      <Entry onlyIfActive label="ABORT" command="STATE_ABORT" />
+      <Entry onlyIfActive label="CUSTOM" command="STATE_CUSTOM" />
 
       <EntryGroup title="Pulse Fill">
-        <Entry inRow label="1s" opState="pulse-fill-A" />
-        <Entry inRow label="5s" opState="pulse-fill-B" />
-        <Entry inRow label="10s" opState="pulse-fill-C" />
-      </EntryGroup>
-
-      <EntryGroup title="Pulse Vent">
-        <Entry inRow label="1s" opState="pulse-vent-A" />
-        <Entry inRow label="2s" opState="pulse-vent-B" />
-        <Entry inRow label="5s" opState="pulse-vent-C" />
-      </EntryGroup>
-
-      <EntryGroup title="Pulse Purge">
-        <Entry inRow label="1s" opState="pulse-purge-A" />
-        <Entry inRow label="2s" opState="pulse-purge-B" />
-        <Entry inRow label="5s" opState="pulse-purge-C" />
+        <Entry inRow label="1s" command="STATE_GN2_PULSE_FILL_A" />
+        <Entry inRow label="5s" command="STATE_GN2_PULSE_FILL_B" />
+        <Entry inRow label="10s" command="STATE_GN2_PULSE_FILL_C" />
       </EntryGroup>
     </Panel>
   );

@@ -4,7 +4,7 @@ import { catchError, useApi } from "@/hooks/useApi";
 import { useEnvironmentKey } from "@/hooks/useEnvironmentKey";
 import { useReplayFromSeconds } from "@/hooks/useReplayFromSeconds";
 import { useSessionName } from "@/hooks/useSessionName";
-import { DEVICES } from "@/lib/stationInterface";
+import { DEVICES } from "@/lib/serverSchemas";
 
 import { CodeBlock } from "./design/codeBlock";
 import { Panel } from "./design/panel";

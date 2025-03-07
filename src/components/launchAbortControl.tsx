@@ -48,9 +48,9 @@ export const LaunchAbortControl = memo(function LaunchAbortControl() {
       <LaunchControlEntry
         label="ABORT"
         isAbort
-        type="opState"
-        executeOpState="abort"
-        stopOpState={null}
+        type="fs-command"
+        executeCommand="STATE_ABORT"
+        stopCommand={null}
       />
 
       <div className="flex flex-col justify-between mt-4 md:flex-row gap-4">

@@ -19,23 +19,23 @@ export const TopStatusPanel = memo(function TopStatusPanel({
 
   const timeSinceBoot = useLaunchMachineSelector((state) =>
     (
-      state.context.deviceStates.firingStation?.data.status.timeSinceBoot ?? 0
+      (state.context.deviceStates.fsState?.data.ms_since_boot ?? 0) / 1000
     ).toFixed(1),
   );
 
-  const timeSinceCalibration = useLaunchMachineSelector((state) =>
-    (
-      state.context.deviceStates.firingStation?.data.status
-        .timeSinceCalibration ?? 0
-    ).toFixed(1),
-  );
+  // const timeSinceCalibration = useLaunchMachineSelector((state) =>
+  //   (
+  //     state.context.deviceStates.firingStation?.data.status
+  //       .timeSinceCalibration ?? 0
+  //   ).toFixed(1),
+  // );
 
   return (
     <div className="grid grid-rows-[auto,auto] md:grid-rows-none md:grid-cols-[1fr,auto] space-y-4 md:space-y-0 md:space-x-4">
       <Panel className="flex flex-col items-stretch md:items-center md:flex-row gap-4 md:gap-6">
         <div className="flex flex-col ml-2 grow shrink-0">
           <p className="text-gray-text">FS Up: {timeSinceBoot} s</p>
-          <p className="text-gray-text">Calib Up: {timeSinceCalibration} s</p>
+          {/* <p className="text-gray-text">Calib Up: {timeSinceCalibration} s</p> */}
         </div>
 
         <RelaysGroup />

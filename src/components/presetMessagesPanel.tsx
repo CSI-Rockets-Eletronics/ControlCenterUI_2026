@@ -3,7 +3,7 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { catchError, useApi } from "@/hooks/useApi";
 import { useEnvironmentKey } from "@/hooks/useEnvironmentKey";
 import { useSessionName } from "@/hooks/useSessionName";
-import { DEVICES } from "@/lib/stationInterface";
+import { DEVICES, type FsCommandMessage } from "@/lib/serverSchemas";
 
 import { Button } from "./design/button";
 import { Panel } from "./design/panel";
@@ -20,33 +20,27 @@ interface PresetMessage {
 
 const RECALIBRATE_MESSAGES: PresetMessage[] = [
   {
-    label: "FS RECALIBRATE",
+    label: "RECALIBRATE TRANSDUCERS",
     device: DEVICES.firingStation,
-    data: { command: "recalibrate" },
-  },
-
-  {
-    label: "ROCKET RECALIBRATE",
-    device: DEVICES.rocketScientific,
-    data: "cal",
+    data: { command: "RECALIBRATE_TRANSDUCERS" } satisfies FsCommandMessage,
   },
   {
-    label: "LOAD CELL RECALIBRATE",
-    device: DEVICES.loadCell,
+    label: "RECALIBRATE LOAD CELL 1",
+    device: DEVICES.loadCell1,
+    data: "calibrate",
+  },
+  {
+    label: "RECALIBRATE LOAD CELL 2",
+    device: DEVICES.loadCell2,
     data: "calibrate",
   },
 ];
 
 const OTHER_MESSAGES: PresetMessage[] = [
   {
-    label: "FS CLEAR CALIB.",
+    label: "RESTART",
     device: DEVICES.firingStation,
-    data: { command: "clear-calibration" },
-  },
-  {
-    label: "ROCKET CLEAR CALIB.",
-    device: DEVICES.rocketScientific,
-    data: "clear cal",
+    data: { command: "RESTART" } satisfies FsCommandMessage,
   },
 ];
 

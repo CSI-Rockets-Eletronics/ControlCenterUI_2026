@@ -1,20 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import {
-  DEVICES,
-  dummyToStateByte,
-  parseRemoteStationState,
-  remoteSetStationOpStateCommandSchema,
-  type RemoteStationState,
-  remoteStationStateSchema,
-  toRelayStatusByte,
-} from "@/lib/stationInterface";
-import {
-  type LoadCellState,
-  type RadioGroundState,
-  type StationOpState,
-} from "@/lib/stationState";
+import { DEVICES } from "@/lib/serverSchemas";
 
 import { type Api, catchError, useApi } from "./useApi";
 import { useEnvironmentKey } from "./useEnvironmentKey";

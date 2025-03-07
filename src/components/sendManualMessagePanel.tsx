@@ -7,7 +7,7 @@ import {
 } from "react";
 import { twMerge } from "tailwind-merge";
 
-import { DEVICES } from "@/lib/stationInterface";
+import { DEVICES } from "@/lib/serverSchemas";
 
 import { Button } from "./design/button";
 import { Panel } from "./design/panel";

@@ -17,7 +17,11 @@ export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
   );
 
   const abortDisabled = useLaunchMachineSelector(
-    (state) => !state.can({ type: "MUTATE_STATION_OP_STATE", value: "abort" }),
+    (state) =>
+      !state.can({
+        type: "SEND_FS_COMMAND",
+        value: { command: "STATE_ABORT" },
+      }),
   );
 
   const handleGoToLaunchMode = useCallback(() => {
@@ -25,7 +29,10 @@ export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
   }, [launchActorRef]);
 
   const handleAbort = useCallback(() => {
-    launchActorRef.send({ type: "MUTATE_STATION_OP_STATE", value: "abort" });
+    launchActorRef.send({
+      type: "SEND_FS_COMMAND",
+      value: { command: "STATE_ABORT" },
+    });
   }, [launchActorRef]);
 
   return (

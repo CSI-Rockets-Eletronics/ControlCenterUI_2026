@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/design/button";
 import { Panel } from "@/components/design/panel";
-import { DEFAULT_SERVER } from "@/lib/stationInterface";
+import { DEFAULT_SERVER } from "@/lib/serverSchemas";
 
 export const Root = memo(function Root() {
   const navigate = useNavigate();

@@ -1,7 +1,7 @@
 import { memo, useCallback, useState } from "react";
 import { twMerge } from "tailwind-merge";
 
-import { type StationRelays } from "@/lib/stationState";
+import { type FsStateRecord } from "@/lib/serverSchemas";
 
 import { Button } from "./design/button";
 import { CheckboxEntry } from "./design/checkboxEntry";
@@ -10,6 +10,8 @@ import {
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
 
+type RelaysState = Omit<FsStateRecord, "state" | "ms_since_boot">;
+
 const Entry = memo(function Entry({
   label,
   field,
@@ -17,15 +19,15 @@ const Entry = memo(function Entry({
   spr: setPendingRelays,
 }: {
   label: string;
-  field: keyof StationRelays;
-  pr: StationRelays | null; // pendingRelays
-  spr: (pendingRelays: StationRelays) => void; // setPendingRelays
+  field: keyof RelaysState;
+  pr: RelaysState | null; // pendingRelays
+  spr: (pendingRelays: RelaysState) => void; // setPendingRelays
 }) {
-  const curRelays = useLaunchMachineSelector(
-    (state) => state.context.deviceStates.firingStation?.data.relays,
+  const fsState = useLaunchMachineSelector(
+    (state) => state.context.deviceStates.fsState?.data,
   );
 
-  const checked = !!curRelays?.[field];
+  const checked = !!fsState?.[field];
 
   const hasPending = pendingRelays != null;
 
@@ -35,10 +37,10 @@ const Entry = memo(function Entry({
         ...pendingRelays,
         [field]: !pendingRelays[field],
       });
-    } else if (curRelays) {
-      setPendingRelays(curRelays);
+    } else if (fsState) {
+      setPendingRelays(fsState);
     }
-  }, [curRelays, field, hasPending, pendingRelays, setPendingRelays]);
+  }, [field, fsState, hasPending, pendingRelays, setPendingRelays]);
 
   return (
     <div
@@ -56,7 +58,7 @@ const Entry = memo(function Entry({
         }
         label={label}
         checked={checked}
-        disabled={!curRelays}
+        disabled={!fsState}
         onChange={handleChange}
       />
     </div>
@@ -66,16 +68,14 @@ const Entry = memo(function Entry({
 export const RelaysGroup = memo(function RelaysGroup() {
   const launchActorRef = useLaunchMachineActorRef();
 
-  const [pendingRelays, setPendingRelays] = useState<StationRelays | null>(
-    null,
-  );
+  const [pendingRelays, setPendingRelays] = useState<RelaysState | null>(null);
 
   const setPendingRelaysDisabled = useLaunchMachineSelector(
     (state) =>
       pendingRelays == null ||
       !state.can({
-        type: "MUTATE_STATION_OP_STATE_CUSTOM",
-        relays: pendingRelays,
+        type: "SEND_FS_COMMAND",
+        value: { command: "STATE_CUSTOM", ...pendingRelays },
       }),
   );
 
@@ -87,8 +87,8 @@ export const RelaysGroup = memo(function RelaysGroup() {
     if (pendingRelays == null) return;
 
     launchActorRef.send({
-      type: "MUTATE_STATION_OP_STATE_CUSTOM",
-      relays: pendingRelays,
+      type: "SEND_FS_COMMAND",
+      value: { command: "STATE_CUSTOM", ...pendingRelays },
     });
     cancelPendingRelays();
   }, [launchActorRef, pendingRelays, cancelPendingRelays]);
@@ -115,18 +115,13 @@ export const RelaysGroup = memo(function RelaysGroup() {
       )}
 
       <div className="flex flex-wrap items-center gap-4">
-        <Entry label="Fill" field="fill" pr={pr} spr={spr} />
-        <Entry label="Vent" field="vent" pr={pr} spr={spr} />
-        <Entry label="Abort" field="abort" pr={pr} spr={spr} />
-        <Entry label="Pyro Cutter" field="pyroCutter" pr={pr} spr={spr} />
+        <Entry label="GN2 Abort" field="gn2_abort" pr={pr} spr={spr} />
+        <Entry label="GN2 Fill" field="gn2_fill" pr={pr} spr={spr} />
+        <Entry label="Pilot Vent" field="pilot_vent" pr={pr} spr={spr} />
+        <Entry label="Dome Pilot" field="dome_pilot_open" pr={pr} spr={spr} />
+        <Entry label="Run" field="run" pr={pr} spr={spr} />
+        <Entry label="Water" field="water_suppression" pr={pr} spr={spr} />
         <Entry label="Igniter" field="igniter" pr={pr} spr={spr} />
-        <Entry label="P-Valve" field="pValve" pr={pr} spr={spr} />
-        <Entry
-          label="Fill Servo Sealed"
-          field="fillServoClosed"
-          pr={pr}
-          spr={spr}
-        />
       </div>
     </div>
   );

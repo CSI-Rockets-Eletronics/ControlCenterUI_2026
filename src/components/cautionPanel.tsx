@@ -10,20 +10,19 @@ export const CautionPanel = memo(function CautionPanel() {
   );
 
   const isHazardous = useLaunchMachineSelector((state) => {
-    const opState = state.context.deviceStates.firingStation?.data.opState;
-    return opState != null && opState !== "standby" && opState !== "abort";
+    const fsState = state.context.deviceStates.fsState?.data.state;
+    return fsState != null && fsState !== "STANDBY" && fsState !== "ABORT";
   });
 
   const readyToFire = useLaunchMachineSelector((state) =>
     state.can({
-      type: "MUTATE_STATION_OP_STATE",
-      value: "fire",
+      type: "SEND_FS_COMMAND",
+      value: { command: "STATE_FIRE" },
     }),
   );
 
   const isFired = useLaunchMachineSelector(
-    (state) =>
-      state.context.deviceStates.firingStation?.data.opState === "fire",
+    (state) => state.context.deviceStates.fsState?.data.state === "FIRE",
   );
 
   const message = isFired ? (
