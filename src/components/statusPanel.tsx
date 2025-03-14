@@ -5,11 +5,13 @@ import {
   Suspense,
   useCallback,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
 import { computeNitrousMass } from "@/lib/coolprop";
 import { type LaunchState } from "@/lib/launchState";
+import { type DeviceStates } from "@/machines/launchMachine";
 
 import { Panel } from "./design/panel";
 import { StatusDisplay } from "./design/statusDisplay";
@@ -77,33 +79,38 @@ const ChartLoadingFallback = memo(function ChartLoadingFallback({
   );
 });
 
-const LoxTankUpperDisplay = memo(function LoxTankUpperDisplay() {
-  const value = useLaunchMachineSelector((state) =>
-    (
-      state.context.deviceStates.fsLoxGn2Transducers?.data.lox_upper ?? 0
-    ).toFixed(1),
+const StatusDisplayWithChart = memo(function StatusDisplayWithChart({
+  label,
+  selector,
+  decimals = 1,
+  minY = 0,
+  maxY = "dataMax + 10",
+}: {
+  label: string;
+  selector: (state: DeviceStates) => { ts: number; value: number } | null;
+  decimals?: number;
+  minY?: string | number;
+  maxY?: string | number;
+}) {
+  const value = useLaunchMachineSelector(
+    (state) => selector(state.context.deviceStates)?.value ?? 0,
   );
+  const valueStr = value.toFixed(decimals);
+
+  const selectorRef = useRef(selector);
 
   const chartElement = useMemo(() => {
     return (
       <ChartLoadingFallback>
         <StationChart
-          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ fsLoxGn2Transducers }) =>
-            fsLoxGn2Transducers
-              ? {
-                  ts: fsLoxGn2Transducers.ts,
-                  value: fsLoxGn2Transducers.data.lox_upper,
-                }
-              : null
-          }
-          valuePrecision={1}
-          minY={0}
-          maxY="dataMax + 10"
+          selector={selectorRef.current}
+          valuePrecision={decimals}
+          minY={minY}
+          maxY={maxY}
         />
       </ChartLoadingFallback>
     );
-  }, []);
+  }, [decimals, maxY, minY]);
 
   const [showChart, setShowChart] = useState(false);
 
@@ -113,143 +120,9 @@ const LoxTankUpperDisplay = memo(function LoxTankUpperDisplay() {
 
   return (
     <StatusDisplay
-      label="Lox Upper (PSI)"
+      label={label}
       color="green"
-      value={value}
-      overflowElement={showChart ? chartElement : undefined}
-      disabled={false}
-      onClick={handleClick}
-    />
-  );
-});
-
-const LoxTankLowerDisplay = memo(function LoxTankLowerDisplay() {
-  const value = useLaunchMachineSelector((state) =>
-    (
-      state.context.deviceStates.fsLoxGn2Transducers?.data.lox_lower ?? 0
-    ).toFixed(1),
-  );
-
-  const chartElement = useMemo(() => {
-    return (
-      <ChartLoadingFallback>
-        <StationChart
-          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ fsLoxGn2Transducers }) =>
-            fsLoxGn2Transducers
-              ? {
-                  ts: fsLoxGn2Transducers.ts,
-                  value: fsLoxGn2Transducers.data.lox_lower,
-                }
-              : null
-          }
-          valuePrecision={1}
-          minY={0}
-          maxY="dataMax + 10"
-        />
-      </ChartLoadingFallback>
-    );
-  }, []);
-
-  const [showChart, setShowChart] = useState(false);
-
-  const handleClick = useCallback(() => {
-    setShowChart(!showChart);
-  }, [showChart]);
-
-  return (
-    <StatusDisplay
-      label="Lox Lower (PSI)"
-      color="green"
-      value={value}
-      overflowElement={showChart ? chartElement : undefined}
-      disabled={false}
-      onClick={handleClick}
-    />
-  );
-});
-
-const LoadCell1Display = memo(function LoadCell1Display() {
-  const value = useLaunchMachineSelector((state) =>
-    (state.context.deviceStates.loadCell1?.data ?? 0).toFixed(2),
-  );
-
-  const chartElement = useMemo(() => {
-    return (
-      <ChartLoadingFallback>
-        <StationChart
-          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ loadCell1 }) =>
-            loadCell1
-              ? {
-                  ts: loadCell1.ts,
-                  value: loadCell1.data,
-                }
-              : null
-          }
-          valuePrecision={3}
-          minY="dataMin - 2"
-          maxY="dataMax + 2"
-        />
-      </ChartLoadingFallback>
-    );
-  }, []);
-
-  const [showChart, setShowChart] = useState(false);
-
-  const handleClick = useCallback(() => {
-    setShowChart(!showChart);
-  }, [showChart]);
-
-  return (
-    <StatusDisplay
-      label="Load Cell 1 (lbs)"
-      color="green"
-      value={value}
-      overflowElement={showChart ? chartElement : undefined}
-      disabled={false}
-      onClick={handleClick}
-    />
-  );
-});
-
-const LoadCell2Display = memo(function LoadCell2Display() {
-  const value = useLaunchMachineSelector((state) =>
-    (state.context.deviceStates.loadCell2?.data ?? 0).toFixed(2),
-  );
-
-  const chartElement = useMemo(() => {
-    return (
-      <ChartLoadingFallback>
-        <StationChart
-          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ loadCell2 }) =>
-            loadCell2
-              ? {
-                  ts: loadCell2.ts,
-                  value: loadCell2.data,
-                }
-              : null
-          }
-          valuePrecision={3}
-          minY="dataMin - 2"
-          maxY="dataMax + 2"
-        />
-      </ChartLoadingFallback>
-    );
-  }, []);
-
-  const [showChart, setShowChart] = useState(false);
-
-  const handleClick = useCallback(() => {
-    setShowChart(!showChart);
-  }, [showChart]);
-
-  return (
-    <StatusDisplay
-      label="Load Cell 2 (lbs)"
-      color="green"
-      value={value}
+      value={valueStr}
       overflowElement={showChart ? chartElement : undefined}
       disabled={false}
       onClick={handleClick}
@@ -264,48 +137,6 @@ function useTotalLoadCellValue() {
   });
   return { value, valueStr: value.toFixed(2) };
 }
-
-const TotalLoadCellDisplay = memo(function TotalLoadCellDisplay() {
-  const { valueStr } = useTotalLoadCellValue();
-
-  const chartElement = useMemo(() => {
-    return (
-      <ChartLoadingFallback>
-        <StationChart
-          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
-          selector={({ loadCell1, loadCell2 }) =>
-            loadCell1 && loadCell2
-              ? {
-                  ts: (loadCell1.ts + loadCell2.ts) / 2,
-                  value: loadCell1.data + loadCell2.data,
-                }
-              : null
-          }
-          valuePrecision={3}
-          minY="dataMin - 2"
-          maxY="dataMax + 2"
-        />
-      </ChartLoadingFallback>
-    );
-  }, []);
-
-  const [showChart, setShowChart] = useState(false);
-
-  const handleClick = useCallback(() => {
-    setShowChart(!showChart);
-  }, [showChart]);
-
-  return (
-    <StatusDisplay
-      label="Total Load Cell (lbs)"
-      color="green"
-      value={valueStr}
-      overflowElement={showChart ? chartElement : undefined}
-      disabled={false}
-      onClick={handleClick}
-    />
-  );
-});
 
 const TotalNitrousDisplay = memo(function TotalNitrousDisplay() {
   const { value: totalMassLbs } = useTotalLoadCellValue();
@@ -474,11 +305,86 @@ export const StatusPanel = memo(function StatusPanel() {
         </>
       ) : (
         <>
-          <LoxTankUpperDisplay />
-          <LoxTankLowerDisplay />
-          <LoadCell1Display />
-          <LoadCell2Display />
-          <TotalLoadCellDisplay />
+          <StatusDisplayWithChart
+            label="Lox Upper (PSI)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsLoxGn2Transducers: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.lox_upper }
+            }
+          />
+          <StatusDisplayWithChart
+            label="Lox Lower (PSI)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsLoxGn2Transducers: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.lox_lower }
+            }
+          />
+          <StatusDisplayWithChart
+            label="GN2 1 (PSI)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsLoxGn2Transducers: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.gn2_manifold_1 }
+            }
+          />
+          <StatusDisplayWithChart
+            label="GN2 2 (PSI)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsLoxGn2Transducers: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.gn2_manifold_2 }
+            }
+          />
+          <StatusDisplayWithChart
+            label="Injector 1 (PSI)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsInjectorTransducers: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.injector_manifold_1 }
+            }
+          />
+          <StatusDisplayWithChart
+            label="Injector 2 (PSI)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsInjectorTransducers: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.injector_manifold_2 }
+            }
+          />
+          <StatusDisplayWithChart
+            label="Load Cell 1 (lbs)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ loadCell1 }) =>
+              loadCell1 && { ts: loadCell1.ts, value: loadCell1.data }
+            }
+            decimals={2}
+            minY="dataMin - 2"
+            maxY="dataMax + 2"
+          />
+          <StatusDisplayWithChart
+            label="Load Cell 2 (lbs)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ loadCell2 }) =>
+              loadCell2 && { ts: loadCell2.ts, value: loadCell2.data }
+            }
+            decimals={2}
+            minY="dataMin - 2"
+            maxY="dataMax + 2"
+          />
+          <StatusDisplayWithChart
+            label="Total Load Cell (lbs)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ loadCell1, loadCell2 }) =>
+              loadCell1 &&
+              loadCell2 && {
+                ts: (loadCell1.ts + loadCell2.ts) / 2,
+                value: loadCell1.data + loadCell2.data,
+              }
+            }
+            decimals={2}
+            minY="dataMin - 2"
+            maxY="dataMax + 2"
+          />
+
+          {/* <LoadCell1Display /> */}
+          {/* <LoadCell2Display /> */}
+          {/* <TotalLoadCellDisplay /> */}
           <TotalNitrousDisplay />
         </>
       )}
