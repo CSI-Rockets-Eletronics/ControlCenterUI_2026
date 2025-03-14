@@ -19,12 +19,16 @@ const ColorThemeContext = createContext({
   toggleDark: () => undefined as void,
 });
 
+function isSystemDarkMode() {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
 export const ColorThemeProvider = memo(function ColorThemeProvider({
   children,
 }: {
   children?: ReactNode;
 }) {
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(isSystemDarkMode());
 
   const toggleDark = useCallback(() => {
     setIsDark((isDark) => !isDark);
