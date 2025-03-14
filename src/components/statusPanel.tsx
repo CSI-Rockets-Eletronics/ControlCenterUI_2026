@@ -348,6 +348,20 @@ export const StatusPanel = memo(function StatusPanel() {
             }
           />
           <StatusDisplayWithChart
+            label="LOX Temp (°C)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsThermocouples: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.lox_celsius }
+            }
+          />
+          <StatusDisplayWithChart
+            label="GN2 Temp (°C)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsThermocouples: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.gn2_celsius }
+            }
+          />
+          <StatusDisplayWithChart
             label="Load Cell 1 (lbs)"
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
             selector={({ loadCell1 }) =>
