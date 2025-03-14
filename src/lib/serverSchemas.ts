@@ -134,37 +134,6 @@ export type FsThermocouplesRecord = z.infer<typeof fsThermocouplesRecordSchema>;
 
 // ===== AVIONICS PACKETS =====
 
-export const gpsRecordSchema = z.object({
-  /**
-   * Last byte of microsecond timestamp of gps micro-controller, to detect if
-   * we're receiving fresh gps data.
-   */
-  ts_tail: z.number(),
-  /** Have a fix? */
-  fix: z.boolean(),
-  /** Fix quality (0, 1, 2 = Invalid, GPS, DGPS). */
-  fixquality: z.number().optional(),
-  /** Fixed point latitude in decimal degrees. Divide by 10000000.0 to get a double. */
-  latitude_fixed: z.number().optional(),
-  /** Fixed point longitude in decimal degrees. Divide by 10000000.0 to get a double. */
-  longitude_fixed: z.number().optional(),
-  /** Altitude in meters above MSL. */
-  altitude: z.number().optional(),
-});
-
-export type GpsRecord = z.infer<typeof gpsRecordSchema>;
-
-export const trajectoryRecordSchema = z.object({
-  /** z position, in meters. */
-  z: z.number(),
-  /** z velocity, in meters per second. */
-  vz: z.number(),
-  /** z acceleration, in meters per second squared. */
-  az: z.number(),
-});
-
-export type TrajectoryRecord = z.infer<typeof trajectoryRecordSchema>;
-
 export const radioGroundRecordSchema = z.object({
   /** Last byte of ts, to detect fresh data. */
   gps_ts_tail: z.number(),
