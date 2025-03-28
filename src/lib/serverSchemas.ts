@@ -108,6 +108,10 @@ export const fsLoxGn2TransducersRecordSchema = z.object({
   lox_lower: z.number(),
   gn2_manifold_1: z.number(),
   gn2_manifold_2: z.number(),
+  lox_upper_median: z.number(),
+  lox_lower_median: z.number(),
+  gn2_manifold_1_median: z.number(),
+  gn2_manifold_2_median: z.number(),
 });
 
 export type FsLoxGn2TransducersRecord = z.infer<
@@ -118,6 +122,8 @@ export const fsInjectorTransducersRecordSchema = z.object({
   ts: z.number(),
   injector_manifold_1: z.number(),
   injector_manifold_2: z.number(),
+  injector_manifold_1_median: z.number(),
+  injector_manifold_2_median: z.number(),
 });
 
 export type FsInjectorTransducersRecord = z.infer<

@@ -143,7 +143,8 @@ const TotalNitrousDisplay = memo(function TotalNitrousDisplay() {
 
   const vaporPressurePsi = useLaunchMachineSelector(
     (state) =>
-      state.context.deviceStates.fsLoxGn2Transducers?.data.lox_upper ?? 0,
+      state.context.deviceStates.fsLoxGn2Transducers?.data.lox_upper_median ??
+      0,
   );
 
   const { liquidMassLbs, vaporMassLbs } = useMemo(
@@ -309,42 +310,42 @@ export const StatusPanel = memo(function StatusPanel() {
             label="Lox Upper (PSI)"
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
             selector={({ fsLoxGn2Transducers: rec }) =>
-              rec && { ts: rec.ts, value: rec.data.lox_upper }
+              rec && { ts: rec.ts, value: rec.data.lox_upper_median }
             }
           />
           <StatusDisplayWithChart
             label="Lox Lower (PSI)"
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
             selector={({ fsLoxGn2Transducers: rec }) =>
-              rec && { ts: rec.ts, value: rec.data.lox_lower }
+              rec && { ts: rec.ts, value: rec.data.lox_lower_median }
             }
           />
           <StatusDisplayWithChart
             label="GN2 1 (PSI)"
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
             selector={({ fsLoxGn2Transducers: rec }) =>
-              rec && { ts: rec.ts, value: rec.data.gn2_manifold_1 }
+              rec && { ts: rec.ts, value: rec.data.gn2_manifold_1_median }
             }
           />
           <StatusDisplayWithChart
             label="GN2 2 (PSI)"
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
             selector={({ fsLoxGn2Transducers: rec }) =>
-              rec && { ts: rec.ts, value: rec.data.gn2_manifold_2 }
+              rec && { ts: rec.ts, value: rec.data.gn2_manifold_2_median }
             }
           />
           <StatusDisplayWithChart
             label="Injector 1 (PSI)"
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
             selector={({ fsInjectorTransducers: rec }) =>
-              rec && { ts: rec.ts, value: rec.data.injector_manifold_1 }
+              rec && { ts: rec.ts, value: rec.data.injector_manifold_1_median }
             }
           />
           <StatusDisplayWithChart
             label="Injector 2 (PSI)"
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
             selector={({ fsInjectorTransducers: rec }) =>
-              rec && { ts: rec.ts, value: rec.data.injector_manifold_2 }
+              rec && { ts: rec.ts, value: rec.data.injector_manifold_2_median }
             }
           />
           <StatusDisplayWithChart

@@ -119,12 +119,18 @@ class DummyStation {
       lox_lower: randRange(0, 1000),
       gn2_manifold_1: randRange(0, 5000),
       gn2_manifold_2: randRange(0, 5000),
+      lox_upper_median: randRange(0, 1000),
+      lox_lower_median: randRange(0, 1000),
+      gn2_manifold_1_median: randRange(0, 5000),
+      gn2_manifold_2_median: randRange(0, 5000),
     };
 
     const fsInjectorTransducersRecord: FsInjectorTransducersRecord = {
       ts,
       injector_manifold_1: randRange(0, 1000),
       injector_manifold_2: randRange(0, 1000),
+      injector_manifold_1_median: randRange(0, 1000),
+      injector_manifold_2_median: randRange(0, 1000),
     };
 
     const fsThermocouplesRecord: FsThermocouplesRecord = {
