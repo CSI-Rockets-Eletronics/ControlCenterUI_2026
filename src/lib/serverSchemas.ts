@@ -107,11 +107,11 @@ export type FsStateRecord = z.infer<typeof fsStateRecordSchema>;
 export const fsLoxGn2TransducersRecordSchema = z.object({
   ts: z.number(),
   lox_upper: z.number(),
-  lox_lower: z.number(),
+  chamber: z.number(),
   gn2_manifold_1: z.number(),
   gn2_manifold_2: z.number(),
   lox_upper_median: z.number(),
-  lox_lower_median: z.number(),
+  chamber_median: z.number(),
   gn2_manifold_1_median: z.number(),
   gn2_manifold_2_median: z.number(),
 });

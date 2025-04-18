@@ -117,11 +117,11 @@ class DummyStation {
     const fsLoxGn2TransducersRecordSchema: FsLoxGn2TransducersRecord = {
       ts,
       lox_upper: randRange(0, 1000),
-      lox_lower: randRange(0, 1000),
+      chamber: randRange(0, 1000),
       gn2_manifold_1: randRange(0, 5000),
       gn2_manifold_2: randRange(0, 5000),
       lox_upper_median: randRange(0, 1000),
-      lox_lower_median: randRange(0, 1000),
+      chamber_median: randRange(0, 1000),
       gn2_manifold_1_median: randRange(0, 5000),
       gn2_manifold_2_median: randRange(0, 5000),
     };

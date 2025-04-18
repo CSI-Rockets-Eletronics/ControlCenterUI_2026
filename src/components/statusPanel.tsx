@@ -314,10 +314,10 @@ export const StatusPanel = memo(function StatusPanel() {
             }
           />
           <StatusDisplayWithChart
-            label="Lox Lower (PSI)"
+            label="Combustion Chamber (PSI)"
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
             selector={({ fsLoxGn2Transducers: rec }) =>
-              rec && { ts: rec.ts, value: rec.data.lox_lower_median }
+              rec && { ts: rec.ts, value: rec.data.chamber_median }
             }
           />
           <StatusDisplayWithChart
