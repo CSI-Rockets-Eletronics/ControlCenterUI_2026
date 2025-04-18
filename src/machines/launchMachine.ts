@@ -474,7 +474,13 @@ export function createLaunchMachine(
             armStatusIsComplete(context.launchState.armStatus);
 
           if (command.command === "STATE_CUSTOM") {
-            if (command.dome_pilot_open || command.run || command.water_suppression || command.igniter) {
+            if (
+              command.dome_pilot_open ||
+              command.run ||
+              command.five_two ||
+              command.water_suppression ||
+              command.igniter
+            ) {
               return fireReqsComplete;
             } else {
               return true;

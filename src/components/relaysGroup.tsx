@@ -120,6 +120,7 @@ export const RelaysGroup = memo(function RelaysGroup() {
         <Entry label="Pilot Vent" field="pilot_vent" pr={pr} spr={spr} />
         <Entry label="Dome Pilot" field="dome_pilot_open" pr={pr} spr={spr} />
         <Entry label="Run" field="run" pr={pr} spr={spr} />
+        <Entry label="Five Two" field="five_two" pr={pr} spr={spr} />
         <Entry label="Water" field="water_suppression" pr={pr} spr={spr} />
         <Entry label="Igniter" field="igniter" pr={pr} spr={spr} />
       </div>

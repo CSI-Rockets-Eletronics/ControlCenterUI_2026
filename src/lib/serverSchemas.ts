@@ -60,6 +60,7 @@ export const fsCommandMessageSchema = z.discriminatedUnion("command", [
     pilot_vent: z.boolean(),
     dome_pilot_open: z.boolean(),
     run: z.boolean(),
+    five_two: z.boolean(),
     water_suppression: z.boolean(),
     igniter: z.boolean(),
   }),
@@ -96,6 +97,7 @@ export const fsStateRecordSchema = z.object({
   pilot_vent: z.boolean(),
   dome_pilot_open: z.boolean(),
   run: z.boolean(),
+  five_two: z.boolean(),
   water_suppression: z.boolean(),
   igniter: z.boolean(),
 });

@@ -109,6 +109,7 @@ class DummyStation {
       pilot_vent: randBool(),
       dome_pilot_open: randBool(),
       run: randBool(),
+      five_two: randBool(),
       water_suppression: randBool(),
       igniter: randBool(),
     };
