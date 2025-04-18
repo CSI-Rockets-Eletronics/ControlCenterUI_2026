@@ -1,0 +1,15 @@
+[Unit]
+Description=Rockets Control Center UI
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+User=victator
+WorkingDirectory=/home/victator/ControlCenterUI/
+ExecStart=/bin/bash -c 'PATH=/home/victator/.bun/bin:$PATH exec bun preview'
+
+[Install]
+WantedBy=multi-user.target
