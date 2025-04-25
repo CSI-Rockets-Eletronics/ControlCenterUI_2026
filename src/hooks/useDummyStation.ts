@@ -138,6 +138,7 @@ class DummyStation {
       ts,
       lox_celsius: randRange(-200, 200),
       gn2_celsius: randRange(-200, 200),
+      gn2_surface_celsius: randRange(-200, 200),
     };
 
     const loadCell1Record: LoadCellRecord = randRange(-30, 1000);

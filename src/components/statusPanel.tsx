@@ -363,6 +363,13 @@ export const StatusPanel = memo(function StatusPanel() {
             }
           />
           <StatusDisplayWithChart
+            label="GN2 Surface Temp (°C)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsThermocouples: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.gn2_surface_celsius }
+            }
+          />
+          <StatusDisplayWithChart
             label="Load Cell 1 (lbs)"
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
             selector={({ loadCell1 }) =>

@@ -136,6 +136,7 @@ export const fsThermocouplesRecordSchema = z.object({
   ts: z.number(),
   lox_celsius: z.number(),
   gn2_celsius: z.number(),
+  gn2_surface_celsius: z.number(),
 });
 
 export type FsThermocouplesRecord = z.infer<typeof fsThermocouplesRecordSchema>;
