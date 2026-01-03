@@ -1,12 +1,10 @@
 import { memo, useCallback } from "react";
 
-import { Button } from "./design/button";
 import { Panel } from "./design/panel";
 import {
   useLaunchMachineActorRef,
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
-import { PreFillChecklist } from "./preFillChecklist";
 import { StandbyStateSelection } from "./standbyStateSelection";
 
 export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
@@ -37,21 +35,22 @@ export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
 
   return (
     <Panel className="md:min-h-0 grid grid-rows-[minmax(0,1fr),auto] gap-4">
-      <div className="grid grid-rows-[auto,auto] md:grid-rows-none md:grid-cols-[2fr,1fr] gap-4">
-        <PreFillChecklist />
-        <StandbyStateSelection />
-      </div>
-      <div className="flex justify-between gap-4">
-        <Button color="red" disabled={abortDisabled} onClick={handleAbort}>
+      <StandbyStateSelection />
+      <div className="flex justify-between gap-2">
+        <button
+          className="px-3 py-2 font-bold rounded bg-red-solid hover:bg-red-solid-hover active:bg-red-solid-active text-gray-text disabled:opacity-50"
+          disabled={abortDisabled}
+          onClick={handleAbort}
+        >
           ABORT
-        </Button>
-        <Button
-          color="green"
+        </button>
+        <button
+          className="px-3 py-2 font-bold rounded bg-green-fallback-8 hover:bg-green-fallback-9 active:bg-green-fallback-10 text-gray-text disabled:opacity-50"
           disabled={goToLaunchModeDisabled}
           onClick={handleGoToLaunchMode}
         >
-          GO TO LAUNCH MODE
-        </Button>
+          LAUNCH MODE
+        </button>
       </div>
     </Panel>
   );

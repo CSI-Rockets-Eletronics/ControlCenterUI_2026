@@ -112,20 +112,12 @@ const StatusDisplayWithChart = memo(function StatusDisplayWithChart({
     );
   }, [decimals, maxY, minY]);
 
-  const [showChart, setShowChart] = useState(false);
-
-  const handleClick = useCallback(() => {
-    setShowChart(!showChart);
-  }, [showChart]);
-
   return (
     <StatusDisplay
       label={label}
       color="green"
       value={valueStr}
-      overflowElement={showChart ? chartElement : undefined}
-      disabled={false}
-      onClick={handleClick}
+      overflowElement={chartElement}
     />
   );
 });
@@ -266,46 +258,15 @@ export const StatusPanel = memo(function StatusPanel() {
   );
 
   return (
-    <Panel className="flex flex-col gap-4 md:scrollable md:min-w-min">
-      <p className="text-lg text-gray-text">Status</p>
-      <ClickableDisplay
-        field="batteryConnected"
-        label="Battery"
-        trueValue="Connected"
-        falseValue="Disconnected"
-      />
-      <ClickableDisplay
-        field="fillTankOpen"
-        label="Fill Tank"
-        trueValue="Open"
-        falseValue="Closed"
-      />
-      <ClickableDisplay
-        field="ignitersConnected"
-        label="Igniters"
-        trueValue="Connected"
-        falseValue="Disconnected"
-      />
-      <ClickableDisplay
-        field="mechPowerOn"
-        label="Mech Power"
-        trueValue="On"
-        falseValue="Off"
-      />
-      <ClickableDisplay
-        field="manualFire"
-        label="Manual Fire"
-        trueValue="Enabled"
-        falseValue="Disabled"
-      />
-
+    <Panel className="md:min-w-min">
+      <p className="mb-4 text-lg text-gray-text">Status</p>
       {isRecovery ? (
-        <>
+        <div className="grid grid-cols-3 gap-4">
           <AltitudeDisplay />
           <AccelerationDisplay />
-        </>
+        </div>
       ) : (
-        <>
+        <div className="grid grid-cols-3 gap-4">
           <StatusDisplayWithChart
             label="Lox Upper (PSI)"
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
@@ -385,9 +346,6 @@ export const StatusPanel = memo(function StatusPanel() {
             selector={({ loadCell2 }) =>
               loadCell2 && { ts: loadCell2.ts, value: loadCell2.data }
             }
-            decimals={2}
-            minY="dataMin - 2"
-            maxY="dataMax + 2"
           />
           <StatusDisplayWithChart
             label="Total Load Cell (lbs)"
@@ -408,7 +366,7 @@ export const StatusPanel = memo(function StatusPanel() {
           {/* <LoadCell2Display /> */}
           {/* <TotalLoadCellDisplay /> */}
           <TotalNitrousDisplay />
-        </>
+        </div>
       )}
     </Panel>
   );
