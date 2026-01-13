@@ -1,6 +1,6 @@
 import { createActorContext } from "@xstate/react";
 import { type ReactNode, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 
 import { type Api, useApi } from "@/hooks/useApi";
 import { useEnvironmentKey } from "@/hooks/useEnvironmentKey";
@@ -14,6 +14,7 @@ const Context = createActorContext(
 
 export function LaunchMachineProvider({ children }: { children: ReactNode }) {
   const api = useApi();
+  const location = useLocation();
 
   const environmentKey = useEnvironmentKey();
   const sessionName = useSessionName();
@@ -22,6 +23,8 @@ export function LaunchMachineProvider({ children }: { children: ReactNode }) {
 
   const [searchParams] = useSearchParams();
   const readonly = searchParams.has("readonly");
+  const isDataDisplayRoute = location.pathname.startsWith("/data");
+  const readonly = searchParamsReadonly || isDataDisplayRoute;
 
   const machine = useMemo(
     () =>
