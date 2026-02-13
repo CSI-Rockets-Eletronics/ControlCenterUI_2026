@@ -22,9 +22,9 @@ export function LaunchMachineProvider({ children }: { children: ReactNode }) {
   const replayFromSeconds = useReplayFromSeconds();
 
   const [searchParams] = useSearchParams();
-  const readonly = searchParams.has("readonly");
+  const readonlyFromQuery = searchParams.has("readonly");
   const isDataDisplayRoute = location.pathname.startsWith("/data");
-  const readonly = searchParamsReadonly || isDataDisplayRoute;
+  const readonly = readonlyFromQuery || isDataDisplayRoute;
 
   const machine = useMemo(
     () =>

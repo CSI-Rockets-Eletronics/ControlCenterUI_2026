@@ -22,7 +22,8 @@
   "dependencies": {
     "@radix-ui/colors": "^0.1.8",
     "@xstate/react": "^3.2.2",
-    "caniuse-lite": "^1.0.30001727",
+    "baseline-browser-mapping": "^2.9.19",
+    "caniuse-lite": "^1.0.30001766",
     "data-server-node": "CSI-Rockets-Eletronics/data-server-node#42ca501",
     "pigeon-maps": "^0.21.3",
     "react": "^18.2.0",
@@ -33,7 +34,8 @@
     "tailwind-scrollbar": "^3.0.5",
     "uuid": "^9.0.0",
     "xstate": "^4.38.2",
-    "zod": "^3.20.6"
+    "zod": "^3.20.6",
+    "zustand": "^5.0.10"
   },
   "devDependencies": {
     "@types/react": "^18.0.27",

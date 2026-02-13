@@ -24,11 +24,13 @@ import {
   loadCellRecordSchema,
   RadioGroundRecord,
   radioGroundRecordSchema,
+  RelayCurrentMonitorRecord,
+  relayCurrentMonitorRecordSchema,
 } from "@/lib/serverSchemas";
 import { fsStateToCommand } from "@/lib/serverSchemaUtils";
 
 const LAUNCH_STATE_FETCH_INTERVAL = 1000;
-const STATION_STATE_FETCH_INTERVAL = 0; // fetch as soon as the previous fetch completes
+const STATION_STATE_FETCH_INTERVAL = 0;
 
 function checklistIsComplete(checklist: Record<string, boolean>) {
   return Object.values(checklist).every(Boolean);
@@ -51,6 +53,7 @@ export type DeviceStates = {
   loadCell1: DeviceRecord<LoadCellRecord> | null;
   loadCell2: DeviceRecord<LoadCellRecord> | null;
   radioGround: DeviceRecord<RadioGroundRecord> | null;
+  relayCurrentMonitor: DeviceRecord<RelayCurrentMonitorRecord> | null;
 };
 
 export interface PendingMessage {
@@ -143,6 +146,7 @@ export function createLaunchMachine(
           loadCell1: null,
           loadCell2: null,
           radioGround: null,
+          relayCurrentMonitor: null,
         },
         sentMessages: [],
       }),
@@ -375,6 +379,7 @@ export function createLaunchMachine(
                   DEVICES.loadCell1,
                   DEVICES.loadCell2,
                   DEVICES.radioGround,
+                  DEVICES.relayCurrentMonitor,
                 ].join(","),
                 endTs,
               },
@@ -388,6 +393,7 @@ export function createLaunchMachine(
           const loadCell1Raw = records[DEVICES.loadCell1];
           const loadCell2Raw = records[DEVICES.loadCell2];
           const radioGroundRaw = records[DEVICES.radioGround];
+          const relayCurrentMonitorRaw = records[DEVICES.relayCurrentMonitor];
 
           const parseRecord = <T>(schema: z.ZodType<T>, record: DeviceRecord<unknown> | null) => {
             return record ? { ts: record.ts, data: schema.parse(record.data) } : null;
@@ -401,6 +407,7 @@ export function createLaunchMachine(
             loadCell1: parseRecord(loadCellRecordSchema, loadCell1Raw),
             loadCell2: parseRecord(loadCellRecordSchema, loadCell2Raw),
             radioGround: parseRecord(radioGroundRecordSchema, radioGroundRaw),
+            relayCurrentMonitor: parseRecord(relayCurrentMonitorRecordSchema, relayCurrentMonitorRaw),
           };
         },
         sendFsCommand: async (_context, event) => {
@@ -474,13 +481,7 @@ export function createLaunchMachine(
             armStatusIsComplete(context.launchState.armStatus);
 
           if (command.command === "STATE_CUSTOM") {
-            if (
-              command.dome_pilot_open ||
-              command.run ||
-              command.five_two ||
-              command.water_suppression ||
-              command.igniter
-            ) {
+            if (command.press_pilot || command.run || command.igniter || command.ereg_power) {
               return fireReqsComplete;
             } else {
               return true;
@@ -495,7 +496,7 @@ export function createLaunchMachine(
               const validFireSourceState = state === "GN2_STANDBY" || state === "CUSTOM";
               return fireReqsComplete && validFireSourceState;
             } else if (
-              command.command === "STATE_FIRE_MANUAL_DOME_PILOT_OPEN" ||
+              command.command === "STATE_FIRE_MANUAL_PRESS_PILOT" ||
               command.command === "STATE_FIRE_MANUAL_DOME_PILOT_CLOSE" ||
               command.command === "STATE_FIRE_MANUAL_IGNITER" ||
               command.command === "STATE_FIRE_MANUAL_RUN"

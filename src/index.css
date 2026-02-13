@@ -1,52 +1,106 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
-@layer base {
-  body {
-    @apply h-full;
-    @apply overflow-hidden;
-    @apply bg-gray-bg-1;
-    @apply text-base;
+/* Bright white/green/red theme */
 
-    @apply select-none;
+@layer components {
+  /* Panel backgrounds */
+  .panel-bg {
+    @apply bg-white border border-gray-border rounded-xl shadow-sm;
   }
 
-  #root {
-    @apply h-full;
+  /* Text styles */
+  .text-primary {
+    @apply text-gray-text;
+  }
+
+  .text-secondary {
+    @apply text-gray-text-dim;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply bg-blue-solid hover:bg-blue-solid-hover text-white rounded-lg px-6 py-2 font-semibold transition-all shadow-md;
+  }
+
+  .btn-danger {
+    @apply bg-red-solid hover:bg-red-solid-hover text-white rounded-lg px-6 py-2 font-semibold transition-all shadow-md;
+  }
+
+  .btn-success {
+    @apply bg-green-solid hover:bg-green-solid-hover text-white rounded-lg px-6 py-2 font-semibold transition-all shadow-md;
+  }
+
+  /* Status indicators */
+  .status-ok {
+    @apply bg-green-bg text-green-text border-green-border;
+  }
+
+  .status-warning {
+    @apply bg-yellow-bg text-yellow-text border-yellow-border;
+  }
+
+  .status-error {
+    @apply bg-red-bg text-red-text border-red-border;
+  }
+
+  .status-disconnected {
+    @apply bg-gray-el-bg text-gray-text-dim border-gray-border;
   }
 }
 
-@layer utilities {
-  .scrollable {
-    overflow: scroll;
-    @apply scrollbar-thin;
-    @apply scrollbar-thumb-gray-solid;
-    @apply hover:scrollbar-thumb-gray-solid-hover;
-    @apply scrollbar-thumb-rounded-full;
-  }
+/* Custom scrollbar - light theme */
+.scrollbar-thin {
+  scrollbar-width: thin;
 }
 
-@font-face {
-  font-family: "B612";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url(/fonts/B612-Regular.ttf);
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-@font-face {
-  font-family: "B612";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url(/fonts/B612-Bold.ttf);
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 4px;
 }
 
-@font-face {
-  font-family: "B612 Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url(/fonts/B612Mono-Regular.ttf);
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #ced4da;
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #adb5bd;
+}
+
+/* Legacy scrollable class for backward compatibility */
+.scrollable {
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+.scrollable::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollable::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+  background: #ced4da;
+  border-radius: 4px;
+}
+
+.scrollable::-webkit-scrollbar-thumb:hover {
+  background: #adb5bd;
+}
+
+/* Global styles */
+body {
+  background: #ffffff;
+  color: #212529;
 }

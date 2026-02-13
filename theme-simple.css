@@ -1,0 +1,73 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@layer components {
+  /* Panel backgrounds */
+  .panel-bg {
+    @apply bg-gray-bg-1 border border-gray-border rounded-xl;
+  }
+
+  /* Text styles */
+  .text-primary {
+    @apply text-gray-text;
+  }
+
+  .text-secondary {
+    @apply text-gray-text-dim;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply bg-blue-solid hover:bg-blue-solid-hover text-white rounded-lg px-6 py-2 font-semibold transition-all shadow-lg;
+  }
+
+  .btn-danger {
+    @apply bg-red-solid hover:bg-red-solid-hover text-white rounded-lg px-6 py-2 font-semibold transition-all shadow-lg;
+  }
+
+  .btn-success {
+    @apply bg-green-solid hover:bg-green-solid-hover text-white rounded-lg px-6 py-2 font-semibold transition-all shadow-lg;
+  }
+
+  /* Status indicators */
+  .status-ok {
+    @apply bg-green-bg text-green-text border-green-border;
+  }
+
+  .status-warning {
+    @apply bg-yellow-bg text-yellow-text border-yellow-border;
+  }
+
+  .status-error {
+    @apply bg-red-bg text-red-text border-red-border;
+  }
+
+  .status-disconnected {
+    @apply bg-gray-el-bg text-gray-text-dim border-gray-border;
+  }
+}
+
+/* Custom scrollbar */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: hsl(var(--radix-color-gray-2));
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--radix-color-gray-7));
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--radix-color-gray-8));
+}

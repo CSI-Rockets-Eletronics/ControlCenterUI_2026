@@ -35,7 +35,7 @@ export const Root = memo(function Root() {
     (event: FormEvent) => {
       event.preventDefault();
       navigate({
-        pathname: `/${environmentKey}`,
+        pathname: `/${environmentKey}/control`,
         search: server ? `?server=${encodeURIComponent(server)}` : undefined,
       });
     },
