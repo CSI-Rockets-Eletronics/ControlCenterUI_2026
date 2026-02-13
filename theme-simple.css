@@ -3,7 +3,6 @@
 @import "tailwindcss/utilities";
 
 @layer components {
-  /* Panel backgrounds */
   .panel-bg {
     @apply bg-gray-bg-1 border border-gray-border rounded-xl;
   }

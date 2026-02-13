@@ -32,14 +32,6 @@ import { fsStateToCommand } from "@/lib/serverSchemaUtils";
 const LAUNCH_STATE_FETCH_INTERVAL = 1000;
 const STATION_STATE_FETCH_INTERVAL = 0;
 
-function checklistIsComplete(checklist: Record<string, boolean>) {
-  return Object.values(checklist).every(Boolean);
-}
-
-function armStatusIsComplete(armStatus: Record<string, boolean>) {
-  return Object.values(armStatus).every(Boolean);
-}
-
 export type DeviceRecord<T> = {
   ts: number;
   data: T;
@@ -74,24 +66,8 @@ export type LaunchMachineEvent =
       value: ActivePanel;
     }
   | {
-      type: "UPDATE_PRE_FILL_CHECKLIST";
-      data: Partial<LaunchState["preFillChecklist"]>;
-    }
-  | {
-      type: "UPDATE_GO_POLL";
-      data: Partial<LaunchState["goPoll"]>;
-    }
-  | {
       type: "UPDATE_MAIN_STATUS";
       data: Partial<LaunchState["mainStatus"]>;
-    }
-  | {
-      type: "UPDATE_ARM_STATUS";
-      data: Partial<LaunchState["armStatus"]>;
-    }
-  | {
-      type: "UPDATE_RANGE_PERMIT";
-      data: Partial<LaunchState["rangePermit"]>;
     }
   | {
       type: "SEND_FS_COMMAND";
@@ -172,11 +148,7 @@ export function createLaunchMachine(
                   always: { cond: "hasPendingLaunchState", target: "mutating" },
                   on: {
                     UPDATE_ACTIVE_PANEL: { actions: "updateActivePanel", cond: "canWrite" },
-                    UPDATE_PRE_FILL_CHECKLIST: { actions: "updatePreFillChecklist", cond: "canWrite" },
-                    UPDATE_GO_POLL: { actions: "updateGoPoll", cond: "canWrite" },
                     UPDATE_MAIN_STATUS: { actions: "updateMainStatus", cond: "canWrite" },
-                    UPDATE_ARM_STATUS: { actions: "updateArmStatus", cond: "canUpdateArmStatus" },
-                    UPDATE_RANGE_PERMIT: { actions: "updateRangePermit", cond: "canWrite" },
                   },
                   initial: "waitingToRefetch",
                   states: {
@@ -287,34 +259,10 @@ export function createLaunchMachine(
             activePanel: event.value,
           }),
         }),
-        updatePreFillChecklist: assign({
-          pendingLaunchState: (context, event) => ({
-            ...context.launchState,
-            preFillChecklist: { ...context.launchState.preFillChecklist, ...event.data },
-          }),
-        }),
-        updateGoPoll: assign({
-          pendingLaunchState: (context, event) => ({
-            ...context.launchState,
-            goPoll: { ...context.launchState.goPoll, ...event.data },
-          }),
-        }),
         updateMainStatus: assign({
           pendingLaunchState: (context, event) => ({
             ...context.launchState,
             mainStatus: { ...context.launchState.mainStatus, ...event.data },
-          }),
-        }),
-        updateArmStatus: assign({
-          pendingLaunchState: (context, event) => ({
-            ...context.launchState,
-            armStatus: { ...context.launchState.armStatus, ...event.data },
-          }),
-        }),
-        updateRangePermit: assign({
-          pendingLaunchState: (context, event) => ({
-            ...context.launchState,
-            rangePermit: { ...context.launchState.rangePermit, ...event.data },
           }),
         }),
         setDeviceStates: assign((_context, event) => {
@@ -407,7 +355,7 @@ export function createLaunchMachine(
             loadCell1: parseRecord(loadCellRecordSchema, loadCell1Raw),
             loadCell2: parseRecord(loadCellRecordSchema, loadCell2Raw),
             radioGround: parseRecord(radioGroundRecordSchema, radioGroundRaw),
-            relayCurrentMonitor: parseRecord(relayCurrentMonitorRecordSchema, relayCurrentMonitorRaw),
+            relayCurrentMonitor: parseRecord(relayCurrentMonitorRecordSchema, relayCurrentMonitorRaw), // ADD THIS
           };
         },
         sendFsCommand: async (_context, event) => {
@@ -451,18 +399,6 @@ export function createLaunchMachine(
       guards: {
         hasPendingLaunchState: (context) => !!context.pendingLaunchState,
         canWrite: () => canWrite,
-        canUpdateArmStatus: (context, event) => {
-          if (!canWrite) {
-            return false;
-          }
-
-          const oldArmStatus = context.launchState.armStatus;
-          const newArmStatus = { ...oldArmStatus, ...event.data };
-          return (
-            newArmStatus.commandCenter !== oldArmStatus.commandCenter ||
-            newArmStatus.abortControl !== oldArmStatus.abortControl
-          );
-        },
         canSendFsCommand: (context, event) => {
           if (!canWrite) {
             return false;
@@ -475,37 +411,20 @@ export function createLaunchMachine(
             return false;
           }
 
-          const fireReqsComplete =
-            checklistIsComplete(context.launchState.preFillChecklist) &&
-            checklistIsComplete(context.launchState.goPoll) &&
-            armStatusIsComplete(context.launchState.armStatus);
-
           if (command.command === "STATE_CUSTOM") {
-            if (command.press_pilot || command.run || command.igniter || command.ereg_power) {
-              return fireReqsComplete;
-            } else {
-              return true;
-            }
-          } else {
-            if (command.command === fsStateToCommand(fsState.data.state)) {
-              return false;
-            }
-
-            if (command.command === "STATE_FIRE") {
-              const state = fsState.data.state;
-              const validFireSourceState = state === "GN2_STANDBY" || state === "CUSTOM";
-              return fireReqsComplete && validFireSourceState;
-            } else if (
-              command.command === "STATE_FIRE_MANUAL_PRESS_PILOT" ||
-              command.command === "STATE_FIRE_MANUAL_DOME_PILOT_CLOSE" ||
-              command.command === "STATE_FIRE_MANUAL_IGNITER" ||
-              command.command === "STATE_FIRE_MANUAL_RUN"
-            ) {
-              return fireReqsComplete;
-            } else {
-              return true;
-            }
+            return true;
           }
+
+          if (command.command === fsStateToCommand(fsState.data.state)) {
+            return false;
+          }
+
+          if (command.command === "STATE_FIRE") {
+            const state = fsState.data.state;
+            return state === "GN2_STANDBY" || state === "CUSTOM";
+          }
+
+          return true;
         },
       },
     },
