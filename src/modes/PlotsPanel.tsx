@@ -90,7 +90,7 @@ export const PlotsPanel = memo(function PlotsPanel() {
     <div className="flex flex-col h-full p-4 border bg-gray-el-bg rounded-xl border-gray-border">
       <div className="mb-4">
         <h2 className="mb-3 text-lg font-bold text-gray-text">
-          TELEMETRY PLOTS
+          Telemetry Plots
         </h2>
 
         <div className="flex flex-wrap mb-3 gap-2">
@@ -127,7 +127,7 @@ export const PlotsPanel = memo(function PlotsPanel() {
       <div className="flex-1 overflow-y-auto space-y-3 scrollbar-thin">
         {plots.length === 0 ? (
           <div className="flex items-center justify-center h-full text-sm text-gray-text-dim">
-            No plots added. Select a signal and click ADD PLOT.
+            Click ADD PLOT as needed.
           </div>
         ) : (
           plots.map((plot) => (

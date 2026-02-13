@@ -2,6 +2,7 @@ import { memo } from "react";
 
 import { ControlButtons } from "./ControlButtons";
 import { ElectronicsRegulator } from "./ElectronicsRegulator";
+import { ManualControlPanel } from "./ManualControlPanel";
 import { PlotsPanel } from "./PlotsPanel";
 import { StatusPanel } from "./StatusPanel";
 
@@ -11,15 +12,13 @@ export const ControlMode = memo(function ControlMode() {
       <div className="overflow-hidden row-span-2">
         <StatusPanel />
       </div>
-
-      <div className="overflow-hidden">
+      <div className="flex flex-col overflow-y-auto gap-4">
+        <ManualControlPanel />
         <ControlButtons />
       </div>
-
       <div className="overflow-hidden">
         <PlotsPanel />
       </div>
-
       <div className="overflow-hidden">
         <ElectronicsRegulator />
       </div>

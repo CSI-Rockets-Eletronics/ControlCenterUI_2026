@@ -12,6 +12,7 @@ import { FiringStationHealth } from "./FiringStationHealth";
 interface CommandButtonProps {
   label: string;
   command: Exclude<FsCommand, "STATE_CUSTOM">;
+
   color?: "primary" | "danger" | "warning";
 }
 
@@ -86,17 +87,12 @@ const CommandButton = memo(function CommandButton({
 export const ControlButtons = memo(function ControlButtons() {
   const [healthOpen, setHealthOpen] = useState(false);
 
-  const handleHealthOpen = useCallback(() => {
-    setHealthOpen(true);
-  }, []);
-
-  const handleHealthClose = useCallback(() => {
-    setHealthOpen(false);
-  }, []);
+  const openHealth = useCallback(() => setHealthOpen(true), []);
+  const closeHealth = useCallback(() => setHealthOpen(false), []);
 
   return (
     <div className="flex flex-col h-full p-6 border bg-gray-el-bg rounded-xl border-gray-border">
-      <h2 className="mb-6 text-lg font-bold text-gray-text">COMMAND CENTER</h2>
+      <h2 className="mb-6 text-lg font-bold text-gray-text">Command center</h2>
 
       <div className="content-start flex-1 grid grid-cols-2 gap-4">
         <CommandButton label="GN2 STANDBY" command="STATE_GN2_STANDBY" />
@@ -110,15 +106,14 @@ export const ControlButtons = memo(function ControlButtons() {
         <CommandButton label="IDLE STANDBY" command="STATE_STANDBY" />
 
         <button
-          onClick={handleHealthOpen}
+          onClick={openHealth}
           className="px-8 py-6 text-lg font-bold text-white shadow-lg rounded-xl bg-blue-solid hover:bg-blue-solid-hover transition-all"
         >
           FS HEALTH
         </button>
       </div>
 
-      {/* FS Health Modal */}
-      {healthOpen && <FiringStationHealth onClose={handleHealthClose} />}
+      {healthOpen && <FiringStationHealth onClose={closeHealth} />}
     </div>
   );
 });
