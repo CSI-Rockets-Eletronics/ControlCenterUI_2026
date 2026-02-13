@@ -19,21 +19,21 @@ const STAGE_CONFIGS: StageConfig[] = [
   {
     command: "EREG_STAGE_1",
     activeField: "ereg_stage_1",
-    name: "STAGE 1",
-    description: "Slow fill to 450 PSI, run valve closed",
+    name: "Stage 1",
+    description: "Slow fill to 450 PSI",
     color: "blue",
   },
   {
     command: "EREG_STAGE_2",
     activeField: "ereg_stage_2",
-    name: "STAGE 2",
-    description: "PID-controlled operation for launch",
+    name: "Stage 2",
+    description: "PID-controlled, launch",
     color: "green",
   },
   {
     command: "EREG_CLOSED",
     activeField: "ereg_closed",
-    name: "CLOSE",
+    name: "Close",
     description: "Close I-port valve",
     color: "red",
   },
@@ -41,19 +41,19 @@ const STAGE_CONFIGS: StageConfig[] = [
 
 const COLORS = {
   blue: {
-    active: "bg-blue-solid text-white shadow-lg ring-2 ring-blue-border",
+    active: "bg-blue-solid text-white ring-2 ring-blue-border",
     inactive: "bg-gray-el-bg hover:bg-gray-el-bg-hover text-gray-text",
     dot: "bg-blue-solid",
     text: "#228be6",
   },
   green: {
-    active: "bg-green-solid text-white shadow-lg ring-2 ring-green-border",
+    active: "bg-green-solid text-white ring-2 ring-green-border",
     inactive: "bg-gray-el-bg hover:bg-gray-el-bg-hover text-gray-text",
     dot: "bg-green-solid",
     text: "#37b24d",
   },
   red: {
-    active: "bg-red-solid text-white shadow-lg ring-2 ring-red-border",
+    active: "bg-red-solid text-white ring-2 ring-red-border",
     inactive: "bg-gray-el-bg hover:bg-gray-el-bg-hover text-gray-text",
     dot: "bg-red-solid",
     text: "#f03e3e",
@@ -83,17 +83,21 @@ const StageButton = memo(function StageButton({
     <button
       onClick={handleClick}
       disabled={!canSend || isActive}
-      className={`p-6 rounded-xl transition-all text-left ${
+      className={`px-3 py-2 rounded-lg transition-all text-left flex items-center gap-3 ${
         isActive ? colors.active : colors.inactive
       } ${!canSend || isActive ? "cursor-not-allowed opacity-50" : ""}`}
     >
-      <div className="flex items-center mb-2 gap-2">
-        <div
-          className={`w-3 h-3 rounded-full ${isActive ? "bg-white animate-pulse" : "bg-gray-solid"}`}
-        />
-        <div className="text-lg font-bold">{stage.name}</div>
+      <div
+        className={`shrink-0 w-2 h-2 rounded-full ${isActive ? "bg-white animate-pulse" : "bg-gray-solid"}`}
+      />
+      <div className="flex flex-col">
+        <span className="text-sm font-semibold leading-tight">
+          {stage.name}
+        </span>
+        <span className="text-xs leading-tight opacity-70">
+          {stage.description}
+        </span>
       </div>
-      <div className="text-sm opacity-80">{stage.description}</div>
     </button>
   );
 });
@@ -142,16 +146,15 @@ export const ElectronicsRegulator = memo(function ElectronicsRegulator() {
   );
 
   return (
-    <div className="flex flex-col h-full p-6 border bg-gray-bg-1 rounded-xl border-gray-border">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-bold text-gray-text">
-          ELECTRONICS REGULATOR
-        </h2>
-
+    <div className="flex flex-col p-4 border bg-gray-bg-1 rounded-xl border-gray-border gap-3">
+      <div className="flex items-center justify-between">
+        <p className="text-lg font-bold text-gray-text">
+          Electronics regulator
+        </p>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-text-dim">PWR</span>
           <div
-            className={`w-2.5 h-2.5 rounded-full ${eregPowerOn ? "bg-green-solid" : "bg-gray-solid"}`}
+            className={`w-2 h-2 rounded-full ${eregPowerOn ? "bg-green-solid" : "bg-gray-solid"}`}
           />
           {eregPowerMa !== null && (
             <span className="text-xs text-gray-text-dim tabular-nums">
@@ -161,43 +164,38 @@ export const ElectronicsRegulator = memo(function ElectronicsRegulator() {
         </div>
       </div>
 
-      <div className="p-4 mb-6 border rounded-lg bg-gray-el-bg border-gray-border">
-        <div className="mb-2 text-xs text-gray-text-dim">CURRENT STATE</div>
+      <div className="flex items-center justify-between px-3 py-2 border rounded-lg bg-gray-el-bg border-gray-border">
+        <span className="text-xs text-gray-text-dim">Current state</span>
         {eregData ? (
-          <div
-            className="text-2xl font-bold"
+          <span
+            className="text-sm font-bold"
             style={{
               color: activeStage ? COLORS[activeStage.color].text : undefined,
             }}
           >
-            {activeStage?.name ?? "UNKNOWN"}
-          </div>
+            {activeStage?.name ?? "Unknown"}
+          </span>
         ) : (
-          <div className="text-sm text-yellow-text animate-pulse">
-            Waiting for data...
-          </div>
+          <span className="text-xs text-yellow-text animate-pulse">
+            Waiting...
+          </span>
         )}
       </div>
 
-      <div className="flex-1 grid grid-rows-3 gap-4">
-        {STAGE_CONFIGS.map((stage) => {
-          const isActive = eregData?.[stage.activeField] ?? false;
-          const canSend = canSendMap[stage.command];
-
-          return (
-            <StageButton
-              key={stage.command}
-              stage={stage}
-              isActive={isActive}
-              canSend={canSend}
-              onCommand={sendCommand}
-            />
-          );
-        })}
+      <div className="flex flex-col gap-2">
+        {STAGE_CONFIGS.map((stage) => (
+          <StageButton
+            key={stage.command}
+            stage={stage}
+            isActive={eregData?.[stage.activeField] ?? false}
+            canSend={canSendMap[stage.command]}
+            onCommand={sendCommand}
+          />
+        ))}
       </div>
 
       {!canSendStage1 && !canSendStage2 && !canSendClosed && (
-        <div className="p-3 mt-4 text-xs border rounded-lg bg-red-bg border-red-border text-red-text">
+        <div className="px-3 py-2 text-xs border rounded-lg bg-red-bg border-red-border text-red-text">
           ⚠ Cannot send commands — check system state
         </div>
       )}
