@@ -75,10 +75,6 @@ export const DataDisplayMode = memo(function DataDisplayMode() {
                       <div className="text-gray-text">{max.toFixed(1)}</div>
                     </div>
                   </div>
-
-                  <div className="pt-2 text-xs border-t border-gray-border text-gray-text-dim">
-                    {allSamples.length} samples buffered
-                  </div>
                 </div>
               </div>
             );

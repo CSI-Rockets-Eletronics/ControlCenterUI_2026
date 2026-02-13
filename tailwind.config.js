@@ -1,10 +1,11 @@
+/* eslint-disable import/no-default-export */
+
 /** @type {import('tailwindcss').Config} */
-export const config = {
+const config = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
-        // White/Gray backgrounds
         gray: {
           "bg-1": "#ffffff",
           "bg-2": "#f8f9fa",
@@ -16,7 +17,6 @@ export const config = {
           text: "#212529",
           "text-dim": "#495057",
         },
-        // Bright Blue
         blue: {
           bg: "#e7f5ff",
           border: "#74c0fc",
@@ -24,7 +24,6 @@ export const config = {
           "solid-hover": "#1c7ed6",
           text: "#1971c2",
         },
-        // Bright Green
         green: {
           bg: "#d3f9d8",
           border: "#8ce99a",
@@ -32,7 +31,6 @@ export const config = {
           "solid-hover": "#2f9e44",
           text: "#2b8a3e",
         },
-        // Bright Red
         red: {
           bg: "#ffe0e0",
           border: "#ffa8a8",
@@ -40,7 +38,6 @@ export const config = {
           "solid-hover": "#e03131",
           text: "#c92a2a",
         },
-        // Yellow for warnings
         yellow: {
           bg: "#fff3bf",
           border: "#ffd43b",
@@ -53,3 +50,5 @@ export const config = {
   },
   plugins: [],
 };
+
+export default config;
