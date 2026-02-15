@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Link, useParams } from "react-router-dom";
 
+import { useLaunchMachineSelector } from "@/components/launchMachineProvider";
 import { useTelemetryStore } from "@/stores/telemetryStore";
 
 interface Props {
@@ -10,6 +11,12 @@ interface Props {
 export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
   const connected = useTelemetryStore((state) => state.connected);
   const { environmentKey } = useParams<{ environmentKey: string }>();
+
+  const msSinceBoot = useLaunchMachineSelector(
+    (state) => state.context.deviceStates.fsState?.data.ms_since_boot ?? null,
+  );
+  const uptimeSeconds =
+    msSinceBoot !== null ? Math.floor(msSinceBoot / 1000) : null;
 
   const isControl = currentPath.includes("/control");
   const isData = currentPath.includes("/data");
@@ -21,6 +28,8 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
           <div className="text-2xl font-bold tracking-tight text-gray-text">
             Rocket Control Center
           </div>
+
+          {/* Connection status */}
           <div
             className={`ml-4 flex items-center gap-2 px-3 py-1 rounded-full text-xs ${
               connected
@@ -32,6 +41,10 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
               className={`w-2 h-2 rounded-full ${connected ? "bg-green-solid animate-pulse" : "bg-red-solid"}`}
             />
             {connected ? "CONNECTED" : "DISCONNECTED"}
+          </div>
+
+          <div className="px-3 py-1 ml-2 text-xs rounded-full bg-gray-bg-2 text-gray-text-dim tabular-nums">
+            FS UP: {uptimeSeconds !== null ? `${uptimeSeconds}s` : "—"}
           </div>
         </div>
 
