@@ -1,22 +1,96 @@
-import { memo } from "react";
+/* eslint-disable react-perf/jsx-no-new-function-as-prop */
+import { memo, useCallback, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
-import { useLaunchMachineSelector } from "@/components/launchMachineProvider";
+import {
+  useLaunchMachineActorRef,
+  useLaunchMachineSelector,
+} from "@/components/launchMachineProvider";
+import { catchError, useApi } from "@/hooks/useApi";
+import { useEnvironmentKey } from "@/hooks/useEnvironmentKey";
+import { useSessionName } from "@/hooks/useSessionName";
+import { DEVICES, type FsCommandMessage } from "@/lib/serverSchemas";
 import { useTelemetryStore } from "@/stores/telemetryStore";
+
+import { FiringStationHealth } from "./FiringStationHealth";
 
 interface Props {
   currentPath: string;
 }
 
+const RECALIBRATE_MESSAGES = [
+  {
+    label: "Recalibrate transducers",
+    device: DEVICES.firingStation,
+    data: { command: "RECALIBRATE_TRANSDUCERS" } satisfies FsCommandMessage,
+  },
+  {
+    label: "Recalibrate load cell 1",
+    device: DEVICES.loadCell1,
+    data: "calibrate",
+  },
+  {
+    label: "Recalibrate load cell 2",
+    device: DEVICES.loadCell2,
+    data: "calibrate",
+  },
+];
+
 export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
   const connected = useTelemetryStore((state) => state.connected);
   const { environmentKey } = useParams<{ environmentKey: string }>();
+  const launchActorRef = useLaunchMachineActorRef();
+  const api = useApi();
+  const envKey = useEnvironmentKey();
+  const sessionName = useSessionName();
+
+  const [healthOpen, setHealthOpen] = useState(false);
+  const [utilsOpen, setUtilsOpen] = useState(false);
+
+  const openHealth = useCallback(() => setHealthOpen(true), []);
+  const closeHealth = useCallback(() => setHealthOpen(false), []);
+  const toggleUtils = useCallback(() => setUtilsOpen((prev) => !prev), []);
 
   const msSinceBoot = useLaunchMachineSelector(
     (state) => state.context.deviceStates.fsState?.data.ms_since_boot ?? null,
   );
   const uptimeSeconds =
     msSinceBoot !== null ? Math.floor(msSinceBoot / 1000) : null;
+
+  const canSend = useLaunchMachineSelector((state) =>
+    state.can({ type: "SEND_MANUAL_MESSAGES", messages: [] }),
+  );
+
+  const usingCustomSession = sessionName != null;
+
+  const handleRecalibrateAll = useCallback(() => {
+    if (!canSend) return;
+    launchActorRef.send({
+      type: "SEND_MANUAL_MESSAGES",
+      messages: RECALIBRATE_MESSAGES.map((m) => ({
+        device: m.device,
+        data: m.data,
+      })),
+    });
+    setUtilsOpen(false);
+  }, [launchActorRef, canSend]);
+
+  const handleRestart = useCallback(() => {
+    if (!canSend) return;
+    launchActorRef.send({
+      type: "SEND_MANUAL_MESSAGES",
+      messages: [
+        { device: DEVICES.firingStation, data: { command: "RESTART" } },
+      ],
+    });
+    setUtilsOpen(false);
+  }, [launchActorRef, canSend]);
+
+  const handleNewSession = useCallback(() => {
+    if (usingCustomSession) return;
+    catchError(api.sessions.create.post({ environmentKey: envKey }));
+    setUtilsOpen(false);
+  }, [api, envKey, usingCustomSession]);
 
   const isControl = currentPath.includes("/control");
   const isData = currentPath.includes("/data");
@@ -48,7 +122,7 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <Link
             to={`/${environmentKey}/control`}
             className={`px-6 py-2 rounded-lg font-semibold transition-all ${
@@ -69,8 +143,71 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
           >
             DATA DISPLAY
           </Link>
+
+          <div className="relative">
+            <button
+              onClick={toggleUtils}
+              className="px-4 py-2 font-semibold rounded-lg bg-gray-el-bg text-gray-text hover:bg-gray-el-bg-hover transition-all"
+            >
+              ⚙
+            </button>
+
+            {utilsOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setUtilsOpen(false)}
+                />
+                <div className="absolute right-0 z-50 w-64 p-3 mt-2 bg-white border rounded-lg shadow-xl border-gray-border">
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={openHealth}
+                      className="px-3 py-2 text-sm font-medium text-left text-white rounded-lg bg-blue-solid hover:bg-blue-solid-hover transition-all"
+                    >
+                      FS health
+                    </button>
+                    <button
+                      onClick={handleRecalibrateAll}
+                      disabled={!canSend}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium text-left transition-all ${
+                        canSend
+                          ? "bg-blue-solid hover:bg-blue-solid-hover text-white"
+                          : "bg-gray-el-bg text-gray-text-dim cursor-not-allowed"
+                      }`}
+                    >
+                      Recalibrate all
+                    </button>
+                    <button
+                      onClick={handleRestart}
+                      disabled={!canSend}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium text-left transition-all ${
+                        canSend
+                          ? "bg-gray-el-bg hover:bg-gray-el-bg-hover text-gray-text border border-gray-border"
+                          : "bg-gray-el-bg text-gray-text-dim cursor-not-allowed"
+                      }`}
+                    >
+                      Restart
+                    </button>
+                    <button
+                      onClick={handleNewSession}
+                      disabled={usingCustomSession}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium text-left transition-all ${
+                        !usingCustomSession
+                          ? "bg-blue-solid hover:bg-blue-solid-hover text-white"
+                          : "bg-gray-el-bg text-gray-text-dim cursor-not-allowed"
+                      }`}
+                    >
+                      New session
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
+
+      {healthOpen && <FiringStationHealth onClose={closeHealth} />}
     </nav>
   );
 });

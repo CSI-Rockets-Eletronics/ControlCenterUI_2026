@@ -7,8 +7,6 @@ import {
 import { type FsCommand } from "@/lib/serverSchemas";
 import { fsStateToCommand } from "@/lib/serverSchemaUtils";
 
-import { FiringStationHealth } from "./FiringStationHealth";
-
 interface CommandButtonProps {
   label: string;
   command: Exclude<FsCommand, "STATE_CUSTOM">;
@@ -81,11 +79,6 @@ const CommandButton = memo(function CommandButton({
 });
 
 export const ControlButtons = memo(function ControlButtons() {
-  const [healthOpen, setHealthOpen] = useState(false);
-
-  const openHealth = useCallback(() => setHealthOpen(true), []);
-  const closeHealth = useCallback(() => setHealthOpen(false), []);
-
   return (
     <div className="flex flex-col h-full p-6 border bg-gray-el-bg rounded-xl border-gray-border">
       <p className="mb-6 text-lg font-bold text-gray-text">Command center</p>
@@ -100,15 +93,7 @@ export const ControlButtons = memo(function ControlButtons() {
         <CommandButton label="Abort" command="STATE_ABORT" color="danger" />
         <CommandButton label="Fire" command="STATE_FIRE" color="warning" />
         <CommandButton label="Idle standby" command="STATE_STANDBY" />
-        <button
-          onClick={openHealth}
-          className="px-8 py-6 text-lg font-bold text-white shadow-lg rounded-xl bg-blue-solid hover:bg-blue-solid-hover transition-all"
-        >
-          FS health
-        </button>
       </div>
-
-      {healthOpen && <FiringStationHealth onClose={closeHealth} />}
     </div>
   );
 });
