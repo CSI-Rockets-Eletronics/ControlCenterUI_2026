@@ -51,10 +51,10 @@ const customFsCommandMessageSchema = z.object({
 });
 
 const baseFsCommandMessageSchema = z.object({
-  command: fsCommandSchema.exclude(["STATE_CUSTOM"]),
+  command: fsCommandSchema,
 });
 
-export const fsCommandMessageSchema = z.discriminatedUnion("command", [
+export const fsCommandMessageSchema = z.union([
   customFsCommandMessageSchema,
   baseFsCommandMessageSchema,
 ]);
@@ -137,7 +137,6 @@ export type FsThermocouplesRecord = z.infer<typeof fsThermocouplesRecordSchema>;
 
 export const loadCellRecordSchema = z.number();
 export type LoadCellRecord = z.infer<typeof loadCellRecordSchema>;
-
 export const radioGroundRecordSchema = z.object({
   gps_ts_tail: z.number(),
   gps_fix: z.boolean(),
@@ -150,7 +149,6 @@ export const radioGroundRecordSchema = z.object({
 });
 
 export type RadioGroundRecord = z.infer<typeof radioGroundRecordSchema>;
-
 export const relayCurrentMonitorRecordSchema = z.object({
   ts: z.number(),
   gn2_drain_ma: z.number(),

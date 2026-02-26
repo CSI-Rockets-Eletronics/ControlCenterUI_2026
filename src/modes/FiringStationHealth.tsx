@@ -34,7 +34,7 @@ export const FiringStationHealth = memo(function FiringStationHealth({
         {
           label: "GN2 DRAIN",
           state: fsState?.gn2_drain ?? false,
-          current: relayCurrentData.gn2_drain_ma / 1000, // mA to A
+          current: relayCurrentData.gn2_drain_ma / 1000,
         },
         {
           label: "GN2 FILL",
@@ -218,7 +218,6 @@ export const FiringStationHealth = memo(function FiringStationHealth({
             </div>
           )}
 
-          {/* CHANGEME: thresholds */}
           <div className="pt-4 text-xs border-t border-gray-border text-gray-text-dim">
             <p className="mb-1 font-semibold">Current Thresholds:</p>
             <p>• Normal: ≤ 2.8A (Green)</p>
