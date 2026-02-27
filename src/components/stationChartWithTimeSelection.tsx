@@ -23,14 +23,14 @@ interface Props {
   minY?: AxisDomainItem;
   maxY?: AxisDomainItem;
   viewMode?: "live" | "historical";
-  historicalStartTime?: number; // timestamp in ms
+  historicalStartTime?: number;
   historicalEndTime?: number;
 }
 
 export const StationChart = memo(function StationChart({
   selector,
   valuePrecision,
-  retentionSeconds = 20 * 60, // changed default to 20 mins
+  retentionSeconds = 20 * 60,
   minY = "auto",
   maxY = "auto",
   viewMode = "live",
@@ -98,7 +98,6 @@ export const StationChart = memo(function StationChart({
       if (!historicalStartTime || !historicalEndTime) return [];
 
       const startSeconds = historicalStartTime / 1e6;
-      const endSeconds = historicalEndTime / 1e6;
 
       return data
         .filter(

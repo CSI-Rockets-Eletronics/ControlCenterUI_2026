@@ -94,7 +94,6 @@ class DummyStation {
     }
 
     const randBool = () => Math.random() > 0.5;
-
     const randRange = (min: number, max: number) =>
       min + (max - min) * Math.random();
 
@@ -104,22 +103,34 @@ class DummyStation {
     const fsStateRecord: FsStateRecord = {
       ms_since_boot: curTimeMs - this.bootTimeMs,
       state: this.state,
-      gn2_abort: randBool(),
+      gn2_drain: randBool(),
       gn2_fill: randBool(),
+      lox_fill: randBool(),
+      lox_disconnect: randBool(),
+      depress: randBool(),
+      press_pilot: randBool(),
+      run: randBool(),
+      igniter: randBool(),
+      ereg_power: randBool(),
+      gn2_abort: randBool(),
       pilot_vent: randBool(),
       dome_pilot_open: randBool(),
-      run: randBool(),
       five_two: randBool(),
       water_suppression: randBool(),
-      igniter: randBool(),
     };
 
-    const fsLoxGn2TransducersRecordSchema: FsLoxGn2TransducersRecord = {
+    const fsLoxGn2TransducersRecord: FsLoxGn2TransducersRecord = {
       ts,
-      lox_upper: randRange(0, 1000),
-      chamber: randRange(0, 1000),
-      gn2_manifold_1: randRange(0, 5000),
-      gn2_manifold_2: randRange(0, 5000),
+      oxtank_1: randRange(0, 1000),
+      oxtank_2: randRange(0, 1000),
+      oxtank_3: randRange(0, 1000),
+      copv_1: randRange(0, 5000),
+      copv_2: randRange(0, 5000),
+      pilot_pres: randRange(0, 1000),
+      qd_pres: randRange(0, 1000),
+      ereg_closed: randBool(),
+      ereg_stage_1: randBool(),
+      ereg_stage_2: randBool(),
       lox_upper_median: randRange(0, 1000),
       chamber_median: randRange(0, 1000),
       gn2_manifold_1_median: randRange(0, 5000),
@@ -128,14 +139,21 @@ class DummyStation {
 
     const fsInjectorTransducersRecord: FsInjectorTransducersRecord = {
       ts,
+      injector_1: randRange(0, 1000),
+      injector_2: randRange(0, 1000),
+      upper_cc: randRange(0, 1000),
       injector_manifold_1: randRange(0, 1000),
-      injector_manifold_2: randRange(0, 1000),
       injector_manifold_1_median: randRange(0, 1000),
       injector_manifold_2_median: randRange(0, 1000),
     };
 
     const fsThermocouplesRecord: FsThermocouplesRecord = {
       ts,
+      gn2_internal_celsius: randRange(-200, 200),
+      gn2_external_celsius: randRange(-200, 200),
+      lox_upper_celsius: randRange(-200, 200),
+      lox_lower_celsius: randRange(-200, 200),
+      dummy: randRange(-200, 200),
       lox_celsius: randRange(-200, 200),
       gn2_celsius: randRange(-200, 200),
       gn2_surface_celsius: randRange(-200, 200),
@@ -167,7 +185,7 @@ class DummyStation {
         this.api.records.post({
           environmentKey: this.environmentKey,
           device: DEVICES.fsLoxGn2Transducers,
-          data: fsLoxGn2TransducersRecordSchema,
+          data: fsLoxGn2TransducersRecord,
         }),
       ),
       catchError(

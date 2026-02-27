@@ -1,113 +1,327 @@
-import { memo } from "react";
+import {
+  lazy,
+  memo,
+  type ReactNode,
+  Suspense,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
+import { Panel } from "@/components/design/panel";
+import { StatusDisplay } from "@/components/design/statusDisplay";
 import { useLaunchMachineSelector } from "@/components/launchMachineProvider";
+import { computeNitrousMass } from "@/lib/coolprop";
+import { type DeviceStates } from "@/machines/launchMachine";
 
-interface StatusItemProps {
-  label: string;
-  value: string;
-  status: "ok" | "warning" | "error" | "disconnected";
-}
+const StationChart = lazy(() =>
+  import("@/components/stationChart").then((res) => ({
+    default: res.StationChart,
+  })),
+);
 
-const StatusItem = memo(function StatusItem({
+const ChartLoadingFallback = memo(function ChartLoadingFallback({
+  children,
+}: {
+  children?: ReactNode;
+}) {
+  return (
+    <Suspense fallback={<p className="text-gray-text">Loading chart...</p>}>
+      {children}
+    </Suspense>
+  );
+});
+
+const StatusDisplayWithChart = memo(function StatusDisplayWithChart({
   label,
-  value,
-  status,
-}: StatusItemProps) {
-  const dotColors = {
-    ok: "bg-green-solid",
-    warning: "bg-yellow-solid animate-pulse",
-    error: "bg-red-solid animate-pulse",
-    disconnected: "bg-gray-solid",
-  };
+  selector,
+  decimals = 1,
+  minY = 0,
+  maxY = "dataMax + 10",
+}: {
+  label: string;
+  selector: (state: DeviceStates) => { ts: number; value: number } | null;
+  decimals?: number;
+  minY?: string | number;
+  maxY?: string | number;
+}) {
+  const value = useLaunchMachineSelector(
+    (state) => selector(state.context.deviceStates)?.value ?? 0,
+  );
+  const valueStr = value.toFixed(decimals);
+
+  const selectorRef = useRef(selector);
+
+  const chartElement = useMemo(() => {
+    return (
+      <ChartLoadingFallback>
+        <StationChart
+          selector={selectorRef.current}
+          valuePrecision={decimals}
+          minY={minY}
+          maxY={maxY}
+        />
+      </ChartLoadingFallback>
+    );
+  }, [decimals, maxY, minY]);
 
   return (
-    <div className="flex items-center px-3 py-2 border rounded-lg gap-2 bg-gray-bg-2 border-gray-border">
-      <div
-        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotColors[status]}`}
+    <StatusDisplay
+      label={label}
+      color="green"
+      value={valueStr}
+      overflowElement={chartElement}
+    />
+  );
+});
+
+function useTotalLoadCellValue() {
+  const value = useLaunchMachineSelector((state) => {
+    const { loadCell1, loadCell2 } = state.context.deviceStates;
+    return loadCell1 && loadCell2 ? loadCell1.data + loadCell2.data : 0;
+  });
+  return { value, valueStr: value.toFixed(2) };
+}
+
+const TotalNitrousDisplay = memo(function TotalNitrousDisplay() {
+  const { value: totalMassLbs } = useTotalLoadCellValue();
+
+  const vaporPressurePsi = useLaunchMachineSelector(
+    (state) =>
+      state.context.deviceStates.fsLoxGn2Transducers?.data.lox_upper_median ??
+      0,
+  );
+
+  const { liquidMassLbs, vaporMassLbs } = useMemo(
+    () => computeNitrousMass(totalMassLbs, vaporPressurePsi),
+    [totalMassLbs, vaporPressurePsi],
+  );
+
+  return (
+    <>
+      <StatusDisplay
+        label="Liquid Nitrous (lbs)"
+        color="green"
+        value={liquidMassLbs.toFixed(2)}
       />
-      <div className="flex flex-col min-w-0">
-        <div className="text-xs truncate text-gray-text-dim">{label}</div>
-        <div className="text-sm font-semibold truncate text-gray-text">
-          {value}
-        </div>
-      </div>
-    </div>
+      <StatusDisplay
+        label="Vapor Nitrous (lbs)"
+        color="green"
+        value={vaporMassLbs.toFixed(2)}
+      />
+    </>
+  );
+});
+
+const AltitudeDisplay = memo(function AltitudeDisplay() {
+  const value = useLaunchMachineSelector((state) =>
+    (state.context.deviceStates.radioGround?.data.gps_altitude ?? 0).toFixed(1),
+  );
+
+  const chartElement = useMemo(() => {
+    return (
+      <ChartLoadingFallback>
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          selector={({ radioGround }) =>
+            radioGround?.data.gps_altitude != null
+              ? {
+                  ts: radioGround.ts,
+                  value: radioGround.data.gps_altitude,
+                }
+              : null
+          }
+          valuePrecision={1}
+          minY={0}
+          maxY="dataMax + 10"
+        />
+      </ChartLoadingFallback>
+    );
+  }, []);
+
+  const [showChart, setShowChart] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setShowChart(!showChart);
+  }, [showChart]);
+
+  return (
+    <StatusDisplay
+      label="Altitude (ft)"
+      color="green"
+      value={value}
+      overflowElement={showChart ? chartElement : undefined}
+      disabled={false}
+      onClick={handleClick}
+    />
+  );
+});
+
+const AccelerationDisplay = memo(function AccelerationDisplay() {
+  // calibrated to 1g on the ground
+  const G_PER_RAW = 1 / 2140;
+
+  const raw_value = useLaunchMachineSelector(
+    (state) => state.context.deviceStates.radioGround?.data.imu_az ?? 0,
+  );
+  const value = (raw_value * G_PER_RAW).toFixed(3);
+
+  const chartElement = useMemo(() => {
+    return (
+      <ChartLoadingFallback>
+        <StationChart
+          // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+          selector={({ radioGround }) =>
+            radioGround
+              ? {
+                  ts: radioGround.ts,
+                  value: radioGround.data.imu_az * G_PER_RAW,
+                }
+              : null
+          }
+          valuePrecision={3}
+          minY="dataMin - 0.2"
+          maxY="dataMax + 0.2"
+        />
+      </ChartLoadingFallback>
+    );
+  }, [G_PER_RAW]);
+
+  const [showChart, setShowChart] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setShowChart(!showChart);
+  }, [showChart]);
+
+  return (
+    <StatusDisplay
+      label="Z Acceleration (Gs)"
+      color="green"
+      value={value}
+      overflowElement={showChart ? chartElement : undefined}
+      disabled={false}
+      onClick={handleClick}
+    />
   );
 });
 
 export const StatusPanel = memo(function StatusPanel() {
-  const fsState = useLaunchMachineSelector(
-    (state) => state.context.deviceStates.fsState?.data,
+  const isRecovery = useLaunchMachineSelector(
+    (state) => state.context.launchState.activePanel === "recovery",
   );
 
-  const getRelayStatus = (
-    value: boolean | undefined,
-  ): "ok" | "error" | "disconnected" => {
-    if (value === undefined) return "disconnected";
-    return value ? "ok" : "error";
-  };
-
   return (
-    <div className="flex flex-col h-full p-3 overflow-hidden border bg-gray-el-bg rounded-xl border-gray-border">
-      <h2 className="mb-3 text-xs font-bold tracking-widest uppercase text-gray-text">
-        SYSTEM STATUS
-      </h2>
-
-      <div className="flex-1 overflow-x-auto overflow-y-hidden">
-        <div className="h-full grid grid-cols-10 gap-2">
-          <StatusItem
-            label="STATE"
-            value={fsState?.state || "UNKNOWN"}
-            status={fsState ? "ok" : "disconnected"}
-          />
-
-          <StatusItem
-            label="GN2 DRAIN"
-            value={fsState?.gn2_drain ? "OPEN" : "CLOSED"}
-            status={getRelayStatus(fsState?.gn2_drain)}
-          />
-          <StatusItem
-            label="GN2 FILL"
-            value={fsState?.gn2_fill ? "OPEN" : "CLOSED"}
-            status={getRelayStatus(fsState?.gn2_fill)}
-          />
-          <StatusItem
-            label="LOX FILL"
-            value={fsState?.lox_fill ? "OPEN" : "CLOSED"}
-            status={getRelayStatus(fsState?.lox_fill)}
-          />
-          <StatusItem
-            label="LOX DISC"
-            value={fsState?.lox_disconnect ? "OPEN" : "CLOSED"}
-            status={getRelayStatus(fsState?.lox_disconnect)}
-          />
-          <StatusItem
-            label="DEPRESS"
-            value={fsState?.depress ? "OPEN" : "CLOSED"}
-            status={getRelayStatus(fsState?.depress)}
-          />
-          <StatusItem
-            label="PRESS PILOT"
-            value={fsState?.press_pilot ? "OPEN" : "CLOSED"}
-            status={getRelayStatus(fsState?.press_pilot)}
-          />
-          <StatusItem
-            label="RUN"
-            value={fsState?.run ? "OPEN" : "CLOSED"}
-            status={getRelayStatus(fsState?.run)}
-          />
-          <StatusItem
-            label="IGNITER"
-            value={fsState?.igniter ? "ARMED" : "SAFE"}
-            status={getRelayStatus(fsState?.igniter)}
-          />
-          <StatusItem
-            label="EREG PWR"
-            value={fsState?.ereg_power ? "ON" : "OFF"}
-            status={getRelayStatus(fsState?.ereg_power)}
-          />
+    <Panel className="md:min-w-min">
+      <p className="mb-4 text-lg text-gray-text">Status</p>
+      {isRecovery ? (
+        <div className="grid grid-cols-3 gap-4">
+          <AltitudeDisplay />
+          <AccelerationDisplay />
         </div>
-      </div>
-    </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-4">
+          <StatusDisplayWithChart
+            label="Lox Upper (PSI)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsLoxGn2Transducers: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.lox_upper_median }
+            }
+          />
+          <StatusDisplayWithChart
+            label="Combustion Chamber (PSI)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsLoxGn2Transducers: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.chamber_median }
+            }
+          />
+          <StatusDisplayWithChart
+            label="GN2 1 (PSI)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsLoxGn2Transducers: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.gn2_manifold_1_median }
+            }
+          />
+          <StatusDisplayWithChart
+            label="GN2 2 (PSI)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsLoxGn2Transducers: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.gn2_manifold_2_median }
+            }
+          />
+          <StatusDisplayWithChart
+            label="Injector 1 (PSI)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsInjectorTransducers: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.injector_manifold_1_median }
+            }
+          />
+          <StatusDisplayWithChart
+            label="Injector 2 (PSI)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsInjectorTransducers: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.injector_manifold_2_median }
+            }
+          />
+          <StatusDisplayWithChart
+            label="LOX Temp (°C)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsThermocouples: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.lox_celsius }
+            }
+          />
+          <StatusDisplayWithChart
+            label="GN2 Temp (°C)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsThermocouples: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.gn2_celsius }
+            }
+          />
+          <StatusDisplayWithChart
+            label="GN2 Surface Temp (°C)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ fsThermocouples: rec }) =>
+              rec && { ts: rec.ts, value: rec.data.gn2_surface_celsius }
+            }
+          />
+          <StatusDisplayWithChart
+            label="Load Cell 1 (lbs)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ loadCell1 }) =>
+              loadCell1 && { ts: loadCell1.ts, value: loadCell1.data }
+            }
+            decimals={2}
+            minY="dataMin - 2"
+            maxY="dataMax + 2"
+          />
+          <StatusDisplayWithChart
+            label="Load Cell 2 (lbs)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ loadCell2 }) =>
+              loadCell2 && { ts: loadCell2.ts, value: loadCell2.data }
+            }
+          />
+          <StatusDisplayWithChart
+            label="Total Load Cell (lbs)"
+            // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
+            selector={({ loadCell1, loadCell2 }) =>
+              loadCell1 &&
+              loadCell2 && {
+                ts: (loadCell1.ts + loadCell2.ts) / 2,
+                value: loadCell1.data + loadCell2.data,
+              }
+            }
+            decimals={2}
+            minY="dataMin - 2"
+            maxY="dataMax + 2"
+          />
+
+          {/* <LoadCell1Display /> */}
+          {/* <LoadCell2Display /> */}
+          {/* <TotalLoadCellDisplay /> */}
+          <TotalNitrousDisplay />
+        </div>
+      )}
+    </Panel>
   );
 });

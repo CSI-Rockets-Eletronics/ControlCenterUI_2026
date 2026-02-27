@@ -10,62 +10,15 @@ import {
 } from "react";
 
 import { computeNitrousMass } from "@/lib/coolprop";
-import { type LaunchState } from "@/lib/launchState";
 import { type DeviceStates } from "@/machines/launchMachine";
 
 import { Panel } from "./design/panel";
 import { StatusDisplay } from "./design/statusDisplay";
-import {
-  useLaunchMachineActorRef,
-  useLaunchMachineSelector,
-} from "./launchMachineProvider";
+import { useLaunchMachineSelector } from "./launchMachineProvider";
 
 const StationChart = lazy(() =>
   import("./stationChart").then((res) => ({ default: res.StationChart })),
 );
-
-const ClickableDisplay = memo(function ClickableDisplay({
-  label,
-  field,
-  trueValue,
-  falseValue,
-}: {
-  field: keyof LaunchState["mainStatus"];
-  label: string;
-  trueValue: string;
-  falseValue: string;
-}) {
-  const launchActorRef = useLaunchMachineActorRef();
-
-  const isTrue = useLaunchMachineSelector(
-    (state) => state.context.launchState.mainStatus[field],
-  );
-
-  const disabled = useLaunchMachineSelector(
-    (state) =>
-      !state.can({
-        type: "UPDATE_MAIN_STATUS",
-        data: { [field]: !isTrue },
-      }),
-  );
-
-  const handleChange = useCallback(() => {
-    launchActorRef.send({
-      type: "UPDATE_MAIN_STATUS",
-      data: { [field]: !isTrue },
-    });
-  }, [field, isTrue, launchActorRef]);
-
-  return (
-    <StatusDisplay
-      label={label}
-      color={isTrue ? "yellow" : "green"}
-      value={isTrue ? trueValue : falseValue}
-      disabled={disabled}
-      onClick={handleChange}
-    />
-  );
-});
 
 const ChartLoadingFallback = memo(function ChartLoadingFallback({
   children,
@@ -205,7 +158,6 @@ const AltitudeDisplay = memo(function AltitudeDisplay() {
 });
 
 const AccelerationDisplay = memo(function AccelerationDisplay() {
-  // calibrated to 1g on the ground
   const G_PER_RAW = 1 / 2140;
 
   const raw_value = useLaunchMachineSelector(
@@ -362,9 +314,6 @@ export const StatusPanel = memo(function StatusPanel() {
             maxY="dataMax + 2"
           />
 
-          {/* <LoadCell1Display /> */}
-          {/* <LoadCell2Display /> */}
-          {/* <TotalLoadCellDisplay /> */}
           <TotalNitrousDisplay />
         </div>
       )}

@@ -12,6 +12,9 @@ const Context = createActorContext(
   createLaunchMachine(undefined as unknown as Api, ""),
 );
 
+// Define options outside the component to ensure a stable reference
+const PROVIDER_OPTIONS = {};
+
 export function LaunchMachineProvider({ children }: { children: ReactNode }) {
   const api = useApi();
   const location = useLocation();
@@ -38,7 +41,12 @@ export function LaunchMachineProvider({ children }: { children: ReactNode }) {
     [api, environmentKey, readonly, replayFromSeconds, sessionName],
   );
 
-  return <Context.Provider machine={machine}>{children}</Context.Provider>;
+  // Use the stable reference 'PROVIDER_OPTIONS' instead of '{{}}'
+  return (
+    <Context.Provider machine={machine} options={PROVIDER_OPTIONS}>
+      {children}
+    </Context.Provider>
+  );
 }
 
 export const useLaunchMachineSelector = Context.useSelector;

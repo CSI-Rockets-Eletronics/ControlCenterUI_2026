@@ -103,7 +103,6 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
             Rocket Control Center
           </div>
 
-          {/* Connection status */}
           <div
             className={`ml-4 flex items-center gap-2 px-3 py-1 rounded-full text-xs ${
               connected
