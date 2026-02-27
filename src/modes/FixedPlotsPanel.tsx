@@ -6,6 +6,7 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
+  YAxis,
 } from "recharts";
 
 import { SIGNAL_METADATA, useTelemetryStore } from "@/stores/telemetryStore";
@@ -47,6 +48,7 @@ const X_AXIS_LABEL = {
   offset: -5,
   fontSize: 10,
 } as const;
+const Y_AXIS_TICK_STYLE = { fontSize: 10 } as const;
 const TOOLTIP_CONTENT_STYLE = {
   backgroundColor: "#fff",
   border: "1px solid #ccc",
@@ -152,8 +154,14 @@ const MultiSignalPlot = memo(function MultiSignalPlot({
                 dataKey="time"
                 stroke="#666"
                 tick={X_AXIS_TICK_STYLE}
-                tickCount={5}
+                tickCount={3}
                 label={X_AXIS_LABEL}
+              />
+              <YAxis
+                stroke="#666"
+                tick={Y_AXIS_TICK_STYLE}
+                tickCount={5}
+                width={45}
               />
               <Tooltip contentStyle={TOOLTIP_CONTENT_STYLE} />
               <Legend
