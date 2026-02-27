@@ -37,6 +37,12 @@ const PLOT_CONFIGS = [
     unit: "°C",
     height: 250,
   },
+  {
+    title: "Load Cells",
+    signals: ["load_cell_1_lbs", "load_cell_2_lbs"] as const,
+    unit: "lbs",
+    height: 200,
+  },
 ] as const;
 
 const TIME_RANGE_SECONDS = 120;
@@ -70,11 +76,14 @@ export const FixedPlotsPanel = memo(function FixedPlotsPanel() {
 
       <div className="p-3 overflow-y-scroll" style={{ flex: "1 1 0px" }}>
         <div className="grid grid-cols-2 gap-3">
+          {/* Left column: COPV + PulseFill + Load Cells */}
           <div className="flex flex-col gap-3">
             <MultiSignalPlot config={PLOT_CONFIGS[0]} />
             <PulseFill />
+            <MultiSignalPlot config={PLOT_CONFIGS[3]} />
           </div>
 
+          {/* Right column: Oxtank + Temperature */}
           <div className="flex flex-col gap-3">
             <MultiSignalPlot config={PLOT_CONFIGS[1]} />
             <MultiSignalPlot config={PLOT_CONFIGS[2]} />
