@@ -17,11 +17,7 @@ import {
 } from "./launchMachineProvider";
 
 function isDeviceValid(device: string) {
-  return (
-    device.length > 0 &&
-    // prevent mistake of wrapping device in quotes
-    !device.includes('"')
-  );
+  return device.length > 0 && !device.includes('"');
 }
 
 function validateData(data: string) {
