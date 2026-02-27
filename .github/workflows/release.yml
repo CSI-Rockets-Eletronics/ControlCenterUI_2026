@@ -3,7 +3,7 @@ name: Build Static Site and Release to Public Repo
 on:
   push:
     tags:
-      - "v*" # Triggers only when you push a tag like v141
+      - "v*"  
 
 jobs:
   build:
@@ -30,7 +30,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: "Release #${{ github.ref_name }}"
+          name: "Release ${{ github.ref_name }}"
 
           make_latest: true
 

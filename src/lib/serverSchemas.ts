@@ -14,6 +14,7 @@ export const DEVICES = {
 
 export const DEFAULT_SERVER = "https://csiwiki.me.columbia.edu/rocketsdata2";
 
+
 export const fsCommandSchema = z.enum([
   "STATE_CUSTOM",
   "STATE_ABORT",
