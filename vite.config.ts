@@ -6,6 +6,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const releaseTag = env.RELEASE_TAG || "dist";
+  const basePath = env.BASE_PATH || "/";
 
   return {
     plugins: [tsconfigPaths(), react()],
@@ -13,5 +14,6 @@ export default defineConfig(({ mode }) => {
       outDir: releaseTag,
       emptyOutDir: true,
     },
+    base: basePath,
   };
 });

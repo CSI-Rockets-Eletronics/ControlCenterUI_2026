@@ -18,8 +18,8 @@ jobs:
         run: |
           bun install --frozen-lockfile
           # Build both versions
-          RELEASE_TAG=dist bun run build
-          RELEASE_TAG=dist-rockets-ui bun run build
+          RELEASE_TAG=dist BASE_PATH=/ bun run build
+          RELEASE_TAG=dist-rockets-ui BASE_PATH=/rockets-ui/ bun run build
 
       - name: Archive Files
         run: |
