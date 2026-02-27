@@ -63,8 +63,6 @@ const TOOLTIP_CONTENT_STYLE = {
 } as const;
 const LEGEND_WRAPPER_STYLE = { fontSize: "10px" } as const;
 
-// ─── components ──────────────────────────────────────────────────────────────
-
 export const FixedPlotsPanel = memo(function FixedPlotsPanel() {
   return (
     <div className="flex flex-col h-full border bg-gray-el-bg rounded-xl border-gray-border">
@@ -76,14 +74,12 @@ export const FixedPlotsPanel = memo(function FixedPlotsPanel() {
 
       <div className="p-3 overflow-y-scroll" style={{ flex: "1 1 0px" }}>
         <div className="grid grid-cols-2 gap-3">
-          {/* Left column: COPV + PulseFill + Load Cells */}
           <div className="flex flex-col gap-3">
             <MultiSignalPlot config={PLOT_CONFIGS[0]} />
             <PulseFill />
             <MultiSignalPlot config={PLOT_CONFIGS[3]} />
           </div>
 
-          {/* Right column: Oxtank + Temperature */}
           <div className="flex flex-col gap-3">
             <MultiSignalPlot config={PLOT_CONFIGS[1]} />
             <MultiSignalPlot config={PLOT_CONFIGS[2]} />
