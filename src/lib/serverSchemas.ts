@@ -12,8 +12,7 @@ export const DEVICES = {
   relayCurrentMonitor: "RelayCurrentMonitor",
 } as const;
 
-export const DEFAULT_SERVER = "https://csiwiki.me.columbia.edu/rocketsdata2";
-
+export const DEFAULT_SERVER = "https://csi-fs-pi-data-server.ngrok.io";
 
 export const fsCommandSchema = z.enum([
   "STATE_CUSTOM",
