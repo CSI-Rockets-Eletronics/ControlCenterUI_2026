@@ -10,17 +10,26 @@ import { type FsCommand } from "@/lib/serverSchemas";
 const PULSE_COMMANDS = [
   {
     label: "1s",
-    command: "STATE_GN2_PULSE_FILL_A" as FsCommand,
+    command: "STATE_GN2_PULSE_FILL_A" as Exclude<
+      FsCommand,
+      "STATE_CUSTOM" | "EREG_SET_GAINS"
+    >,
     state: "GN2_PULSE_FILL_A",
   },
   {
     label: "5s",
-    command: "STATE_GN2_PULSE_FILL_B" as FsCommand,
+    command: "STATE_GN2_PULSE_FILL_B" as Exclude<
+      FsCommand,
+      "STATE_CUSTOM" | "EREG_SET_GAINS"
+    >,
     state: "GN2_PULSE_FILL_B",
   },
   {
     label: "10s",
-    command: "STATE_GN2_PULSE_FILL_C" as FsCommand,
+    command: "STATE_GN2_PULSE_FILL_C" as Exclude<
+      FsCommand,
+      "STATE_CUSTOM" | "EREG_SET_GAINS"
+    >,
     state: "GN2_PULSE_FILL_C",
   },
 ] as const;
@@ -32,7 +41,9 @@ interface PulseButtonProps {
   command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">;
   isActive: boolean;
   isPending: boolean;
-  onClick: (command: FsCommand) => void; // stable ref passed from parent
+  onClick: (
+    command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">,
+  ) => void; // stable ref passed from parent
 }
 
 const PulseButton = memo(function PulseButton({
@@ -71,14 +82,17 @@ const PulseButton = memo(function PulseButton({
 
 export const PulseFill = memo(function PulseFill() {
   const launchActorRef = useLaunchMachineActorRef();
-  const [pending, setPending] = useState<string | null>(null);
+  const [pending, setPending] = useState<Exclude<
+    FsCommand,
+    "STATE_CUSTOM" | "EREG_SET_GAINS"
+  > | null>(null);
 
   const fsState = useLaunchMachineSelector(
     (state) => state.context.deviceStates.fsState?.data.state,
   );
 
   const handleClick = useCallback(
-    (command: FsCommand) => {
+    (command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">) => {
       const snapshot = launchActorRef.getSnapshot();
       if (!snapshot) return;
 
@@ -86,6 +100,7 @@ export const PulseFill = memo(function PulseFill() {
         type: "SEND_FS_COMMAND",
         value: { command },
       });
+
       if (!canExecute || pending) return;
 
       setPending(command);
