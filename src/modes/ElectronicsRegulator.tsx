@@ -61,11 +61,11 @@ const COLORS = {
 };
 
 const GAIN_PRESETS = [
-  { label: "Default", kp: 0.35, ki: 2.5, kd: 0.01 },
-  { label: "Option 1", kp: 0.45, ki: 3.0, kd: 0.015 },
-  { label: "Option 2", kp: 0.28, ki: 2.0, kd: 0.008 },
-  { label: "Option 3", kp: 0.2, ki: 1.5, kd: 0.005 },
-  { label: "Option 4", kp: 0.15, ki: 1.0, kd: 0.003 },
+  { label: "Default", kp: 0.065, ki: 0.3, kd: 0.0001 },
+  { label: "Option 1", kp: 0.0975, ki: 0.45, kd: 0.0001 },
+  { label: "Option 2", kp: 0.13, ki: 0.6, kd: 0.00025 },
+  { label: "Option 3", kp: 0.163, ki: 0.75, kd: 0.00025 },
+  { label: "Option 4", kp: 0.195, ki: 0.9, kd: 0.00025 },
 ];
 
 interface StageButtonProps {
