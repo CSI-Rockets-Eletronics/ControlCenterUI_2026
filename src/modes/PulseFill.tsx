@@ -43,7 +43,7 @@ interface PulseButtonProps {
   isPending: boolean;
   onClick: (
     command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">,
-  ) => void; // stable ref passed from parent
+  ) => void;
 }
 
 const PulseButton = memo(function PulseButton({
@@ -53,8 +53,6 @@ const PulseButton = memo(function PulseButton({
   isPending,
   onClick,
 }: PulseButtonProps) {
-  // useCallback here means the JSX `onClick` prop is a stable function,
-  // not a new arrow-function literal — satisfying react-perf/jsx-no-new-function-as-prop
   const handleClick = useCallback(() => {
     onClick(command);
   }, [onClick, command]);
@@ -77,8 +75,6 @@ const PulseButton = memo(function PulseButton({
     </button>
   );
 });
-
-// ─── parent ──────────────────────────────────────────────────────────────────
 
 export const PulseFill = memo(function PulseFill() {
   const launchActorRef = useLaunchMachineActorRef();
