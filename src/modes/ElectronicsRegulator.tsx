@@ -60,13 +60,12 @@ const COLORS = {
   },
 };
 
-// Gain presets matching firmware defaults and variations
 const GAIN_PRESETS = [
-  { label: "Aggressive", kp: 0.45, ki: 3.0, kd: 0.015 },
   { label: "Default", kp: 0.35, ki: 2.5, kd: 0.01 },
-  { label: "Moderate", kp: 0.28, ki: 2.0, kd: 0.008 },
-  { label: "Conservative", kp: 0.2, ki: 1.5, kd: 0.005 },
-  { label: "Slow", kp: 0.15, ki: 1.0, kd: 0.003 },
+  { label: "Option 1", kp: 0.45, ki: 3.0, kd: 0.015 },
+  { label: "Option 2", kp: 0.28, ki: 2.0, kd: 0.008 },
+  { label: "Option 3", kp: 0.2, ki: 1.5, kd: 0.005 },
+  { label: "Option 4", kp: 0.15, ki: 1.0, kd: 0.003 },
 ];
 
 interface StageButtonProps {
@@ -133,10 +132,12 @@ const GainButton = memo(function GainButton({
   return (
     <button
       onClick={handleClick}
-      className="px-2 py-1 text-xs border rounded bg-gray-el-bg hover:bg-gray-el-bg-hover text-gray-text border-gray-border transition-all"
-      title={`Kp=${kp}, Ki=${ki}, Kd=${kd}`}
+      className="flex flex-col items-center px-2 py-1 text-xs border rounded bg-gray-el-bg hover:bg-gray-el-bg-hover text-gray-text border-gray-border transition-all gap-0.5"
     >
-      {label}
+      <span className="font-semibold">{label}</span>
+      <span className="font-mono leading-none text-[10px] text-gray-text-dim">
+        {kp}/{ki}/{kd}
+      </span>
     </button>
   );
 });
@@ -182,11 +183,11 @@ export const ElectronicsRegulator = memo(function ElectronicsRegulator() {
 
   const sendGains = useCallback(
     (kp: number, ki: number, kd: number) => {
-      console.log(`Setting EREG gains: Kp=${kp}, Ki=${ki}, Kd=${kd}`);
       launchActorRef.send({
         type: "SEND_FS_COMMAND",
         value: { command: "EREG_SET_GAINS", kp, ki, kd },
       });
+      console.log(`Sent EREG gains: Kp=${kp}, Ki=${ki}, Kd=${kd}`);
     },
     [launchActorRef],
   );
@@ -215,7 +216,6 @@ export const ElectronicsRegulator = memo(function ElectronicsRegulator() {
         </div>
       </div>
 
-      {/* Current state */}
       <div className="flex items-center justify-between px-3 py-2 border rounded-lg bg-gray-el-bg border-gray-border">
         <span className="text-xs text-gray-text-dim">Current state</span>
         {eregData ? (
@@ -234,7 +234,6 @@ export const ElectronicsRegulator = memo(function ElectronicsRegulator() {
         )}
       </div>
 
-      {/* Stage buttons */}
       <div className="flex flex-col gap-2">
         {STAGE_CONFIGS.map((stage) => (
           <StageButton
