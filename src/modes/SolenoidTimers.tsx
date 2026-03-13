@@ -1,9 +1,6 @@
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
-import {
-  useLaunchMachineActorRef,
-  useLaunchMachineSelector,
-} from "@/components/launchMachineProvider";
+import { useLaunchMachineSelector } from "@/components/launchMachineProvider";
 
 type SolenoidField =
   | "gn2_drain"
@@ -28,207 +25,124 @@ const SOLENOID_LABELS: Record<SolenoidField, string> = {
   ereg_power: "EREG Power",
 };
 
-interface ActiveTimer {
-  field: SolenoidField;
-  endTime: number;
+const PILOT_VALVE_OPEN_MS = 1000;
+const PILOT_VALVE_CLOSED_MS = 9000;
+const GN2_FILL_OPEN_MS = 5000;
+const GN2_FILL_CLOSED_MS = 5000;
+const FILL_A_PULSE_MS = 1000;
+const FILL_B_PULSE_MS = 5000;
+const FILL_C_PULSE_MS = 10000;
+const FIRE_DOME_PILOT_CLOSE_MS = 5000;
+const FIRE_IGNITER_ON_MS = 10000;
+const FIRE_IGNITER_OFF_MS = 13000;
+const FIRE_RUN_OPEN_MS = 15000;
+const FIRE_BACK_TO_STANDBY_MS = 25000;
+const MAX_CUSTOM_OPEN_MS = 30000;
+
+interface TimerInfo {
+  countdown: number;
+  isOpen: boolean;
 }
 
 interface SolenoidRowProps {
   field: SolenoidField;
   label: string;
-  activeTimer: ActiveTimer | null;
-  onStart: (field: SolenoidField, durationSec: number) => void;
-  onStop: (field: SolenoidField) => void;
+  timer: TimerInfo | null;
 }
 
 const SolenoidRow = memo(function SolenoidRow({
-  field,
   label,
-  activeTimer,
-  onStart,
-  onStop,
+  timer,
 }: SolenoidRowProps) {
-  const [duration, setDuration] = useState("5");
-  const [, forceUpdate] = useState(0);
+  if (!timer) {
+    return (
+      <div className="flex items-center justify-between px-2 border rounded py-1.5 border-gray-border bg-gray-el-bg">
+        <div className="flex items-center flex-1 gap-2">
+          <div className="w-2 h-2 rounded-full shrink-0 bg-gray-solid" />
+          <span className="text-xs text-gray-text">{label}</span>
+        </div>
+        <span className="font-mono text-xs text-gray-text-dim">—</span>
+      </div>
+    );
+  }
 
-  const isActive = activeTimer?.field === field;
-  const remainingMs = isActive
-    ? Math.max(0, activeTimer!.endTime - Date.now())
-    : 0;
-  const remainingSec = Math.ceil(remainingMs / 1000);
-
-  useEffect(() => {
-    if (!isActive) return;
-    const interval = setInterval(() => {
-      forceUpdate((n) => n + 1);
-    }, 100);
-    return () => clearInterval(interval);
-  }, [isActive]);
-
-  const handleStart = useCallback(() => {
-    const durationSec = parseFloat(duration);
-    if (isNaN(durationSec) || durationSec <= 0) return;
-    onStart(field, durationSec);
-  }, [field, duration, onStart]);
-
-  const handleStop = useCallback(() => {
-    onStop(field);
-  }, [field, onStop]);
-
-  const handleDurationChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setDuration(e.target.value);
-    },
-    [],
-  );
+  const displayTime =
+    timer.countdown === Infinity
+      ? "∞"
+      : (() => {
+          const seconds = Math.ceil(timer.countdown / 1000);
+          const tenths = Math.floor((timer.countdown % 1000) / 100);
+          return seconds > 0 ? `${seconds}.${tenths}s` : "0.0s";
+        })();
 
   return (
-    <div className="flex items-center px-2 border rounded gap-2 py-1.5 border-gray-border bg-gray-el-bg">
-      <div
-        className={`w-2 h-2 rounded-full shrink-0 ${isActive ? "bg-green-solid" : "bg-gray-solid"}`}
-      />
-
-      <span className="text-xs text-gray-text min-w-[100px]">{label}</span>
-
-      {!isActive ? (
-        <>
-          <input
-            type="number"
-            value={duration}
-            onChange={handleDurationChange}
-            min="0.1"
-            step="0.1"
-            className="w-16 px-2 font-mono text-xs text-center border rounded py-0.5 bg-gray-bg border-gray-border text-gray-text"
-            placeholder="sec"
-          />
-          <button
-            onClick={handleStart}
-            className="px-3 text-xs text-white rounded py-0.5 bg-green-solid hover:bg-green-solid-hover transition-colors"
-          >
-            Start
-          </button>
-        </>
-      ) : (
-        <>
-          <span className="font-mono text-xs font-bold text-center text-green-text tabular-nums min-w-[3rem]">
-            {remainingSec}s
-          </span>
-          <button
-            onClick={handleStop}
-            className="px-3 text-xs text-white rounded py-0.5 bg-red-solid hover:bg-red-solid-hover transition-colors"
-          >
-            Stop
-          </button>
-        </>
-      )}
+    <div className="flex items-center justify-between px-2 border rounded py-1.5 border-gray-border bg-gray-el-bg">
+      <div className="flex items-center flex-1 gap-2">
+        <div
+          className={`w-2 h-2 rounded-full shrink-0 ${timer.isOpen ? "bg-green-solid" : "bg-yellow-solid"}`}
+        />
+        <span className="text-xs text-gray-text">{label}</span>
+      </div>
+      <span
+        className={`text-xs font-mono font-bold tabular-nums ${timer.isOpen ? "text-green-text" : "text-yellow-text"}`}
+      >
+        {timer.isOpen ? displayTime : `↻ ${displayTime}`}
+      </span>
     </div>
   );
 });
 
 export const SolenoidTimers = memo(function SolenoidTimers() {
-  const launchActorRef = useLaunchMachineActorRef();
-  const fsState = useLaunchMachineSelector(
-    (state) => state.context.deviceStates.fsState?.data,
+  const fsStateRecord = useLaunchMachineSelector(
+    (state) => state.context.deviceStates.fsState,
   );
 
-  const [activeTimer, setActiveTimer] = useState<ActiveTimer | null>(null);
+  const [stateEnterTime, setStateEnterTime] = useState<number>(Date.now());
+  const [depressPulseEnterTime, setDepressPulseEnterTime] = useState<number>(
+    Date.now(),
+  );
+  const [lastState, setLastState] = useState<string>("");
+  const [, forceUpdate] = useState(0);
 
   useEffect(() => {
-    if (!activeTimer || !fsState) return;
+    if (!fsStateRecord?.data) return;
 
-    const checkTimer = () => {
-      if (Date.now() >= activeTimer.endTime) {
-        console.log(`Timer expired for ${activeTimer.field}, closing valve`);
+    const currentState = fsStateRecord.data.state;
+    if (currentState !== lastState) {
+      const now = Date.now();
+      setStateEnterTime(now);
 
-        launchActorRef.send({
-          type: "SEND_FS_COMMAND",
-          value: {
-            command: "STATE_CUSTOM",
-            gn2_drain:
-              activeTimer.field === "gn2_drain" ? false : fsState.gn2_drain,
-            gn2_fill:
-              activeTimer.field === "gn2_fill" ? false : fsState.gn2_fill,
-            depress: activeTimer.field === "depress" ? false : fsState.depress,
-            press_pilot:
-              activeTimer.field === "press_pilot" ? false : fsState.press_pilot,
-            run: activeTimer.field === "run" ? false : fsState.run,
-            lox_fill:
-              activeTimer.field === "lox_fill" ? false : fsState.lox_fill,
-            lox_disconnect:
-              activeTimer.field === "lox_disconnect"
-                ? false
-                : fsState.lox_disconnect,
-            igniter: activeTimer.field === "igniter" ? false : fsState.igniter,
-            ereg_power:
-              activeTimer.field === "ereg_power" ? false : fsState.ereg_power,
-          },
-        });
+      const shouldPulseNew = [
+        "GN2_STANDBY",
+        "GN2_FILL",
+        "GN2_PULSE_FILL_A",
+        "GN2_PULSE_FILL_B",
+        "GN2_PULSE_FILL_C",
+      ].includes(currentState);
+      const shouldPulseOld = [
+        "GN2_STANDBY",
+        "GN2_FILL",
+        "GN2_PULSE_FILL_A",
+        "GN2_PULSE_FILL_B",
+        "GN2_PULSE_FILL_C",
+      ].includes(lastState);
 
-        setActiveTimer(null);
+      if (shouldPulseNew && !shouldPulseOld) {
+        setDepressPulseEnterTime(now);
       }
-    };
 
-    const interval = setInterval(checkTimer, 100);
+      setLastState(currentState);
+    }
+  }, [fsStateRecord?.data?.state, lastState]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      forceUpdate((n) => n + 1);
+    }, 100);
     return () => clearInterval(interval);
-  }, [activeTimer, fsState, launchActorRef]);
+  }, []);
 
-  const handleStart = useCallback(
-    (field: SolenoidField, durationSec: number) => {
-      if (!fsState) return;
-
-      // Open the valve
-      launchActorRef.send({
-        type: "SEND_FS_COMMAND",
-        value: {
-          command: "STATE_CUSTOM",
-          gn2_drain: field === "gn2_drain" ? true : fsState.gn2_drain,
-          gn2_fill: field === "gn2_fill" ? true : fsState.gn2_fill,
-          depress: field === "depress" ? true : fsState.depress,
-          press_pilot: field === "press_pilot" ? true : fsState.press_pilot,
-          run: field === "run" ? true : fsState.run,
-          lox_fill: field === "lox_fill" ? true : fsState.lox_fill,
-          lox_disconnect:
-            field === "lox_disconnect" ? true : fsState.lox_disconnect,
-          igniter: field === "igniter" ? true : fsState.igniter,
-          ereg_power: field === "ereg_power" ? true : fsState.ereg_power,
-        },
-      });
-
-      setActiveTimer({
-        field,
-        endTime: Date.now() + durationSec * 1000,
-      });
-    },
-    [fsState, launchActorRef],
-  );
-
-  const handleStop = useCallback(
-    (field: SolenoidField) => {
-      if (!fsState) return;
-
-      launchActorRef.send({
-        type: "SEND_FS_COMMAND",
-        value: {
-          command: "STATE_CUSTOM",
-          gn2_drain: field === "gn2_drain" ? false : fsState.gn2_drain,
-          gn2_fill: field === "gn2_fill" ? false : fsState.gn2_fill,
-          depress: field === "depress" ? false : fsState.depress,
-          press_pilot: field === "press_pilot" ? false : fsState.press_pilot,
-          run: field === "run" ? false : fsState.run,
-          lox_fill: field === "lox_fill" ? false : fsState.lox_fill,
-          lox_disconnect:
-            field === "lox_disconnect" ? false : fsState.lox_disconnect,
-          igniter: field === "igniter" ? false : fsState.igniter,
-          ereg_power: field === "ereg_power" ? false : fsState.ereg_power,
-        },
-      });
-
-      setActiveTimer(null);
-    },
-    [fsState, launchActorRef],
-  );
-
-  if (!fsState) {
+  if (!fsStateRecord?.data) {
     return (
       <div className="p-4 border bg-gray-el-bg rounded-xl border-gray-border">
         <p className="text-sm text-gray-text-dim">
@@ -236,6 +150,135 @@ export const SolenoidTimers = memo(function SolenoidTimers() {
         </p>
       </div>
     );
+  }
+
+  const fsState = fsStateRecord.data;
+  const currentState = fsState.state;
+  const timeInStateMs = Date.now() - stateEnterTime;
+  const timeInDepressPulseMs = Date.now() - depressPulseEnterTime;
+
+  const timers: Record<SolenoidField, TimerInfo | null> = {
+    gn2_drain: null,
+    gn2_fill: null,
+    depress: null,
+    press_pilot: null,
+    run: null,
+    lox_fill: null,
+    lox_disconnect: null,
+    igniter: null,
+    ereg_power: null,
+  };
+
+  // Calculate timers based on state
+  const shouldPulse = [
+    "GN2_STANDBY",
+    "GN2_FILL",
+    "GN2_PULSE_FILL_A",
+    "GN2_PULSE_FILL_B",
+    "GN2_PULSE_FILL_C",
+  ].includes(currentState);
+
+  if (shouldPulse) {
+    // Depress pulses: 1s open, 9s closed
+    const pulsePeriod = PILOT_VALVE_OPEN_MS + PILOT_VALVE_CLOSED_MS;
+    const timeInPulse = timeInDepressPulseMs % pulsePeriod;
+    const isOpen = timeInPulse < PILOT_VALVE_OPEN_MS;
+    const countdown = Math.max(
+      0,
+      isOpen ? PILOT_VALVE_OPEN_MS - timeInPulse : pulsePeriod - timeInPulse,
+    );
+
+    timers.depress = { countdown, isOpen };
+  }
+
+  if (currentState === "GN2_FILL") {
+    // GN2 Fill pulses: 5s open, 5s closed
+    const pulsePeriod = GN2_FILL_OPEN_MS + GN2_FILL_CLOSED_MS;
+    const timeInPulse = timeInStateMs % pulsePeriod;
+    const isOpen = timeInPulse < GN2_FILL_OPEN_MS;
+    const countdown = Math.max(
+      0,
+      isOpen ? GN2_FILL_OPEN_MS - timeInPulse : pulsePeriod - timeInPulse,
+    );
+
+    timers.gn2_fill = { countdown, isOpen };
+  }
+
+  if (currentState === "GN2_PULSE_FILL_A") {
+    timers.gn2_fill = {
+      countdown: Math.max(0, FILL_A_PULSE_MS - timeInStateMs),
+      isOpen: true,
+    };
+  }
+
+  if (currentState === "GN2_PULSE_FILL_B") {
+    timers.gn2_fill = {
+      countdown: Math.max(0, FILL_B_PULSE_MS - timeInStateMs),
+      isOpen: true,
+    };
+  }
+
+  if (currentState === "GN2_PULSE_FILL_C") {
+    timers.gn2_fill = {
+      countdown: Math.max(0, FILL_C_PULSE_MS - timeInStateMs),
+      isOpen: true,
+    };
+  }
+
+  if (currentState === "FIRE") {
+    // Press pilot: open for first 5s
+    if (timeInStateMs < FIRE_DOME_PILOT_CLOSE_MS) {
+      timers.press_pilot = {
+        countdown: FIRE_DOME_PILOT_CLOSE_MS - timeInStateMs,
+        isOpen: true,
+      };
+    }
+
+    // Igniter: on from 10s to 13s
+    if (
+      timeInStateMs >= FIRE_IGNITER_ON_MS &&
+      timeInStateMs < FIRE_IGNITER_OFF_MS
+    ) {
+      timers.igniter = {
+        countdown: FIRE_IGNITER_OFF_MS - timeInStateMs,
+        isOpen: true,
+      };
+    }
+
+    // Run: on from 15s onwards
+    if (timeInStateMs >= FIRE_RUN_OPEN_MS) {
+      timers.run = {
+        countdown: FIRE_BACK_TO_STANDBY_MS - timeInStateMs,
+        isOpen: true,
+      };
+    }
+  }
+
+  if (currentState === "ABORT") {
+    if (fsState.gn2_drain) {
+      timers.gn2_drain = { countdown: Infinity, isOpen: true };
+    }
+    if (fsState.depress) {
+      timers.depress = { countdown: Infinity, isOpen: true };
+    }
+  }
+
+  if (currentState === "CUSTOM") {
+    const countdown = Math.max(0, MAX_CUSTOM_OPEN_MS - timeInStateMs);
+
+    if (fsState.gn2_drain) timers.gn2_drain = { countdown, isOpen: true };
+    if (fsState.gn2_fill) timers.gn2_fill = { countdown, isOpen: true };
+    if (fsState.depress) timers.depress = { countdown, isOpen: true };
+    if (fsState.press_pilot) timers.press_pilot = { countdown, isOpen: true };
+    if (fsState.run) timers.run = { countdown, isOpen: true };
+    if (fsState.lox_fill) timers.lox_fill = { countdown, isOpen: true };
+    if (fsState.lox_disconnect)
+      timers.lox_disconnect = { countdown, isOpen: true };
+    if (fsState.igniter) timers.igniter = { countdown, isOpen: true };
+  }
+
+  if (fsState.ereg_power) {
+    timers.ereg_power = { countdown: Infinity, isOpen: true };
   }
 
   const fields: SolenoidField[] = [
@@ -252,18 +295,17 @@ export const SolenoidTimers = memo(function SolenoidTimers() {
 
   return (
     <div className="flex flex-col p-3 border bg-gray-el-bg rounded-xl border-gray-border gap-2">
-      <p className="mb-1 text-sm font-bold text-gray-text">
-        Solenoid Countdown Timers
-      </p>
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-sm font-bold text-gray-text">Solenoid Timers</p>
+        <p className="font-mono text-xs text-gray-text-dim">{currentState}</p>
+      </div>
       <div className="grid grid-cols-2 gap-1.5">
         {fields.map((field) => (
           <SolenoidRow
             key={field}
             field={field}
             label={SOLENOID_LABELS[field]}
-            activeTimer={activeTimer}
-            onStart={handleStart}
-            onStop={handleStop}
+            timer={timers[field]}
           />
         ))}
       </div>
