@@ -9,7 +9,7 @@ import { fsStateToCommand } from "@/lib/serverSchemaUtils";
 
 interface CommandButtonProps {
   label: string;
-  command: Exclude<FsCommand, "STATE_CUSTOM">;
+  command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">;
   color?: "primary" | "danger" | "warning";
 }
 
@@ -33,6 +33,7 @@ const CommandButton = memo(function CommandButton({
 
   const handleClick = useCallback(() => {
     if (!canExecute || pending) return;
+
     setPending(true);
     launchActorRef.send({ type: "SEND_FS_COMMAND", value: { command } });
     setTimeout(() => setPending(false), 2000);
@@ -84,7 +85,6 @@ export const ManualControlPanel = memo(function ManualControlPanel() {
       <p className="mb-1 text-lg font-bold text-gray-text">
         Manual fire control
       </p>
-
       <div className="grid grid-cols-2 gap-4">
         <CommandButton
           label="Press pilot"

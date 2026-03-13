@@ -29,7 +29,7 @@ const PULSE_COMMANDS = [
 
 interface PulseButtonProps {
   label: string;
-  command: FsCommand;
+  command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">;
   isActive: boolean;
   isPending: boolean;
   onClick: (command: FsCommand) => void; // stable ref passed from parent
