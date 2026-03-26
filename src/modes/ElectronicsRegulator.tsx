@@ -164,9 +164,13 @@ export const ElectronicsRegulator = memo(function ElectronicsRegulator() {
   const canSendStage2 = useLaunchMachineSelector((state) =>
     state.can({ type: "SEND_FS_COMMAND", value: { command: "EREG_STAGE_2" } }),
   );
-  const canSendClosed = useLaunchMachineSelector((state) =>
-    state.can({ type: "SEND_FS_COMMAND", value: { command: "EREG_CLOSED" } }),
+
+  const fsStateExists = useLaunchMachineSelector(
+    (state) => !!state.context.deviceStates.fsState,
   );
+
+  const isEregClosed = eregData?.ereg_closed ?? false;
+  const canSendClosed = fsStateExists && !isEregClosed;
 
   const canSendMap: Record<EregCommand, boolean> = {
     EREG_STAGE_1: canSendStage1,
@@ -198,7 +202,6 @@ export const ElectronicsRegulator = memo(function ElectronicsRegulator() {
 
   return (
     <div className="flex flex-col p-4 border bg-gray-bg-1 rounded-xl border-gray-border gap-3">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <p className="text-lg font-bold text-gray-text">
           Electronics regulator
@@ -262,7 +265,7 @@ export const ElectronicsRegulator = memo(function ElectronicsRegulator() {
         </div>
       </div>
 
-      {!canSendStage1 && !canSendStage2 && !canSendClosed && (
+      {!canSendStage1 && !canSendStage2 && !fsStateExists && (
         <div className="px-3 py-2 text-xs border rounded-lg bg-red-bg border-red-border text-red-text">
           ⚠ Cannot send commands — check system state
         </div>
