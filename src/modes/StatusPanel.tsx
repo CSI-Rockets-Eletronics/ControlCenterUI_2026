@@ -265,21 +265,21 @@ export const StatusPanel = memo(function StatusPanel() {
             label="LOX Temp (°C)"
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
             selector={({ fsThermocouples: rec }) =>
-              rec && { ts: rec.ts, value: rec.data.lox_celsius }
+              rec && { ts: rec.ts, value: rec.data.lox_celsius ?? NaN }
             }
           />
           <StatusDisplayWithChart
             label="GN2 Temp (°C)"
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
             selector={({ fsThermocouples: rec }) =>
-              rec && { ts: rec.ts, value: rec.data.gn2_celsius }
+              rec && { ts: rec.ts, value: rec.data.gn2_celsius ?? NaN }
             }
           />
           <StatusDisplayWithChart
             label="GN2 Surface Temp (°C)"
             // eslint-disable-next-line react-perf/jsx-no-new-function-as-prop
             selector={({ fsThermocouples: rec }) =>
-              rec && { ts: rec.ts, value: rec.data.gn2_surface_celsius }
+              rec && { ts: rec.ts, value: rec.data.gn2_surface_celsius ?? NaN }
             }
           />
           <StatusDisplayWithChart
