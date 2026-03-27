@@ -1,11 +1,12 @@
 import { memo, useCallback } from "react";
 
+import { StandbyStateSelection } from "@/components/StandbyStateSelection";
+
 import { Panel } from "./design/panel";
 import {
   useLaunchMachineActorRef,
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
-import { StandbyStateSelection } from "./StandbyStateSelection";
 
 export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
   const launchActorRef = useLaunchMachineActorRef();
