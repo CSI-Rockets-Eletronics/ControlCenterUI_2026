@@ -5,7 +5,7 @@ import {
   useLaunchMachineActorRef,
   useLaunchMachineSelector,
 } from "./launchMachineProvider";
-import { StandbyStateSelection } from "./standbyStateSelection";
+import { StandbyStateSelection } from "./StandbyStateSelection";
 
 export const PreFireStandbyPanel = memo(function PreFireStandbyPanel() {
   const launchActorRef = useLaunchMachineActorRef();
