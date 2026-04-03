@@ -104,12 +104,13 @@ export const FixedPlotsPanel = memo(function FixedPlotsPanel() {
           </div>
         </div>
 
-        <div className="mt-3">
-          <CapFillPlot config={PLOT_CONFIGS[4]} />
-        </div>
-
-        <div className="mt-3">
-          <BoardTempPlot />
+        <div className="flex mt-3 gap-3">
+          <div style={{ flex: "3 1 0" }}>
+            <CapFillPlot config={PLOT_CONFIGS[4]} />
+          </div>
+          <div style={{ flex: "1 1 0" }}>
+            <BoardTempPlot />
+          </div>
         </div>
       </div>
     </div>
