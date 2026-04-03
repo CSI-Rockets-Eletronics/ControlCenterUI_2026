@@ -23,7 +23,9 @@ export type SignalType =
   | "total_relay_current_ma"
   | "gn2_drain_current_ma"
   | "gn2_fill_current_ma"
-  | "igniter_current_ma";
+  | "igniter_current_ma"
+  | "cap_fill_actual"
+  | "cap_fill_base";
 
 export const SIGNAL_METADATA: Record<
   SignalType,
@@ -71,6 +73,17 @@ export const SIGNAL_METADATA: Record<
     label: "Igniter Current",
     unit: "mA",
     color: "#ffbe0b",
+  },
+
+  cap_fill_actual: {
+    label: "Cap Actual",
+    unit: "pF",
+    color: "#38bdf8",
+  },
+  cap_fill_base: {
+    label: "Cap Base",
+    unit: "pF",
+    color: "#94a3b8",
   },
 };
 
@@ -156,6 +169,8 @@ const initializeBuffers = () => {
     "gn2_drain_current_ma",
     "gn2_fill_current_ma",
     "igniter_current_ma",
+    "cap_fill_actual",
+    "cap_fill_base",
   ];
 
   const buffers = new Map<SignalType, SignalBuffer>();

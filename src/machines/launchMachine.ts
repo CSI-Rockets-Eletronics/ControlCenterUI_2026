@@ -10,6 +10,8 @@ import {
   launchStateSchema,
 } from "@/lib/launchState";
 import {
+  CapFillRecord,
+  capFillRecordSchema,
   DEVICES,
   FsCommandMessage,
   FsInjectorTransducersRecord,
@@ -46,6 +48,7 @@ export type DeviceStates = {
   loadCell2: DeviceRecord<LoadCellRecord> | null;
   radioGround: DeviceRecord<RadioGroundRecord> | null;
   relayCurrentMonitor: DeviceRecord<RelayCurrentMonitorRecord> | null;
+  capFill: DeviceRecord<CapFillRecord> | null;
 };
 
 export interface PendingMessage {
@@ -123,6 +126,7 @@ export function createLaunchMachine(
           loadCell2: null,
           radioGround: null,
           relayCurrentMonitor: null,
+          capFill: null,
         },
         sentMessages: [],
       }),
@@ -295,7 +299,6 @@ export function createLaunchMachine(
           return launchStateSchema.parse(records[0].data);
         },
         mutateLaunchState: async (context) => {
-          // sanity check
           if (!context.pendingLaunchState) {
             throw new Error("No pending launch state");
           }
@@ -328,6 +331,7 @@ export function createLaunchMachine(
                   DEVICES.loadCell2,
                   DEVICES.radioGround,
                   DEVICES.relayCurrentMonitor,
+                  DEVICES.capFill,
                 ].join(","),
                 endTs,
               },
@@ -342,6 +346,7 @@ export function createLaunchMachine(
           const loadCell2Raw = records[DEVICES.loadCell2];
           const radioGroundRaw = records[DEVICES.radioGround];
           const relayCurrentMonitorRaw = records[DEVICES.relayCurrentMonitor];
+          const capFillRaw = records[DEVICES.capFill];
 
           const parseRecord = <T>(schema: z.ZodType<T>, record: DeviceRecord<unknown> | null) => {
             return record ? { ts: record.ts, data: schema.parse(record.data) } : null;
@@ -355,7 +360,8 @@ export function createLaunchMachine(
             loadCell1: parseRecord(loadCellRecordSchema, loadCell1Raw),
             loadCell2: parseRecord(loadCellRecordSchema, loadCell2Raw),
             radioGround: parseRecord(radioGroundRecordSchema, radioGroundRaw),
-            relayCurrentMonitor: parseRecord(relayCurrentMonitorRecordSchema, relayCurrentMonitorRaw), // ADD THIS
+            relayCurrentMonitor: parseRecord(relayCurrentMonitorRecordSchema, relayCurrentMonitorRaw),
+            capFill: parseRecord(capFillRecordSchema, capFillRaw),
           };
         },
         sendFsCommand: async (_context, event) => {
@@ -413,12 +419,10 @@ export function createLaunchMachine(
 
           const currentState = fsState.data.state;
 
-          // Block run and press pilot commands when in GN2_FILL
           if (currentState === "GN2_FILL") {
             if (command.command === "STATE_FIRE_MANUAL_RUN" || command.command === "STATE_FIRE_MANUAL_PRESS_PILOT") {
               return false;
             }
-            // Also block STATE_CUSTOM commands that try to open these relays
             if (command.command === "STATE_CUSTOM" && "run" in command && "press_pilot" in command) {
               if (command.run || command.press_pilot) {
                 return false;

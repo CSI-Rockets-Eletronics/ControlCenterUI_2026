@@ -10,6 +10,7 @@ export const DEVICES = {
   loadCell2: "LoadCell2",
   radioGround: "RadioGround",
   relayCurrentMonitor: "RelayCurrentMonitor",
+  capFill: "CapFill",
 } as const;
 
 export const DEFAULT_SERVER = "https://csi-fs-pi-data-server.ngrok.io";
@@ -188,3 +189,12 @@ export const relayCurrentMonitorRecordSchema = z.object({
 export type RelayCurrentMonitorRecord = z.infer<
   typeof relayCurrentMonitorRecordSchema
 >;
+
+export const capFillRecordSchema = z.object({
+  ts: z.number(),
+  cap_fill_base: z.number(),
+  cap_fill_actual: z.number(),
+  board_temp: z.number(),
+});
+
+export type CapFillRecord = z.infer<typeof capFillRecordSchema>;

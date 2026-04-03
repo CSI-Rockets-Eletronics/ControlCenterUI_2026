@@ -95,9 +95,9 @@ export const StandbyStateSelection = memo(function StandbyStateSelection() {
       <Entry onlyIfActive label="FIRE RUN" command="STATE_FIRE_MANUAL_RUN" />
       <Entry onlyIfActive label="ABORT" command="STATE_ABORT" />
       <EntryGroup title="Pulse Fill">
-        <Entry inRow label="1s" command="STATE_GN2_PULSE_FILL_A" />
-        <Entry inRow label="5s" command="STATE_GN2_PULSE_FILL_B" />
-        <Entry inRow label="10s" command="STATE_GN2_PULSE_FILL_C" />
+        <Entry inRow label="1/2s" command="STATE_GN2_PULSE_FILL_A" />
+        <Entry inRow label="1s" command="STATE_GN2_PULSE_FILL_B" />
+        <Entry inRow label="5s" command="STATE_GN2_PULSE_FILL_C" />
       </EntryGroup>
     </Panel>
   );
