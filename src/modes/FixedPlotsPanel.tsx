@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
 import {
   Legend,
   Line,
@@ -52,10 +52,15 @@ const PLOT_CONFIGS = [
   },
 ] as const;
 
-const MAX_HISTORY_SECONDS = 600;
-const DEFAULT_TIME_RANGE_SECONDS = 120;
+const TIME_RANGE_SECONDS = 120;
 
 const X_AXIS_TICK_STYLE = { fontSize: 10 } as const;
+const X_AXIS_LABEL = {
+  value: "Time (s)",
+  position: "insideBottom",
+  offset: -5,
+  fontSize: 10,
+} as const;
 const Y_AXIS_TICK_STYLE = { fontSize: 10 } as const;
 
 const TOOLTIP_CONTENT_STYLE = {
@@ -67,7 +72,6 @@ const TOOLTIP_CONTENT_STYLE = {
 
 const LEGEND_WRAPPER_STYLE = { fontSize: "10px" } as const;
 
-// Hoisted module-level constants — never recreated
 const CAP_FILL_REFERENCE_LINE_LABEL = {
   value: "base",
   fontSize: 9,
@@ -78,199 +82,51 @@ const CAP_FILL_REFERENCE_LINE_LABEL = {
 const capFillTooltipFormatter = (value: number) =>
   [`${value.toFixed(3)} pF`] as const;
 
-// ── Scrollable time bar ────────────────────────────────────────────────────────
-
-interface TimeScrollBarProps {
-  timeRangeSeconds: number;
-  timeOffsetSeconds: number;
-  onOffsetChange: (offset: number) => void;
-  onRangeChange: (range: number) => void;
-}
-
-const TimeScrollBar = memo(function TimeScrollBar({
-  timeRangeSeconds,
-  timeOffsetSeconds,
-  onOffsetChange,
-  onRangeChange,
-}: TimeScrollBarProps) {
-  const maxOffset = MAX_HISTORY_SECONDS - timeRangeSeconds;
-  const isLive = timeOffsetSeconds === 0;
-
-  const handleRangeChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const next = Number(e.target.value);
-      onRangeChange(next);
-      const newMax = MAX_HISTORY_SECONDS - next;
-      if (timeOffsetSeconds > newMax) onOffsetChange(newMax);
-    },
-    [onRangeChange, onOffsetChange, timeOffsetSeconds],
-  );
-
-  const handleGoLive = useCallback(() => {
-    onOffsetChange(0);
-  }, [onOffsetChange]);
-
-  const handleScrollChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const invertedVal = Math.max(0, maxOffset) - Number(e.target.value);
-      onOffsetChange(invertedVal);
-    },
-    [onOffsetChange, maxOffset],
-  );
-
-  return (
-    <div className="flex flex-col px-3 pt-2 pb-3 border-t border-gray-border gap-2">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-text-dim whitespace-nowrap">
-            Window
-          </span>
-          <input
-            type="range"
-            min={10}
-            max={MAX_HISTORY_SECONDS}
-            step={10}
-            value={timeRangeSeconds}
-            onChange={handleRangeChange}
-            className="cursor-pointer w-28 accent-blue-500"
-          />
-          <span className="w-10 font-mono text-xs text-gray-text">
-            {timeRangeSeconds}s
-          </span>
-        </div>
-
-        <button
-          onClick={handleGoLive}
-          className={`text-xs px-2 py-0.5 rounded font-semibold transition-colors ${
-            isLive
-              ? "bg-green-500/20 text-green-400 border border-green-500/30"
-              : "bg-gray-bg-1 text-gray-text-dim border border-gray-border hover:border-green-500/50 hover:text-green-400"
-          }`}
-        >
-          {isLive ? "● LIVE" : "Go Live"}
-        </button>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-text-dim whitespace-nowrap">
-          Scroll
-        </span>
-        <input
-          type="range"
-          min={0}
-          max={Math.max(0, maxOffset)}
-          step={1}
-          value={Math.max(0, maxOffset) - timeOffsetSeconds}
-          onChange={handleScrollChange}
-          className="flex-1 cursor-pointer accent-blue-500"
-        />
-        <span className="w-20 font-mono text-xs text-right text-gray-text">
-          {timeOffsetSeconds === 0 ? "now" : `-${timeOffsetSeconds}s`}
-        </span>
-      </div>
-    </div>
-  );
-});
-
-// ── Main panel ─────────────────────────────────────────────────────────────────
-
 export const FixedPlotsPanel = memo(function FixedPlotsPanel() {
-  const [timeRangeSeconds, setTimeRangeSeconds] = useState(
-    DEFAULT_TIME_RANGE_SECONDS,
-  );
-  const [timeOffsetSeconds, setTimeOffsetSeconds] = useState(0);
-
-  const handleOffsetChange = useCallback((offset: number) => {
-    setTimeOffsetSeconds(Math.max(0, offset));
-  }, []);
-
-  const handleRangeChange = useCallback((range: number) => {
-    setTimeRangeSeconds(range);
-  }, []);
-
   return (
     <div className="flex flex-col h-full border bg-gray-el-bg rounded-xl border-gray-border">
-      <div className="flex items-center justify-between p-3 border-b border-gray-border">
+      <div className="p-3 border-b border-gray-border">
         <h2 className="text-xs font-bold tracking-widest uppercase text-gray-text">
           Live Telemetry
         </h2>
-        {timeOffsetSeconds > 0 && (
-          <span className="text-xs font-semibold text-amber-400">
-            ⏪ Viewing -{timeOffsetSeconds}s
-          </span>
-        )}
       </div>
-
-      <TimeScrollBar
-        timeRangeSeconds={timeRangeSeconds}
-        timeOffsetSeconds={timeOffsetSeconds}
-        onOffsetChange={handleOffsetChange}
-        onRangeChange={handleRangeChange}
-      />
 
       <div className="p-3 overflow-y-scroll" style={{ flex: "1 1 0px" }}>
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-3">
-            <MultiSignalPlot
-              config={PLOT_CONFIGS[0]}
-              timeRangeSeconds={timeRangeSeconds}
-              timeOffsetSeconds={timeOffsetSeconds}
-            />
+            <MultiSignalPlot config={PLOT_CONFIGS[0]} />
             <PulseFill />
-            <MultiSignalPlot
-              config={PLOT_CONFIGS[3]}
-              timeRangeSeconds={timeRangeSeconds}
-              timeOffsetSeconds={timeOffsetSeconds}
-            />
+            <MultiSignalPlot config={PLOT_CONFIGS[3]} />
           </div>
           <div className="flex flex-col gap-3">
-            <MultiSignalPlot
-              config={PLOT_CONFIGS[1]}
-              timeRangeSeconds={timeRangeSeconds}
-              timeOffsetSeconds={timeOffsetSeconds}
-            />
-            <MultiSignalPlot
-              config={PLOT_CONFIGS[2]}
-              timeRangeSeconds={timeRangeSeconds}
-              timeOffsetSeconds={timeOffsetSeconds}
-            />
+            <MultiSignalPlot config={PLOT_CONFIGS[1]} />
+            <MultiSignalPlot config={PLOT_CONFIGS[2]} />
           </div>
         </div>
 
         <div className="mt-3">
-          <CapFillPlot
-            config={PLOT_CONFIGS[4]}
-            timeRangeSeconds={timeRangeSeconds}
-            timeOffsetSeconds={timeOffsetSeconds}
-          />
+          <CapFillPlot config={PLOT_CONFIGS[4]} />
         </div>
       </div>
     </div>
   );
 });
 
-// ── Generic multi-signal plot ──────────────────────────────────────────────────
-
 interface MultiSignalPlotProps {
   config: (typeof PLOT_CONFIGS)[number];
-  timeRangeSeconds: number;
-  timeOffsetSeconds: number;
 }
 
 const MultiSignalPlot = memo(function MultiSignalPlot({
   config,
-  timeRangeSeconds,
-  timeOffsetSeconds,
 }: MultiSignalPlotProps) {
   const store = useTelemetryStore();
 
   const chartData = useMemo(() => {
     const now = Date.now() * 1000;
-    const endTime = now - timeOffsetSeconds * 1e6;
-    const startTime = endTime - timeRangeSeconds * 1e6;
+    const startTime = now - TIME_RANGE_SECONDS * 1e6;
 
     const allSamples = config.signals.map((signal) =>
-      store.getSamples(signal, startTime, endTime),
+      store.getSamples(signal, startTime, now),
     );
 
     const timestamps = new Set<number>();
@@ -282,35 +138,19 @@ const MultiSignalPlot = memo(function MultiSignalPlot({
 
     return sortedTimestamps.map((timestamp) => {
       const dataPoint: Record<string, number> = {
-        time: (timestamp - endTime) / 1e6,
+        time: (timestamp - now) / 1e6,
       };
+
       config.signals.forEach((signal, idx) => {
         const sample = allSamples[idx].find((s) => s.timestamp === timestamp);
         if (sample) {
           dataPoint[signal] = sample.value;
         }
       });
+
       return dataPoint;
     });
-  }, [config.signals, store, timeRangeSeconds, timeOffsetSeconds]);
-
-  const xAxisLabel = useMemo(
-    () => ({
-      value:
-        timeOffsetSeconds > 0
-          ? `Time (s, offset -${timeOffsetSeconds}s)`
-          : "Time (s)",
-      position: "insideBottom" as const,
-      offset: -5,
-      fontSize: 10,
-    }),
-    [timeOffsetSeconds],
-  );
-
-  const xAxisDomain = useMemo(
-    () => [-timeRangeSeconds, 0] as [number, number],
-    [timeRangeSeconds],
-  );
+  }, [config.signals, store]);
 
   const hasData = chartData.length > 0;
 
@@ -343,9 +183,7 @@ const MultiSignalPlot = memo(function MultiSignalPlot({
                   stroke="#666"
                   tick={X_AXIS_TICK_STYLE}
                   tickCount={3}
-                  label={xAxisLabel}
-                  domain={xAxisDomain}
-                  type="number"
+                  label={X_AXIS_LABEL}
                 />
                 <YAxis
                   stroke="#666"
@@ -410,28 +248,19 @@ const MultiSignalPlot = memo(function MultiSignalPlot({
   );
 });
 
-// ── Cap Fill plot ──────────────────────────────────────────────────────────────
-
 interface CapFillPlotProps {
   config: (typeof PLOT_CONFIGS)[4];
-  timeRangeSeconds: number;
-  timeOffsetSeconds: number;
 }
 
-const CapFillPlot = memo(function CapFillPlot({
-  config,
-  timeRangeSeconds,
-  timeOffsetSeconds,
-}: CapFillPlotProps) {
+const CapFillPlot = memo(function CapFillPlot({ config }: CapFillPlotProps) {
   const store = useTelemetryStore();
 
   const { chartData, latestActual, latestBase, delta } = useMemo(() => {
     const now = Date.now() * 1000;
-    const endTime = now - timeOffsetSeconds * 1e6;
-    const startTime = endTime - timeRangeSeconds * 1e6;
+    const startTime = now - TIME_RANGE_SECONDS * 1e6;
 
     const allSamples = config.signals.map((signal) =>
-      store.getSamples(signal, startTime, endTime),
+      store.getSamples(signal, startTime, now),
     );
 
     const timestamps = new Set<number>();
@@ -443,7 +272,7 @@ const CapFillPlot = memo(function CapFillPlot({
 
     const data = sortedTimestamps.map((timestamp) => {
       const dataPoint: Record<string, number> = {
-        time: (timestamp - endTime) / 1e6,
+        time: (timestamp - now) / 1e6,
       };
       config.signals.forEach((signal, idx) => {
         const sample = allSamples[idx].find((s) => s.timestamp === timestamp);
@@ -458,25 +287,7 @@ const CapFillPlot = memo(function CapFillPlot({
     const d = la != null && lb != null ? la - lb : null;
 
     return { chartData: data, latestActual: la, latestBase: lb, delta: d };
-  }, [config.signals, store, timeRangeSeconds, timeOffsetSeconds]);
-
-  const xAxisLabel = useMemo(
-    () => ({
-      value:
-        timeOffsetSeconds > 0
-          ? `Time (s, offset -${timeOffsetSeconds}s)`
-          : "Time (s)",
-      position: "insideBottom" as const,
-      offset: -5,
-      fontSize: 10,
-    }),
-    [timeOffsetSeconds],
-  );
-
-  const xAxisDomain = useMemo(
-    () => [-timeRangeSeconds, 0] as [number, number],
-    [timeRangeSeconds],
-  );
+  }, [config.signals, store]);
 
   const hasData = chartData.length > 0;
 
@@ -522,9 +333,7 @@ const CapFillPlot = memo(function CapFillPlot({
                   stroke="#666"
                   tick={X_AXIS_TICK_STYLE}
                   tickCount={6}
-                  label={xAxisLabel}
-                  domain={xAxisDomain}
-                  type="number"
+                  label={X_AXIS_LABEL}
                 />
                 <YAxis
                   stroke="#666"
