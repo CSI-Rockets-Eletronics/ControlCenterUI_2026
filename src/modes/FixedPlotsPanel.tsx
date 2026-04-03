@@ -107,6 +107,10 @@ export const FixedPlotsPanel = memo(function FixedPlotsPanel() {
         <div className="mt-3">
           <CapFillPlot config={PLOT_CONFIGS[4]} />
         </div>
+
+        <div className="mt-3">
+          <BoardTempPlot />
+        </div>
       </div>
     </div>
   );
@@ -409,6 +413,113 @@ const CapFillPlot = memo(function CapFillPlot({ config }: CapFillPlotProps) {
                 {latestBase !== null ? latestBase.toFixed(3) : "--"}
               </span>
               <span className="text-xs text-gray-text-dim">pF</span>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+});
+
+const BOARD_TEMP_X_AXIS_LABEL = {
+  value: "Time (s)",
+  position: "insideBottom" as const,
+  offset: -5,
+  fontSize: 10,
+};
+
+const boardTempTooltipFormatter = (value: number) =>
+  [`${value.toFixed(1)} °C`] as const;
+
+const BoardTempPlot = memo(function BoardTempPlot() {
+  const store = useTelemetryStore();
+
+  const { chartData, latestTemp } = useMemo(() => {
+    const now = Date.now() * 1000;
+    const startTime = now - TIME_RANGE_SECONDS * 1e6;
+
+    const samples = store.getSamples("cap_fill_board_temp_c", startTime, now);
+
+    const data = samples.map((s) => ({
+      time: (s.timestamp - now) / 1e6,
+      cap_fill_board_temp_c: s.value,
+    }));
+
+    const latest =
+      data.length > 0 ? data[data.length - 1].cap_fill_board_temp_c : null;
+
+    return { chartData: data, latestTemp: latest };
+  }, [store]);
+
+  const hasData = chartData.length > 0;
+
+  return (
+    <div className="p-3 border rounded-lg bg-gray-bg-1 border-gray-border">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs font-bold text-gray-text">
+          Cap Fill Board Temp
+        </h3>
+        <span className="text-xs text-gray-text-dim">°C</span>
+      </div>
+
+      {!hasData && (
+        <div
+          style={{ height: "120px" }}
+          className="flex items-center justify-center text-xs text-gray-text-dim"
+        >
+          Waiting for data...
+        </div>
+      )}
+
+      {hasData && (
+        <>
+          <div style={{ height: "120px" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <XAxis
+                  dataKey="time"
+                  stroke="#666"
+                  tick={X_AXIS_TICK_STYLE}
+                  tickCount={3}
+                  label={BOARD_TEMP_X_AXIS_LABEL}
+                />
+                <YAxis
+                  stroke="#666"
+                  tick={Y_AXIS_TICK_STYLE}
+                  tickCount={4}
+                  width={45}
+                />
+                <Tooltip
+                  contentStyle={TOOLTIP_CONTENT_STYLE}
+                  formatter={boardTempTooltipFormatter}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="cap_fill_board_temp_c"
+                  name={SIGNAL_METADATA["cap_fill_board_temp_c"].label}
+                  stroke={SIGNAL_METADATA["cap_fill_board_temp_c"].color}
+                  strokeWidth={2}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="flex flex-wrap pt-2 mt-2 border-t gap-3 border-gray-border">
+            <div className="flex items-baseline gap-1.5">
+              <div
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{
+                  backgroundColor:
+                    SIGNAL_METADATA["cap_fill_board_temp_c"].color,
+                }}
+              />
+              <span className="text-xs text-gray-text-dim">Board Temp:</span>
+              <span className="font-mono text-xs font-semibold text-gray-text tabular-nums">
+                {latestTemp !== null ? latestTemp.toFixed(1) : "--"}
+              </span>
+              <span className="text-xs text-gray-text-dim">°C</span>
             </div>
           </div>
         </>

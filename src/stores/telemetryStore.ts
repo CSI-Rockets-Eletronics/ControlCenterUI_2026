@@ -25,7 +25,8 @@ export type SignalType =
   | "gn2_fill_current_ma"
   | "igniter_current_ma"
   | "cap_fill_actual"
-  | "cap_fill_base";
+  | "cap_fill_base"
+  | "cap_fill_board_temp_c";
 
 export const SIGNAL_METADATA: Record<
   SignalType,
@@ -84,6 +85,11 @@ export const SIGNAL_METADATA: Record<
     label: "Cap Base",
     unit: "pF",
     color: "#94a3b8",
+  },
+  cap_fill_board_temp_c: {
+    label: "Board Temp",
+    unit: "°C",
+    color: "#fb923c",
   },
 };
 
@@ -171,6 +177,7 @@ const initializeBuffers = () => {
     "igniter_current_ma",
     "cap_fill_actual",
     "cap_fill_base",
+    "cap_fill_board_temp_c",
   ];
 
   const buffers = new Map<SignalType, SignalBuffer>();

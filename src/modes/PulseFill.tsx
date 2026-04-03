@@ -9,7 +9,7 @@ import { type FsCommand } from "@/lib/serverSchemas";
 
 const PULSE_COMMANDS = [
   {
-    label: "1s",
+    label: "1/4s",
     command: "STATE_GN2_PULSE_FILL_A" as Exclude<
       FsCommand,
       "STATE_CUSTOM" | "EREG_SET_GAINS"
@@ -17,7 +17,7 @@ const PULSE_COMMANDS = [
     state: "GN2_PULSE_FILL_A",
   },
   {
-    label: "5s",
+    label: "1s",
     command: "STATE_GN2_PULSE_FILL_B" as Exclude<
       FsCommand,
       "STATE_CUSTOM" | "EREG_SET_GAINS"
@@ -25,7 +25,7 @@ const PULSE_COMMANDS = [
     state: "GN2_PULSE_FILL_B",
   },
   {
-    label: "10s",
+    label: "5s",
     command: "STATE_GN2_PULSE_FILL_C" as Exclude<
       FsCommand,
       "STATE_CUSTOM" | "EREG_SET_GAINS"
