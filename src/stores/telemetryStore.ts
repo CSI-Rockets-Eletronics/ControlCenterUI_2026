@@ -80,12 +80,12 @@ export const SIGNAL_METADATA: Record<
   },
 
   cap_fill_actual: {
-    label: "Cap Fill Actual",
+    label: "Cap Fill Height",
     unit: "%",
     color: "#38bdf8",
   },
   cap_fill_base: {
-    label: "Cap Base",
+    label: "Cap Fill Capacitance",
     unit: "pF",
     color: "#94a3b8",
   },

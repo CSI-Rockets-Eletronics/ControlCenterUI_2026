@@ -420,7 +420,7 @@ const FillLevelPlot = memo(function FillLevelPlot() {
     <div className="p-3 border rounded-lg bg-gray-bg-1 border-gray-border">
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-bold text-gray-text">
-          Cap Fill Actual
+          Cap Fill Height
         </span>
         <span className="text-xs text-gray-text-dim">%</span>
       </div>
@@ -479,7 +479,7 @@ const FillLevelPlot = memo(function FillLevelPlot() {
                 }}
               />
               <span className="text-xs text-gray-text-dim">
-                Cap fill actual:
+                Cap fill height:
               </span>
               <span className="font-mono text-xs font-semibold text-gray-text tabular-nums">
                 {latestValue !== null ? latestValue.toFixed(1) : "--"}
@@ -516,7 +516,9 @@ const CapBasePlot = memo(function CapBasePlot() {
   return (
     <div className="p-3 border rounded-lg bg-gray-bg-1 border-gray-border">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-bold text-gray-text">Cap base</span>
+        <span className="text-xs font-bold text-gray-text">
+          Cap Fill Capacitance
+        </span>
         <span className="text-xs text-gray-text-dim">pF</span>
       </div>
 
@@ -573,7 +575,9 @@ const CapBasePlot = memo(function CapBasePlot() {
                   backgroundColor: SIGNAL_METADATA["cap_fill_base"].color,
                 }}
               />
-              <span className="text-xs text-gray-text-dim">Cap base:</span>
+              <span className="text-xs text-gray-text-dim">
+                Cap Fill Capacitance:
+              </span>
               <span className="font-mono text-xs font-semibold text-gray-text tabular-nums">
                 {latestValue !== null ? latestValue.toFixed(3) : "--"}
               </span>
