@@ -83,6 +83,7 @@ export const fsStateSchema = z.enum([
   "GN2_PULSE_FILL_B",
   "GN2_PULSE_FILL_C",
   "FIRE",
+  "ENGINE_PRIME",
   "FIRE_MANUAL_PRESS_PILOT",
   "FIRE_MANUAL_DOME_PILOT_CLOSE",
   "FIRE_MANUAL_IGNITER",
