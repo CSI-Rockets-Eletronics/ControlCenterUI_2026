@@ -142,9 +142,9 @@ export const fsInjectorTransducersRecordSchema = z.object({
   injector_1: z.number(),
   injector_2: z.number(),
   upper_cc: z.number(),
-  injector_manifold_1: z.number(),
-  injector_manifold_1_median: z.number(),
-  injector_manifold_2_median: z.number(),
+  injector_manifold_1: z.number().optional(),
+  injector_manifold_1_median: z.number().optional(),
+  injector_manifold_2_median: z.number().optional(),
 });
 
 export type FsInjectorTransducersRecord = z.infer<
