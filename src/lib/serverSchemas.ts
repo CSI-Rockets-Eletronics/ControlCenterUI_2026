@@ -109,21 +109,27 @@ export type FsStateRecord = z.infer<typeof fsStateRecordSchema>;
 
 export const fsLoxGn2TransducersRecordSchema = z.object({
   ts: z.number(),
-  oxtank_1: z.number(),
-  oxtank_2: z.number(),
   copv_1: z.number(),
   copv_2: z.number(),
+  oxtank_1: z.number(),
+  oxtank_2: z.number(),
   pilot_pres: z.number(),
   qd_pres: z.number(),
-  ereg_closed: z.boolean(),
-  ereg_stage_1: z.boolean(),
-  ereg_stage_2: z.boolean(),
-  oxtank_1_median: z.number(),
-  oxtank_2_median: z.number(),
   copv_1_median: z.number(),
   copv_2_median: z.number(),
+  oxtank_1_median: z.number(),
+  oxtank_2_median: z.number(),
   pilot_pres_median: z.number(),
   qd_pres_median: z.number(),
+
+  // EREG fields — only present when EREG is active
+  ereg_closed: z.boolean().optional(),
+  ereg_stage_1: z.boolean().optional(),
+  ereg_stage_2: z.boolean().optional(),
+  current_angle: z.number().optional(),
+  p_cont: z.number().optional(),
+  i_cont: z.number().optional(),
+  d_cont: z.number().optional(),
 });
 
 export type FsLoxGn2TransducersRecord = z.infer<
