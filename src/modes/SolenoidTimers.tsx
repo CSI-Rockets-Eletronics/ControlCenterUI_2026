@@ -11,7 +11,7 @@ type SolenoidField =
   | "lox_fill"
   | "lox_disconnect"
   | "igniter"
-  | "ereg_power";
+  | "igniter_backup"; // replaced ereg_power
 
 const SOLENOID_LABELS: Record<SolenoidField, string> = {
   gn2_drain: "GN2 Drain",
@@ -22,21 +22,30 @@ const SOLENOID_LABELS: Record<SolenoidField, string> = {
   lox_fill: "LOX Fill",
   lox_disconnect: "LOX Disconnect",
   igniter: "Igniter",
-  ereg_power: "EREG Power",
+  igniter_backup: "Igniter Backup", // replaced ereg_power
 };
 
+// Depress (pilot valve) pulse timing
 const PILOT_VALVE_OPEN_MS = 1000;
 const PILOT_VALVE_CLOSED_MS = 9000;
+
+// GN2 fill pulse timing
 const GN2_FILL_OPEN_MS = 5000;
 const GN2_FILL_CLOSED_MS = 5000;
-const FILL_A_PULSE_MS = 1000;
-const FILL_B_PULSE_MS = 5000;
-const FILL_C_PULSE_MS = 10000;
-const FIRE_DOME_PILOT_CLOSE_MS = 5000;
-const FIRE_IGNITER_ON_MS = 10000;
-const FIRE_IGNITER_OFF_MS = 13000;
-const FIRE_RUN_OPEN_MS = 15000;
-const FIRE_BACK_TO_STANDBY_MS = 25000;
+
+// Pulse fill durations (must match kFillA/B/CPulseDurationMs in dev_fs_relays.h)
+const FILL_A_PULSE_MS = 500;
+const FILL_B_PULSE_MS = 1000;
+const FILL_C_PULSE_MS = 5000;
+
+// FIRE timing (must match constants in dev_fs_relays.h)
+const FIRE_IGNITER_ON_MS = 3000; // kFireIgniterOnDelayMs
+const FIRE_IGNITER_OFF_MS = 3500; // kFireIgniterOffDelayMs (500ms pulse)
+const FIRE_IGNITER_BACKUP_ON_MS = 4000; // primary on + 1000ms
+const FIRE_IGNITER_BACKUP_OFF_MS = 4500; // primary off + 1000ms
+const FIRE_RUN_OPEN_MS = 10000; // kFireRunOpenDelayMs
+const FIRE_BACK_TO_STANDBY_MS = 30000; // kFireBackToStandbyDelayMs
+
 const MAX_CUSTOM_OPEN_MS = 30000;
 
 interface TimerInfo {
@@ -166,10 +175,10 @@ export const SolenoidTimers = memo(function SolenoidTimers() {
     lox_fill: null,
     lox_disconnect: null,
     igniter: null,
-    ereg_power: null,
+    igniter_backup: null, // replaced ereg_power
   };
 
-  // Calculate timers based on state
+  // Depress (pilot valve) pulse: 1s open, 9s closed
   const shouldPulse = [
     "GN2_STANDBY",
     "GN2_FILL",
@@ -179,7 +188,6 @@ export const SolenoidTimers = memo(function SolenoidTimers() {
   ].includes(currentState);
 
   if (shouldPulse) {
-    // Depress pulses: 1s open, 9s closed
     const pulsePeriod = PILOT_VALVE_OPEN_MS + PILOT_VALVE_CLOSED_MS;
     const timeInPulse = timeInDepressPulseMs % pulsePeriod;
     const isOpen = timeInPulse < PILOT_VALVE_OPEN_MS;
@@ -187,12 +195,10 @@ export const SolenoidTimers = memo(function SolenoidTimers() {
       0,
       isOpen ? PILOT_VALVE_OPEN_MS - timeInPulse : pulsePeriod - timeInPulse,
     );
-
     timers.depress = { countdown, isOpen };
   }
 
   if (currentState === "GN2_FILL") {
-    // GN2 Fill pulses: 5s open, 5s closed
     const pulsePeriod = GN2_FILL_OPEN_MS + GN2_FILL_CLOSED_MS;
     const timeInPulse = timeInStateMs % pulsePeriod;
     const isOpen = timeInPulse < GN2_FILL_OPEN_MS;
@@ -200,7 +206,6 @@ export const SolenoidTimers = memo(function SolenoidTimers() {
       0,
       isOpen ? GN2_FILL_OPEN_MS - timeInPulse : pulsePeriod - timeInPulse,
     );
-
     timers.gn2_fill = { countdown, isOpen };
   }
 
@@ -226,15 +231,7 @@ export const SolenoidTimers = memo(function SolenoidTimers() {
   }
 
   if (currentState === "FIRE") {
-    // Press pilot: open for first 5s
-    if (timeInStateMs < FIRE_DOME_PILOT_CLOSE_MS) {
-      timers.press_pilot = {
-        countdown: FIRE_DOME_PILOT_CLOSE_MS - timeInStateMs,
-        isOpen: true,
-      };
-    }
-
-    // Igniter: on from 10s to 13s
+    // Primary igniter: on at T+3s, off at T+3.5s (500ms pulse)
     if (
       timeInStateMs >= FIRE_IGNITER_ON_MS &&
       timeInStateMs < FIRE_IGNITER_OFF_MS
@@ -245,7 +242,18 @@ export const SolenoidTimers = memo(function SolenoidTimers() {
       };
     }
 
-    // Run: on from 15s onwards
+    // Backup igniter: on at T+4s, off at T+4.5s (1s after primary)
+    if (
+      timeInStateMs >= FIRE_IGNITER_BACKUP_ON_MS &&
+      timeInStateMs < FIRE_IGNITER_BACKUP_OFF_MS
+    ) {
+      timers.igniter_backup = {
+        countdown: FIRE_IGNITER_BACKUP_OFF_MS - timeInStateMs,
+        isOpen: true,
+      };
+    }
+
+    // Run: opens at T+10s
     if (timeInStateMs >= FIRE_RUN_OPEN_MS) {
       timers.run = {
         countdown: FIRE_BACK_TO_STANDBY_MS - timeInStateMs,
@@ -275,10 +283,8 @@ export const SolenoidTimers = memo(function SolenoidTimers() {
     if (fsState.lox_disconnect)
       timers.lox_disconnect = { countdown, isOpen: true };
     if (fsState.igniter) timers.igniter = { countdown, isOpen: true };
-  }
-
-  if (fsState.ereg_power) {
-    timers.ereg_power = { countdown: Infinity, isOpen: true };
+    if (fsState.igniter_backup)
+      timers.igniter_backup = { countdown, isOpen: true }; // replaced ereg_power
   }
 
   const fields: SolenoidField[] = [
@@ -290,7 +296,7 @@ export const SolenoidTimers = memo(function SolenoidTimers() {
     "lox_fill",
     "lox_disconnect",
     "igniter",
-    "ereg_power",
+    "igniter_backup", // replaced ereg_power
   ];
 
   return (

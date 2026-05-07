@@ -119,7 +119,12 @@ export const RelaysGroup = memo(function RelaysGroup() {
         <Entry label="LOx Fill" field="lox_fill" pr={pr} spr={spr} />
         <Entry label="LOx Disc" field="lox_disconnect" pr={pr} spr={spr} />
         <Entry label="Igniter" field="igniter" pr={pr} spr={spr} />
-        <Entry label="EREG Power" field="ereg_power" pr={pr} spr={spr} />
+        <Entry
+          label="Igniter Backup"
+          field="igniter_backup"
+          pr={pr}
+          spr={spr}
+        />
       </div>
     </div>
   );

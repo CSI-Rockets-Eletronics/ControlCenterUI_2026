@@ -27,7 +27,7 @@ const FIRING_RELAYS = [
   { key: "press_pilot", label: "Press Pilot" },
   { key: "run", label: "Run" },
   { key: "igniter", label: "Igniter" },
-  { key: "ereg_power", label: "EREG Power" },
+  { key: "igniter_backup", label: "Igniter Backup" },
 ] as const;
 
 type RelayKey =
@@ -79,10 +79,10 @@ export const RelayControlPanel = memo(function RelayControlPanel() {
         run: relayKey === "run" ? !relayStates.run : relayStates.run,
         igniter:
           relayKey === "igniter" ? !relayStates.igniter : relayStates.igniter,
-        ereg_power:
-          relayKey === "ereg_power"
-            ? !relayStates.ereg_power
-            : relayStates.ereg_power,
+        igniter_backup:
+          relayKey === "igniter_backup"
+            ? !relayStates.igniter_backup
+            : relayStates.igniter_backup,
       };
 
       actorRef.send({

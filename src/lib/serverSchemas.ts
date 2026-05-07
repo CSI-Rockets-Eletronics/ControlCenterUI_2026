@@ -51,7 +51,7 @@ const customFsCommandMessageSchema = z.object({
   lox_fill: z.boolean(),
   lox_disconnect: z.boolean(),
   igniter: z.boolean(),
-  ereg_power: z.boolean(),
+  igniter_backup: z.boolean(),
 });
 
 const eregSetGainsMessageSchema = z.object({
@@ -103,7 +103,7 @@ export const fsStateRecordSchema = z.object({
   lox_fill: z.boolean(),
   lox_disconnect: z.boolean(),
   igniter: z.boolean(),
-  ereg_power: z.boolean(),
+  igniter_backup: z.boolean(),
 });
 
 export type FsStateRecord = z.infer<typeof fsStateRecordSchema>;
@@ -191,7 +191,7 @@ export const relayCurrentMonitorRecordSchema = z.object({
   lox_fill_ma: z.number(),
   lox_disconnect_ma: z.number(),
   igniter_ma: z.number(),
-  ereg_power_ma: z.number(),
+  igniter_backup_ma: z.number(),
 });
 
 export type RelayCurrentMonitorRecord = z.infer<

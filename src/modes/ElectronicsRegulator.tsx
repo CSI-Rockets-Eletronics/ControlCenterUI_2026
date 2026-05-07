@@ -147,18 +147,9 @@ const GainButton = memo(function GainButton({
 
 export const ElectronicsRegulator = memo(function ElectronicsRegulator() {
   const launchActorRef = useLaunchMachineActorRef();
+
   const eregData = useLaunchMachineSelector(
     (state) => state.context.deviceStates.fsLoxGn2Transducers?.data ?? null,
-  );
-
-  const eregPowerOn = useLaunchMachineSelector(
-    (state) => state.context.deviceStates.fsState?.data.ereg_power ?? false,
-  );
-
-  const eregPowerMa = useLaunchMachineSelector(
-    (state) =>
-      state.context.deviceStates.relayCurrentMonitor?.data.ereg_power_ma ??
-      null,
   );
 
   const canSendStage1 = useLaunchMachineSelector((state) =>
@@ -212,22 +203,7 @@ export const ElectronicsRegulator = memo(function ElectronicsRegulator() {
 
   return (
     <div className="flex flex-col p-4 border bg-gray-bg-1 rounded-xl border-gray-border gap-3">
-      <div className="flex items-center justify-between">
-        <p className="text-lg font-bold text-gray-text">
-          Electronics regulator
-        </p>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-text-dim">PWR</span>
-          <div
-            className={`w-2 h-2 rounded-full ${eregPowerOn ? "bg-green-solid" : "bg-gray-solid"}`}
-          />
-          {eregPowerMa !== null && (
-            <span className="text-xs text-gray-text-dim tabular-nums">
-              {(eregPowerMa / 1000).toFixed(2)}A
-            </span>
-          )}
-        </div>
-      </div>
+      <p className="text-lg font-bold text-gray-text">Electronics regulator</p>
 
       <div className="flex items-center justify-between px-3 py-2 border rounded-lg bg-gray-el-bg border-gray-border">
         <span className="text-xs text-gray-text-dim">Current state</span>
