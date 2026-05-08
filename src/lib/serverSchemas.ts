@@ -191,7 +191,7 @@ export const relayCurrentMonitorRecordSchema = z.object({
   lox_fill_ma: z.number(),
   lox_disconnect_ma: z.number(),
   igniter_ma: z.number(),
-  igniter_backup_ma: z.number(),
+  igniter_backup_ma: z.number().optional(),
 });
 
 export type RelayCurrentMonitorRecord = z.infer<
