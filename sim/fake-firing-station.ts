@@ -695,7 +695,8 @@ let lastTick = Date.now();
 
 setInterval(() => {
   const now = Date.now();
-  const dt = (now - lastTick) / 1000;
+  // clamp: after laptop sleep dt can be hours, which blows up the physics
+  const dt = Math.min((now - lastTick) / 1000, 0.5);
   lastTick = now;
   for (const env of envsSeen) {
     let s = stations.get(env);
@@ -707,9 +708,13 @@ setInterval(() => {
       stations.set(env, s);
       console.log(`[station:${env}] online in STANDBY`);
     }
-    s.pollCommands();
-    s.tick(dt);
-    s.publish();
+    try {
+      s.pollCommands();
+      s.tick(dt);
+      s.publish();
+    } catch (e) {
+      console.error(`[station:${env}] tick failed`, e);
+    }
   }
 }, TICK_MS);
 
