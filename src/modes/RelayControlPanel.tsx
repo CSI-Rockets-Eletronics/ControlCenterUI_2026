@@ -204,10 +204,10 @@ export const RelayControlPanel = memo(function RelayControlPanel() {
             isOn ? "ui-dot-on" : "bg-red-solid"
           }`}
         />
-        <div className="text-xs font-semibold leading-tight text-center">
+        <div className="font-semibold leading-tight text-center text-[13px]">
           {relay.label}
         </div>
-        <div className="text-xs font-medium opacity-70">
+        <div className="font-medium text-[13px] opacity-70">
           {isOn ? "OPEN" : "CLOSED"}
         </div>
       </button>
@@ -310,10 +310,10 @@ export const RelayControlPanel = memo(function RelayControlPanel() {
                         isOn ? "ui-dot-on" : "bg-red-solid"
                       }`}
                     />
-                    <div className="text-xs font-semibold leading-tight text-center">
+                    <div className="font-semibold leading-tight text-center text-[13px]">
                       {relay.label}
                     </div>
-                    <div className="text-xs font-medium opacity-70">
+                    <div className="font-medium text-[13px] opacity-70">
                       {isOn ? "OPEN" : "CLOSED"}
                     </div>
                   </button>
