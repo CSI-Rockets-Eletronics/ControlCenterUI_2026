@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
   Link,
   useLocation,
@@ -54,6 +54,72 @@ const RECALIBRATE_MESSAGES = [
     data: "calibrate",
   },
 ];
+
+/**
+ * In-app confirmation before leaving simulation for live hardware.
+ * "Stay in simulation" has focus, so Enter or Esc never goes live by accident.
+ */
+const ConfirmLiveDialog = memo(function ConfirmLiveDialog({
+  onCancel,
+  onConfirm,
+}: {
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const stayRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    stayRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCancel();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onCancel]);
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center z-[60] bg-black/50"
+      onMouseDown={onCancel}
+    >
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirm-live-title"
+        aria-describedby="confirm-live-body"
+        onMouseDown={stopPropagation}
+        className="w-full max-w-md p-6 rounded-lg ui-section"
+      >
+        <h2 id="confirm-live-title" className="mb-2 ui-section-title">
+          Switch to live hardware?
+        </h2>
+        <p id="confirm-live-body" className="mb-5 text-sm text-gray-text-dim">
+          The UI will connect to the real firing station (
+          <span className="font-mono text-gray-text">
+            {effectiveServer(null)}
+          </span>
+          ). Any command you send after this goes to hardware.
+        </p>
+        <div className="flex justify-end gap-2">
+          <button
+            ref={stayRef}
+            onClick={onCancel}
+            className="h-10 px-4 text-sm font-semibold rounded-lg ui-selected"
+          >
+            Stay in simulation
+          </button>
+          <button
+            onClick={onConfirm}
+            className="h-10 px-4 text-sm font-semibold text-white rounded-lg bg-red-solid hover:bg-red-solid-hover"
+          >
+            Connect to live hardware
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
 
 export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
   const location = useLocation();
@@ -155,15 +221,19 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
     window.location.assign(url.toString());
   }, []);
 
+  const [confirmLiveOpen, setConfirmLiveOpen] = useState(false);
+  const cancelLive = useCallback(() => setConfirmLiveOpen(false), []);
+  const confirmLive = useCallback(() => {
+    setConfirmLiveOpen(false);
+    goToServer(null);
+  }, [goToServer]);
+
   const toggleSim = useCallback(async () => {
     setSimError(null);
     if (simOn) {
-      const ok = window.confirm(
-        "Turn off simulation mode?\n\n" +
-          `The UI will connect to the REAL firing station (${effectiveServer(null)}). ` +
-          "Any command you send after this goes to hardware.",
-      );
-      if (ok) goToServer(null);
+      // ask in-app before connecting to live hardware
+      setConfirmLiveOpen(true);
+      setUtilsOpen(false);
       return;
     }
     setSimBusy(true);
@@ -201,11 +271,22 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
       });
     }
   }, []);
+  // Gear-menu shortcuts (Option/Alt + key). Matched by e.code, since on
+  // macOS Option+letter types a symbol (Option+F = "ƒ"). Each action keeps
+  // its own guards: Restart only when commands can be sent, turning
+  // Simulation off still asks before connecting to live hardware.
   useEffect(() => {
-    // Option+F (Alt+F): e.code, since Option+F types "ƒ" on macOS
+    const actions: Record<string, () => void> = {
+      KeyF: toggleFullscreen,
+      KeyS: () => void toggleSim(),
+      KeyR: handleRestart,
+      KeyN: handleNewSession,
+      KeyD: toggleDark,
+    };
     const onKeyDown = (e: KeyboardEvent) => {
       if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-      if (e.code !== "KeyF") return;
+      const action = actions[e.code];
+      if (!action) return;
       const t = e.target as HTMLElement | null;
       if (
         t &&
@@ -215,11 +296,17 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
         return;
       }
       e.preventDefault();
-      toggleFullscreen();
+      action();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [toggleFullscreen]);
+  }, [
+    toggleFullscreen,
+    toggleSim,
+    handleRestart,
+    handleNewSession,
+    toggleDark,
+  ]);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -428,6 +515,9 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
                       }`}
                     >
                       Restart
+                      <kbd className="ml-2 font-sans text-xs leading-none opacity-70">
+                        {SHORTCUT_MOD}R
+                      </kbd>
                     </button>
                     <button
                       onClick={handleNewSession}
@@ -439,6 +529,9 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
                       }`}
                     >
                       New session
+                      <kbd className="ml-2 font-sans text-xs leading-none opacity-70">
+                        {SHORTCUT_MOD}N
+                      </kbd>
                     </button>
                     <button
                       onClick={toggleSim}
@@ -447,7 +540,12 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
                       aria-checked={simOn}
                       className="flex items-center justify-between px-3 py-2 text-sm font-medium text-left rounded-lg bg-gray-bg-2 hover:bg-gray-el-bg-hover text-gray-text transition-all disabled:opacity-60"
                     >
-                      {simBusy ? "Starting simulator…" : "Simulation mode"}
+                      <span className="flex items-center gap-2">
+                        {simBusy ? "Starting simulator…" : "Simulation mode"}
+                        <kbd className="font-sans text-xs leading-none text-gray-text-dim">
+                          {SHORTCUT_MOD}S
+                        </kbd>
+                      </span>
                       <span
                         className={`relative w-9 h-5 rounded-md ${
                           simOn ? "ui-dot-on" : "bg-gray-border-hover"
@@ -489,7 +587,12 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
                       aria-checked={isDark}
                       className="flex items-center justify-between px-3 py-2 text-sm font-medium text-left rounded-lg bg-gray-bg-2 hover:bg-gray-el-bg-hover text-gray-text transition-all"
                     >
-                      Dark mode
+                      <span className="flex items-center gap-2">
+                        Dark mode
+                        <kbd className="font-sans text-xs leading-none text-gray-text-dim">
+                          {SHORTCUT_MOD}D
+                        </kbd>
+                      </span>
                       <span
                         className={`relative w-9 h-5 rounded-md ${
                           isDark ? "ui-dot-on" : "bg-gray-border-hover"
@@ -536,6 +639,9 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
       </div>
 
       {healthOpen && <FiringStationHealth onClose={closeHealth} />}
+      {confirmLiveOpen && (
+        <ConfirmLiveDialog onCancel={cancelLive} onConfirm={confirmLive} />
+      )}
     </nav>
   );
 });
