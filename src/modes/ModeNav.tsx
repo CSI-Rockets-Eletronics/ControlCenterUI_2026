@@ -398,8 +398,9 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
             to={`/${environmentKey}/control${location.search}`}
             className="inline-flex items-center font-normal gap-3 text-[32px] leading-[37px] tracking-[-0.64px] text-gray-text hover:opacity-80"
           >
-            {/* 40px tile, same height and rounding as the header pills */}
-            <span className="inline-flex items-center justify-center w-10 h-10 rounded-md shrink-0 bg-gray-el-bg">
+            {/* 40px tile, same height and rounding as the header pills; black/white
+                (inverted in dark mode) with the logo in the opposite color */}
+            <span className="inline-flex items-center justify-center w-10 h-10 rounded-md shrink-0 ui-selected">
               <span aria-hidden className="w-7 h-7" style={LOGO_STYLE} />
             </span>
             Rocket Control Center
