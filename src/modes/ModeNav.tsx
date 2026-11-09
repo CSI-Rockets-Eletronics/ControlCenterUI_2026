@@ -27,6 +27,14 @@ import { useViewPrefsStore } from "@/stores/viewPrefsStore";
 
 import { FiringStationHealth } from "./FiringStationHealth";
 
+/** navigator.keyboard (Keyboard Lock API) is not in the TS DOM lib yet. */
+type NavigatorWithKeyboard = Navigator & {
+  keyboard?: {
+    lock?: (keys: string[]) => Promise<void>;
+    unlock?: () => void;
+  };
+};
+
 /** Modifier shown in tab shortcut hints: ⌥ on macOS, "Alt+" elsewhere. */
 const SHORTCUT_MOD =
   typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform)
@@ -258,7 +266,16 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
     () => typeof document !== "undefined" && !!document.fullscreenElement,
   );
   useEffect(() => {
-    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    const onChange = () => {
+      const on = !!document.fullscreenElement;
+      setIsFullscreen(on);
+      // Keyboard Lock (Chrome/Edge): in full screen, a short Esc press goes
+      // to the page instead of exiting, so in-app dialogs can use it first.
+      // Holding Esc still exits. No-op where unsupported (Safari, Firefox).
+      const kb = (navigator as NavigatorWithKeyboard).keyboard;
+      if (on) void kb?.lock?.(["Escape"]).catch(() => undefined);
+      else kb?.unlock?.();
+    };
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
@@ -271,6 +288,27 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
       });
     }
   }, []);
+  // Esc in full screen (with Keyboard Lock the page receives it): close the
+  // live-hardware warning first (its own handler does that), let text fields
+  // use Esc, otherwise exit full screen as the browser normally would.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || !document.fullscreenElement) return;
+      if (confirmLiveOpen) return;
+      const t = e.target as HTMLElement | null;
+      if (
+        t &&
+        (t.isContentEditable ||
+          ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))
+      ) {
+        return;
+      }
+      void document.exitFullscreen();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [confirmLiveOpen]);
+
   // Gear-menu shortcuts (Option/Alt + key). Matched by e.code, since on
   // macOS Option+letter types a symbol (Option+F = "ƒ"). Each action keeps
   // its own guards: Restart only when commands can be sent, turning
