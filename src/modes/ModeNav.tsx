@@ -27,6 +27,24 @@ import { useViewPrefsStore } from "@/stores/viewPrefsStore";
 
 import { FiringStationHealth } from "./FiringStationHealth";
 
+/**
+ * CSI logo as a one-color stencil (public/csi-logo-mono.png, made from the
+ * color favicon): painted with the text color, so it's black in light mode
+ * and white in dark mode. The crown is cut out and shows the background.
+ */
+const LOGO_URL = `${import.meta.env.BASE_URL}csi-logo-mono.png`;
+const LOGO_STYLE = {
+  backgroundColor: "currentColor",
+  WebkitMaskImage: `url("${LOGO_URL}")`,
+  maskImage: `url("${LOGO_URL}")`,
+  WebkitMaskSize: "contain",
+  maskSize: "contain",
+  WebkitMaskRepeat: "no-repeat",
+  maskRepeat: "no-repeat",
+  WebkitMaskPosition: "center",
+  maskPosition: "center",
+} as const;
+
 /** navigator.keyboard (Keyboard Lock API) is not in the TS DOM lib yet. */
 type NavigatorWithKeyboard = Navigator & {
   keyboard?: {
@@ -378,8 +396,13 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
         <div className="flex items-center gap-2">
           <Link
             to={`/${environmentKey}/control${location.search}`}
-            className="font-normal text-[32px] leading-[37px] tracking-[-0.64px] text-gray-text hover:opacity-80"
+            className="inline-flex items-center font-normal gap-3 text-[32px] leading-[37px] tracking-[-0.64px] text-gray-text hover:opacity-80"
           >
+            <span
+              aria-hidden
+              className="w-10 h-10 shrink-0"
+              style={LOGO_STYLE}
+            />
             Rocket Control Center
           </Link>
 
