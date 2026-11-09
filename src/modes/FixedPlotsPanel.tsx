@@ -416,14 +416,13 @@ const FillLevelPlot = memo(function FillLevelPlot() {
 
     const samples = useTelemetryStore
       .getState()
-      .getSamples("cap_fill_actual", startTime, now);
+      .getSamples("cap_fill_base", startTime, now);
     const data = samples.map((s) => ({
       time: (s.timestamp - now) / 1e6,
-      cap_fill_actual: s.value,
+      cap_fill_base: s.value,
     }));
 
-    const latest =
-      data.length > 0 ? data[data.length - 1].cap_fill_actual : null;
+    const latest = data.length > 0 ? data[data.length - 1].cap_fill_base : null;
 
     return { chartData: decimate(data), latestValue: latest };
     // tick: recompute when the throttled telemetry version changes
@@ -475,9 +474,9 @@ const FillLevelPlot = memo(function FillLevelPlot() {
                 />
                 <Line
                   type="monotone"
-                  dataKey="cap_fill_actual"
-                  name={SIGNAL_METADATA["cap_fill_actual"].label}
-                  stroke={SIGNAL_METADATA["cap_fill_actual"].color}
+                  dataKey="cap_fill_base"
+                  name={SIGNAL_METADATA["cap_fill_base"].label}
+                  stroke={SIGNAL_METADATA["cap_fill_base"].color}
                   strokeWidth={2}
                   dot={false}
                   isAnimationActive={false}
@@ -491,7 +490,7 @@ const FillLevelPlot = memo(function FillLevelPlot() {
               <div
                 className="w-2 h-2 rounded-full shrink-0"
                 style={{
-                  backgroundColor: SIGNAL_METADATA["cap_fill_actual"].color,
+                  backgroundColor: SIGNAL_METADATA["cap_fill_base"].color,
                 }}
               />
               <span className="text-xs text-gray-text-dim">
@@ -519,13 +518,14 @@ const CapBasePlot = memo(function CapBasePlot() {
 
     const samples = useTelemetryStore
       .getState()
-      .getSamples("cap_fill_base", startTime, now);
+      .getSamples("cap_fill_actual", startTime, now);
     const data = samples.map((s) => ({
       time: (s.timestamp - now) / 1e6,
-      cap_fill_base: s.value,
+      cap_fill_actual: s.value,
     }));
 
-    const latest = data.length > 0 ? data[data.length - 1].cap_fill_base : null;
+    const latest =
+      data.length > 0 ? data[data.length - 1].cap_fill_actual : null;
 
     return { chartData: decimate(data), latestValue: latest };
     // tick: recompute when the throttled telemetry version changes
@@ -576,9 +576,9 @@ const CapBasePlot = memo(function CapBasePlot() {
                 />
                 <Line
                   type="monotone"
-                  dataKey="cap_fill_base"
-                  name={SIGNAL_METADATA["cap_fill_base"].label}
-                  stroke={SIGNAL_METADATA["cap_fill_base"].color}
+                  dataKey="cap_fill_actual"
+                  name={SIGNAL_METADATA["cap_fill_actual"].label}
+                  stroke={SIGNAL_METADATA["cap_fill_actual"].color}
                   strokeWidth={1.5}
                   strokeDasharray="5 3"
                   dot={false}
@@ -593,7 +593,7 @@ const CapBasePlot = memo(function CapBasePlot() {
               <div
                 className="w-2 h-2 rounded-full shrink-0"
                 style={{
-                  backgroundColor: SIGNAL_METADATA["cap_fill_base"].color,
+                  backgroundColor: SIGNAL_METADATA["cap_fill_actual"].color,
                 }}
               />
               <span className="text-xs text-gray-text-dim">

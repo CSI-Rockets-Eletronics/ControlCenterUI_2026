@@ -265,6 +265,10 @@ const allClosed = (): Relays =>
   Object.fromEntries(RELAYS.map((r) => [r, false])) as Relays;
 
 /** Per-environment simulated hardware. */
+/** Cap-fill probe (pF). Empty value from firmware kMinCapacitance; span is a guess. */
+const CAP_EMPTY_PF = 259.074219;
+const CAP_SPAN_PF = 120;
+
 class Station {
   bootMs = Date.now();
   state: FsState = "STANDBY";
@@ -286,6 +290,7 @@ class Station {
   copv = 3800;
   oxtank = 0;
   lox = 1; // fraction of LOX load remaining (tank assumed filled at boot)
+  capMaxPf = CAP_EMPTY_PF; // running max, like firmware max_capacitance_pf
   pilot = 0;
   qd = 0;
   injector = 0;
@@ -639,12 +644,22 @@ class Station {
       },
     });
 
+    // Firmware: empty tank reads ~259 pF; percent is scaled against the
+    // highest capacitance seen since boot (CapacitanceToHeightPercent).
+    const capPf = n(CAP_EMPTY_PF + CAP_SPAN_PF * this.lox, 0.4);
+    this.capMaxPf = Math.max(this.capMaxPf, capPf);
+    const capRange = this.capMaxPf - CAP_EMPTY_PF;
+    const capPct =
+      capRange === 0 ? 0 : ((capPf - CAP_EMPTY_PF) / capRange) * 100;
+
     push(records, env, "CapFill", {
       ts,
       data: {
-        ts: Date.now(), // cap_fill_actual = LOX tank level in % (UI: "Cap Fill Height")
-        cap_fill_base: 100,
-        cap_fill_actual: Math.max(0, n(this.lox * 100, 0.3)),
+        ts: Date.now(),
+        // Same fields as firmware dev_cap_fill.h (names are misleading):
+        // cap_fill_actual = probe capacitance (pF), cap_fill_base = height (%).
+        cap_fill_base: capPct,
+        cap_fill_actual: capPf,
         board_temp: n(30, 0.2),
       },
     });

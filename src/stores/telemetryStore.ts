@@ -80,12 +80,14 @@ export const SIGNAL_METADATA: Record<
     color: "#ffbe0b",
   },
 
-  cap_fill_actual: {
+  // Firmware (dev_cap_fill.h): cap_fill_base = fill height in %,
+  // cap_fill_actual = probe capacitance in pF. The names are misleading.
+  cap_fill_base: {
     label: "Cap Fill Height",
     unit: "%",
     color: "#38bdf8",
   },
-  cap_fill_base: {
+  cap_fill_actual: {
     label: "Cap Fill Capacitance",
     unit: "pF",
     color: "#94a3b8",

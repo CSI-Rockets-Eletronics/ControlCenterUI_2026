@@ -96,25 +96,29 @@ values for them, so they look live in simulation.
 - **Simulator honesty.** Have the sim send 0 / NaN for these too, so
   simulation matches hardware.
 
-### 4. "LOX level" shows 140%
+### 4. LOX level: field mix-up fixed; firmware calibration still open
 
-The P&ID and Readings table show `cap_fill_actual` as a percent, but the raw
-value is not a percentage (the simulator sends ~140). Confirm the cap-fill
-sensor's units and calibration, then convert to percent full.
+**Fixed (UI + sim):** firmware `dev_cap_fill.h` sends `cap_fill_base` =
+fill height (%) and `cap_fill_actual` = probe capacitance (pF). The UI had
+them swapped, so on hardware the LOX level would have shown the raw pF value
+(~259+ at empty) as a percent. The UI now reads `cap_fill_base` as the
+level, the P&ID clamps it to 0–100, and the simulator sends the same shape
+as firmware. (The 140% came from the old simulator's values.)
+
+**Still open (firmware):** `CapacitanceToHeightPercent` scales against the
+highest capacitance seen since boot, not a fixed "full" value. So right
+after boot any reading at or above empty shows ~100%, a partly filled tank
+reads 100% until it's topped up, and readings below empty go negative.
 
 **Options**
 
-- ★ **Two-point calibration.** Record `cap_fill_actual` with the tank empty
-  and full (or use `cap_fill_base` as the empty reference). Then
-  `percent = clamp((actual - empty) / (full - empty) * 100, 0, 100)`.
-  Put `EMPTY`/`FULL` in one config file next to the signal list.
-- **Show raw until calibrated.** Label the value "cap fill (raw)" instead
-  of "%" and drop the tank fill animation until calibration exists. Honest,
-  costs nothing.
-- **Calibrate in firmware.** Firmware sends percent directly; UI only
-  displays. Better if several clients read it.
-- **Recalibrate button.** The gear menu "Recalibrate all" could capture the
-  current reading as "empty" for this sensor (needs firmware support).
+- ★ **Fixed two-point calibration.** Measure the probe empty and full once,
+  hard-code `kMinCapacitance` / `kMaxCapacitance`, and clamp 0–100 in
+  firmware.
+- **Calibrate from the UI.** "Recalibrate all" captures the current reading
+  as empty (or full) and stores it on the board.
+- **Show pF until calibrated.** Have the P&ID show capacitance instead of a
+  percent until real calibration numbers exist.
 
 ### 5. Pi script command numbers not checked
 

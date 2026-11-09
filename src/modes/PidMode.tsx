@@ -16,7 +16,7 @@ import { type SignalType, useTelemetryStore } from "@/stores/telemetryStore";
 /**
  * Live P&ID, redrawn from public/Fluids 25-26 P&ID-Main.png.
  * Focus for now: tank contents.
- *   - LOX tank: liquid level from the capacitive fill sensor (cap_fill_actual, %)
+ *   - LOX tank: liquid level from the capacitive fill sensor (cap_fill_base, %; firmware does not clamp)
  *   - COPV: gas, so its volume is fixed; fill shows pressure as % of 4500 psi rating
  *   - GN2 supply bottle (GSE): no sensor, drawn without a level
  */
@@ -564,9 +564,11 @@ export const PidMode = memo(function PidMode() {
   const hoverCtx = useMemo(() => ({ hover, setHover }), [hover]);
   const copv = avg(useLatest("copv_1_psi"), useLatest("copv_2_psi"));
   const oxtank = avg(useLatest("oxtank_1_psi"), useLatest("oxtank_2_psi"));
-  const loxLevel = useLatest("cap_fill_actual");
+  const loxRaw = useLatest("cap_fill_base");
+  // firmware percent is unclamped (negative below empty, >100 is possible)
+  const loxLevel = loxRaw === null ? null : Math.min(100, Math.max(0, loxRaw));
   const pilot = useLatest("pilot_pres_psi");
-  const loxTrend = useTrend("cap_fill_actual", 0.8);
+  const loxTrend = useTrend("cap_fill_base", 0.8);
   const copvTrend = useTrend("copv_1_psi", 15);
   const qd = useLatest("qd_pres_psi");
   const copv1 = useLatest("copv_1_psi");
