@@ -420,9 +420,7 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
           <div
             title={effectiveServer(serverParam)}
             className={`inline-flex items-center h-10 px-4 text-sm font-semibold rounded-md whitespace-nowrap ${
-              simOn
-                ? "bg-blue-bg text-blue-text"
-                : "bg-red-bg text-red-text border border-red-border"
+              simOn ? "bg-blue-bg text-blue-text" : "bg-red-bg text-red-text"
             }`}
           >
             {simOn ? "SIMULATION" : "LIVE HARDWARE"}
