@@ -175,7 +175,10 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
   const [healthOpen, setHealthOpen] = useState(false);
   const [utilsOpen, setUtilsOpen] = useState(false);
 
-  const openHealth = useCallback(() => setHealthOpen(true), []);
+  const openHealth = useCallback(() => {
+    setUtilsOpen(false);
+    setHealthOpen(true);
+  }, []);
   const closeHealth = useCallback(() => setHealthOpen(false), []);
   const toggleUtils = useCallback(() => setUtilsOpen((prev) => !prev), []);
   const closeUtils = useCallback(() => setUtilsOpen(false), []);
