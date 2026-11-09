@@ -4,7 +4,8 @@ Open items found while building the simulator and the UI redesign
 (branch `ui/sim-and-redesign`). None of these are fixed yet. Items marked
 **firmware** live in `avionics-software-2026-2027`.
 
-Last updated: 2026-11-08.
+Last updated: 2026-11-09. Each item now has an **Options** list:
+brainstormed fixes, not decisions. A ★ marks the suggested starting point.
 
 ## Safety
 
@@ -23,6 +24,23 @@ relay control and then presses ABORT, the fill valve stays open.
 - Found by reading the code; not reproduced on hardware. The simulator copies
   the same logic.
 
+**Options**
+
+- ★ **Firmware: clear overrides on ABORT.** In `UpdateRelayStates`, zero the
+  four override flags when entering ABORT (one line per flag, or a
+  `ClearManualOverrides()` helper). ABORT is a "make safe" command, so it
+  should win over everything. Mirror it in `sim/fake-firing-station.ts`.
+- **Also clear on STANDBY / IDLE.** Stricter: any named state resets manual
+  overrides; only `STATE_CUSTOM` sets them. Needs avionics sign-off, since an
+  operator might rely on a valve staying open across a state change.
+- **UI guard (no firmware change).** Show a red "Manual override active:
+  GN2 Fill" banner in Firing control whenever an override is set, and make
+  the UI send a `STATE_CUSTOM` with all overrides off right before ABORT.
+  Fragile: two commands, and the second can be lost.
+- **Expose override state in telemetry.** Add the four flags to the
+  `fsState` record so the UI shows true override state instead of
+  inferring it. Useful with any of the above.
+
 ### 2. The UI defaults to the live firing-station server
 
 `DEFAULT_SERVER` in `src/lib/serverSchemas.ts` is the real Pi (ngrok).
@@ -30,6 +48,20 @@ Opening the UI without `?server=` talks to hardware. The SIMULATION /
 LIVE HARDWARE badge makes this visible, but local development could
 default to the simulator (for example, use `http://localhost:3000` when
 `import.meta.env.DEV`) so live hardware is always an explicit choice.
+
+**Options**
+
+- ★ **Dev defaults to the simulator.** In `src/lib/serverSchemas.ts`:
+  `DEFAULT_SERVER = import.meta.env.DEV ? "http://localhost:3000" : <ngrok>`.
+  Production builds on the Pi are unchanged; `bun dev` never touches
+  hardware by accident.
+- **Env var.** `VITE_DEFAULT_SERVER` in `.env` / `.env.local`, falling back
+  to the simulator. Lets each machine pick without code changes.
+- **Make the start page ask.** The Environment key screen gets a
+  "Simulator / Live hardware" choice (no default), and the ngrok URL moves
+  behind "Live hardware".
+- **Confirm on first live connect.** Reuse `ConfirmLiveDialog` the first time
+  a session connects to a non-localhost server.
 
 ### Done: Command center FIRE skipped arming
 
@@ -49,11 +81,40 @@ values for them, so they look live in simulation.
 - Either re-enable them in firmware (confirm which physical PTs they are), or
   label them "sensor disabled" in the UI.
 
+**Options**
+
+- ★ **UI: mark them disabled now.** Add a `DISABLED_SIGNALS` set
+  (`pilot_pres`, `qd_pres`) in one place. Readings/P&ID show "—" with a
+  "sensor disabled" tooltip, and plots/cards skip them. Remove an entry once
+  firmware sends real data.
+- **Firmware: re-enable.** Confirm wiring and ADC channels with avionics,
+  uncomment the `pilot_pres` read, and replace the `qd_pres = 0.0f`
+  placeholder with the real channel.
+- **Firmware sends NaN / a validity bit.** Disabled sensors send `NaN` (or a
+  `valid` mask), and the UI greys out anything not valid. More general;
+  needs a schema change.
+- **Simulator honesty.** Have the sim send 0 / NaN for these too, so
+  simulation matches hardware.
+
 ### 4. "LOX level" shows 140%
 
 The P&ID and Readings table show `cap_fill_actual` as a percent, but the raw
 value is not a percentage (the simulator sends ~140). Confirm the cap-fill
 sensor's units and calibration, then convert to percent full.
+
+**Options**
+
+- ★ **Two-point calibration.** Record `cap_fill_actual` with the tank empty
+  and full (or use `cap_fill_base` as the empty reference). Then
+  `percent = clamp((actual - empty) / (full - empty) * 100, 0, 100)`.
+  Put `EMPTY`/`FULL` in one config file next to the signal list.
+- **Show raw until calibrated.** Label the value "cap fill (raw)" instead
+  of "%" and drop the tank fill animation until calibration exists. Honest,
+  costs nothing.
+- **Calibrate in firmware.** Firmware sends percent directly; UI only
+  displays. Better if several clients read it.
+- **Recalibrate button.** The gear menu "Recalibrate all" could capture the
+  current reading as "empty" for this sensor (needs firmware support).
 
 ### 5. Pi script command numbers not checked
 
@@ -65,6 +126,21 @@ reviewed; that repo was not on this machine.
 Also: `STATE_FIRE_MANUAL_DOME_PILOT_OPEN` is still in the UI's command list
 (`fsCommandSchema`) but has no firmware number.
 
+**Options**
+
+- ★ **Single source of truth.** Generate a `commands.json`
+  (`{ name: number }`) from `enum class FsCommand` in `packets.h` with a
+  small script, and have both `main_fs_pi.py` and the UI's
+  `fsCommandSchema` read it. A mismatch becomes impossible, not just
+  unlikely.
+- **CI check.** Cheaper: a script (like the one used for
+  `test_send_command.py`) that parses `packets.h` and `main_fs_pi.py` and
+  fails if names or numbers differ. Run it in each repo's CI.
+- **Drop the stale command.** Remove `STATE_FIRE_MANUAL_DOME_PILOT_OPEN` /
+  `_CLOSE` from `fsCommandSchema` and its uses
+  (`src/modes/ManualControlPanel.tsx`, `src/components/StandbyStateSelection.tsx`),
+  or add it to firmware if it's still wanted.
+
 ## Testing / shipping
 
 ### 6. Bench-test `test_send_command.py` (firmware)
@@ -73,20 +149,53 @@ Command numbers and baud rate were fixed (branch
 `fix/test-command-numbers`) and checked against `packets.h` with a script,
 but not run against an ESP32 (pyserial was not installed).
 
+**Options**
+
+- ★ **Bench run checklist.** `pip install pyserial`, flash a board, send
+  each command once with relays disconnected (or LEDs on the outputs),
+  confirm the state in the serial log. Record results in the PR.
+- **Dry-run mode.** Add `--dry-run` to `test_send_command.py` that prints
+  the bytes instead of sending, so packet framing can be checked without
+  hardware.
+- **Point it at the simulator.** Give the sim a serial-like TCP port so the
+  same script can drive it. More work; mostly useful for CI.
+
 ### 7. Review the UI against the simulator, then push
 
 Have a teammate run `bun run sim` + `bun dev`, try the FIRE walkthrough in
 `sim/README.md`, then push `ui/sim-and-redesign` and
 `fix/test-command-numbers` and open PRs.
 
+Status: both branches pushed, draft PRs open (avionics #1, UI #2).
+
+**Options**
+
+- ★ **Teammate walkthrough.** One teammate runs `bun run sim` + `bun dev`,
+  follows the FIRE walkthrough in `sim/README.md`, and leaves PR comments.
+  Then mark both PRs ready.
+- **Split PR #2.** It is large. Possible split: (a) simulator + live-status
+  fixes, (b) redesign. Smaller reviews, but more rebasing.
+- **Record a demo.** A 2-minute screen recording of the walkthrough attached
+  to the PR lets reviewers skip local setup.
+
 ## Smaller notes
 
 - Small windows (about 1024×768): the top row leaves little room, so the Live
   telemetry charts get short. Shorter relay/firing buttons would help.
+  - Options: a `min-h` on the telemetry row with page scroll below ~800px
+    tall; or a compact density (smaller buttons/padding) under a
+    `max-height` media query; or collapse Manual relay control into the gear
+    menu on small screens.
 - `src/components/` still contains the previous UI (`controlCenter.tsx`,
   `launchCommandCenter.tsx`, `cautionPanel.tsx`, ...). No route renders it,
   but it still has FIRE buttons. Consider deleting it so it can't be wired
   back in by accident.
+  - Options: ★ delete `src/components/` files no route imports (check with
+    `bunx knip` or a grep for imports first); or move them to `legacy/`
+    excluded from the build; or at minimum remove the FIRE buttons there.
 - The E-Reg "Stage 1 / Stage 2" descriptions in the old view ("Slow fill to
   450 PSI", "PID-controlled, launch") don't match the firmware, where both
   stages target 450 psi. Confirm with the avionics team.
+  - Options: change the text to match firmware (both stages → 450 psi); or
+    remove the descriptions; or, if the firmware is what's wrong, fix the
+    stage-1 setpoint there.
