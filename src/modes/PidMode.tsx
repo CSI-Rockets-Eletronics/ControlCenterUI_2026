@@ -712,6 +712,34 @@ export const PidMode = memo(function PidMode() {
               <Line d="M300 600 H460 V560 H780 V422" />
               {/* LOX line -> GSE LOX */}
 
+              {/* gauge connectors: drawn with the pipes, under every symbol, so an
+                  enlarged tank or gauge covers them instead of being crossed */}
+              <line
+                x1="360"
+                y1="150"
+                x2="480"
+                y2="150"
+                className="stroke-gray-text"
+                strokeWidth="2"
+              />
+              <line
+                x1="360"
+                y1="480"
+                x2="480"
+                y2="480"
+                className="stroke-gray-text"
+                strokeWidth="2"
+              />
+              <line
+                x1="100"
+                y1="250"
+                x2="140"
+                y2="250"
+                className="stroke-gray-text"
+                strokeWidth="2"
+              />
+              {/* Sensors */}
+
               {/* Tanks */}
               <Hl id="tank-copv">
                 <Tank
@@ -853,32 +881,6 @@ export const PidMode = memo(function PidMode() {
                 />
               </Hl>
 
-              {/* gauge connectors first, so (enlarged) gauges cover them */}
-              <line
-                x1="360"
-                y1="150"
-                x2="480"
-                y2="150"
-                className="stroke-gray-text"
-                strokeWidth="2"
-              />
-              <line
-                x1="360"
-                y1="480"
-                x2="480"
-                y2="480"
-                className="stroke-gray-text"
-                strokeWidth="2"
-              />
-              <line
-                x1="100"
-                y1="250"
-                x2="140"
-                y2="250"
-                className="stroke-gray-text"
-                strokeWidth="2"
-              />
-              {/* Sensors */}
               {/* two transducers each: COPV 1/2 and Oxtank 1/2 */}
               <Hl id="gauge-copv1">
                 <Gauge x={430} y={150} label="COPV 1" value={copv1} />
