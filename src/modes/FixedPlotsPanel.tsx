@@ -1,4 +1,11 @@
-import { memo, useMemo } from "react";
+import {
+  createContext,
+  memo,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   Legend,
   Line,
@@ -17,6 +24,58 @@ import {
 } from "@/stores/telemetryStore";
 
 import { PulseFill } from "./PulseFill";
+
+/** Set by the panel: expand (in the grid) or close (in the popup). */
+const PlotFrameCtx = createContext<{
+  onExpand?: () => void;
+  onClose?: () => void;
+}>({});
+
+const ICON_PROPS = {
+  width: 14,
+  height: 14,
+  viewBox: "0 0 14 14",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.6,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+};
+
+function PlotHeader({ title, unit }: { title: string; unit: string }) {
+  const { onExpand, onClose } = useContext(PlotFrameCtx);
+  const action = onClose ?? onExpand;
+  return (
+    <div className="flex items-center justify-between mb-2">
+      <h3 className="font-medium text-[16px] tracking-[-0.01em] text-gray-text">
+        {title}
+      </h3>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-gray-text-dim">{unit}</span>
+        {action && (
+          <button
+            type="button"
+            onClick={action}
+            aria-label={onClose ? `Close ${title}` : `Expand ${title}`}
+            title={onClose ? "Close (Esc)" : "Expand"}
+            className="inline-flex items-center justify-center w-6 h-6 -my-1 rounded-md text-gray-text-dim hover:bg-gray-el-bg hover:text-gray-text"
+          >
+            {onClose ? (
+              <svg {...ICON_PROPS}>
+                <path d="M3.5 3.5l7 7M10.5 3.5l-7 7" />
+              </svg>
+            ) : (
+              <svg {...ICON_PROPS}>
+                <path d="M8.5 2.5h3v3M11.5 2.5 8 6M5.5 11.5h-3v-3M2.5 11.5 6 8" />
+              </svg>
+            )}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const SECONDARY_DASH = "6 3";
 const FILL_LEVEL_DOMAIN: [number, number] = [0, 100];
@@ -76,9 +135,13 @@ const TOOLTIP_CONTENT_STYLE = {
 
 const LEGEND_WRAPPER_STYLE = { fontSize: "10px" } as const;
 
-const fillLevelTooltipFormatter = (value: number) => `${value.toFixed(1)} %`;
+/** toFixed without "-0" for small negatives around zero. */
+const fix = (v: number, digits: number) =>
+  v.toFixed(digits).replace(/^-(0(\.0+)?)$/, "$1");
 
-const capBaseTooltipFormatter = (value: number) => `${value.toFixed(3)} pF`;
+const fillLevelTooltipFormatter = (value: number) => `${fix(value, 1)} %`;
+
+const capBaseTooltipFormatter = (value: number) => `${fix(value, 3)} pF`;
 
 type PressureConfig = typeof COPV_CONFIG | typeof OXTANK_CONFIG;
 
@@ -136,12 +199,7 @@ const PressurePlot = memo(function PressurePlot({
 
   return (
     <div className="flex flex-col h-full min-h-0 p-3 ui-card">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-medium text-[16px] tracking-[-0.01em] text-gray-text">
-          {config.title}
-        </h3>
-        <span className="text-xs text-gray-text-dim">{config.unit}</span>
-      </div>
+      <PlotHeader title={config.title} unit={config.unit} />
 
       {!hasData && (
         <div
@@ -238,14 +296,14 @@ const PressurePlot = memo(function PressurePlot({
                       </span>
                     </div>
                     <span
-                      className="font-mono font-semibold tabular-nums"
+                      className="font-normal tabular-nums"
                       style={{
                         fontSize: "2.25rem",
                         lineHeight: 1.1,
                         color: accentColor,
                       }}
                     >
-                      {val !== null ? val.toFixed(0) : "--"}
+                      {val !== null ? fix(val, 0) : "--"}
                     </span>
                     <span className="text-xs text-gray-text-dim">PSI</span>
                   </div>
@@ -310,12 +368,7 @@ const MultiSignalPlot = memo(function MultiSignalPlot({
 
   return (
     <div className="flex flex-col h-full min-h-0 p-3 ui-card">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-medium text-[16px] tracking-[-0.01em] text-gray-text">
-          {config.title}
-        </h3>
-        <span className="text-xs text-gray-text-dim">{config.unit}</span>
-      </div>
+      <PlotHeader title={config.title} unit={config.unit} />
 
       {!hasData && (
         <div
@@ -386,9 +439,9 @@ const MultiSignalPlot = memo(function MultiSignalPlot({
                       {SIGNAL_METADATA[signal].label}:
                     </span>
                   )}
-                  <span className="font-mono text-sm font-semibold text-gray-text tabular-nums">
+                  <span className="text-sm font-normal text-gray-text tabular-nums">
                     {latestValue !== null && latestValue !== undefined
-                      ? latestValue.toFixed(1)
+                      ? fix(latestValue, 1)
                       : "--"}
                   </span>
                   {compactFooter ? null : (
@@ -433,12 +486,7 @@ const FillLevelPlot = memo(function FillLevelPlot() {
 
   return (
     <div className="flex flex-col h-full min-h-0 p-3 ui-card">
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-medium text-[16px] tracking-[-0.01em] text-gray-text">
-          Cap Fill Height
-        </span>
-        <span className="text-xs text-gray-text-dim">%</span>
-      </div>
+      <PlotHeader title={"Cap Fill Height"} unit={"%"} />
 
       {!hasData && (
         <div
@@ -496,8 +544,8 @@ const FillLevelPlot = memo(function FillLevelPlot() {
               <span className="text-xs text-gray-text-dim">
                 Cap fill height:
               </span>
-              <span className="font-mono text-sm font-semibold text-gray-text tabular-nums">
-                {latestValue !== null ? latestValue.toFixed(1) : "--"}
+              <span className="text-sm font-normal text-gray-text tabular-nums">
+                {latestValue !== null ? fix(latestValue, 1) : "--"}
               </span>
               <span className="text-xs text-gray-text-dim">%</span>
             </div>
@@ -536,12 +584,7 @@ const CapBasePlot = memo(function CapBasePlot() {
 
   return (
     <div className="flex flex-col h-full min-h-0 p-3 ui-card">
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-medium text-[16px] tracking-[-0.01em] text-gray-text">
-          Cap Fill Capacitance
-        </span>
-        <span className="text-xs text-gray-text-dim">pF</span>
-      </div>
+      <PlotHeader title={"Cap Fill Capacitance"} unit={"pF"} />
 
       {!hasData && (
         <div
@@ -599,8 +642,8 @@ const CapBasePlot = memo(function CapBasePlot() {
               <span className="text-xs text-gray-text-dim">
                 Cap Fill Capacitance:
               </span>
-              <span className="font-mono text-sm font-semibold text-gray-text tabular-nums">
-                {latestValue !== null ? latestValue.toFixed(3) : "--"}
+              <span className="text-sm font-normal text-gray-text tabular-nums">
+                {latestValue !== null ? fix(latestValue, 3) : "--"}
               </span>
               <span className="text-xs text-gray-text-dim">pF</span>
             </div>
@@ -611,7 +654,35 @@ const CapBasePlot = memo(function CapBasePlot() {
   );
 });
 
+const PLOTS = [
+  () => <PressurePlot config={COPV_CONFIG} />,
+  () => <PressurePlot config={OXTANK_CONFIG} />,
+  () => <MultiSignalPlot config={MULTI_SIGNAL_CONFIGS[0]} />,
+  () => <MultiSignalPlot config={MULTI_SIGNAL_CONFIGS[1]} />,
+  () => <FillLevelPlot />,
+  () => <CapBasePlot />,
+];
+
+const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
+
 export const FixedPlotsPanel = memo(function FixedPlotsPanel() {
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const expandCtx = useMemo(
+    () => PLOTS.map((_, i) => ({ onExpand: () => setExpanded(i) })),
+    [],
+  );
+  const closeCtx = useMemo(() => ({ onClose: () => setExpanded(null) }), []);
+
+  // Esc closes the popup
+  useEffect(() => {
+    if (expanded === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setExpanded(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [expanded]);
+
   return (
     <div className="flex flex-col h-full ui-section">
       <div className="flex items-center justify-between px-4 pt-4 pb-3 gap-4">
@@ -622,14 +693,31 @@ export const FixedPlotsPanel = memo(function FixedPlotsPanel() {
       <div className="px-4 pb-4 overflow-hidden" style={FILL_HEIGHT}>
         {/* three charts per row */}
         <div className="h-full grid grid-cols-3 grid-rows-2 gap-2">
-          <PressurePlot config={COPV_CONFIG} />
-          <PressurePlot config={OXTANK_CONFIG} />
-          <MultiSignalPlot config={MULTI_SIGNAL_CONFIGS[0]} />
-          <MultiSignalPlot config={MULTI_SIGNAL_CONFIGS[1]} />
-          <FillLevelPlot />
-          <CapBasePlot />
+          {PLOTS.map((Plot, i) => (
+            <PlotFrameCtx.Provider key={i} value={expandCtx[i]}>
+              <Plot />
+            </PlotFrameCtx.Provider>
+          ))}
         </div>
       </div>
+
+      {expanded !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/50"
+          onMouseDown={closeCtx.onClose}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            onMouseDown={stopPropagation}
+            className="w-full p-2 rounded-lg max-w-[1400px] h-[80vh] ui-section"
+          >
+            <PlotFrameCtx.Provider value={closeCtx}>
+              {PLOTS[expanded]()}
+            </PlotFrameCtx.Provider>
+          </div>
+        </div>
+      )}
     </div>
   );
 });

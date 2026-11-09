@@ -153,7 +153,7 @@ function Tank({
           textAnchor="middle"
           className={
             i === 0
-              ? `${onColor ? "" : "fill-gray-text"} font-bold ${narrow ? "text-[13px]" : "text-[18px]"}`
+              ? `${onColor ? "" : "fill-gray-text"} font-normal ${narrow ? "text-[13px]" : "text-[18px]"}`
               : `${onColor ? "" : "fill-gray-text-dim"} text-[12px] font-medium`
           }
           fillOpacity={onColor && i > 0 ? 0.85 : undefined}
@@ -402,7 +402,7 @@ function Gauge({
         x={x}
         y={y + 12}
         textAnchor="middle"
-        className="font-bold fill-gray-text text-[13px]"
+        className="font-normal fill-gray-text text-[13px]"
         style={{ fontVariantNumeric: "tabular-nums" }}
       >
         {fmt(value)}
@@ -501,7 +501,7 @@ function Row({
       className="flex items-center justify-between flex-1 px-2 py-2 -mx-2 rounded-md hover:bg-gray-el-bg-hover"
     >
       <span className="text-sm text-gray-text-dim">{label}</span>
-      <span className="text-sm font-semibold tabular-nums text-gray-text">
+      <span className="text-sm font-normal tabular-nums text-gray-text">
         {value}
         {unit && (
           <span className="ml-1 text-xs font-normal text-gray-text-dim">

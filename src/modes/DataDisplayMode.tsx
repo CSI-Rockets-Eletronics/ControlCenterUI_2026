@@ -59,7 +59,7 @@ const SignalCard = memo(function SignalCard({
         </h3>
       </div>
 
-      <div className="font-bold leading-tight text-[clamp(22px,3.6vh,36px)] tracking-[-0.02em] tabular-nums text-gray-text">
+      <div className="font-normal leading-tight text-[clamp(22px,3.6vh,36px)] tracking-[-0.02em] tabular-nums text-gray-text">
         {fmt(latest, 2)}
         <span className="ml-1 text-sm font-normal tracking-normal text-gray-text-dim">
           {meta.unit}
@@ -141,7 +141,7 @@ const SidebarCard = memo(function SidebarCard({
           {meta.label}
         </span>
       </div>
-      <div className="mt-1 text-lg font-bold tabular-nums text-gray-text">
+      <div className="mt-1 text-lg font-normal tabular-nums text-gray-text">
         {fmt(latest, 2)}
         <span className="ml-1 text-xs font-normal text-gray-text-dim">
           {meta.unit}
@@ -189,7 +189,7 @@ const FocusMain = memo(function FocusMain({ signal }: { signal: SignalType }) {
         ].map(([label, value, digits]) => (
           <div key={label as string} className="px-4 py-3 ui-card">
             <div className="text-xs text-gray-text-dim">{label}</div>
-            <div className="text-xl font-bold tabular-nums text-gray-text">
+            <div className="text-xl font-normal tabular-nums text-gray-text">
               {fmt(value as number | null, digits as number)}
               <span className="ml-1 text-xs font-normal text-gray-text-dim">
                 {meta.unit}
