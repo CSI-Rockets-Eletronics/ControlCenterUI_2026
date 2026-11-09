@@ -29,12 +29,37 @@ export type SignalType =
   | "cap_fill_base"
   | "cap_fill_board_temp_c";
 
+/**
+ * Signal color that changes with the theme. Read at render time; charts
+ * redraw every ~200 ms, so a theme switch shows up almost immediately.
+ */
+const themed = ({ light, dark }: { light: string; dark: string }) =>
+  typeof document !== "undefined" &&
+  document.documentElement.classList.contains("dark")
+    ? dark
+    : light;
+
+// #8338ec is too dim on the dark background
+const COPV_PURPLE = { light: "#8338ec", dark: "#a970ff" };
+
 export const SIGNAL_METADATA: Record<
   SignalType,
   { label: string; unit: string; color: string }
 > = {
-  copv_1_psi: { label: "COPV 1", unit: "PSI", color: "#8338ec" },
-  copv_2_psi: { label: "COPV 2", unit: "PSI", color: "#8338ec" },
+  copv_1_psi: {
+    label: "COPV 1",
+    unit: "PSI",
+    get color() {
+      return themed(COPV_PURPLE);
+    },
+  },
+  copv_2_psi: {
+    label: "COPV 2",
+    unit: "PSI",
+    get color() {
+      return themed(COPV_PURPLE);
+    },
+  },
 
   oxtank_1_psi: { label: "Oxtank 1", unit: "PSI", color: "#00d4ff" },
   oxtank_2_psi: { label: "Oxtank 2", unit: "PSI", color: "#00d4ff" },
