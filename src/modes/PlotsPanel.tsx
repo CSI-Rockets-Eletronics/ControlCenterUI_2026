@@ -221,9 +221,13 @@ const PlotSearch = memo(function PlotSearch({
       if (!el) return;
       if (document.activeElement === el) {
         el.blur();
+        setOpen(false); // don't rely on the blur event alone
       } else {
         el.focus();
         el.select();
+        // open the full list right away so ↑/↓ + Enter work immediately
+        setActive(0);
+        setOpen(true);
       }
     };
     window.addEventListener(FOCUS_PLOT_SEARCH_EVENT, focus);
