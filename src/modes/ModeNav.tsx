@@ -182,6 +182,45 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
 
   // Option/Alt + 1/2/3 switches tabs. Match e.code (physical key): on macOS
   // Option+1 types "¡", so e.key isn't "1".
+  // Full screen (browser Fullscreen API). Synced with the browser so Esc,
+  // or exiting another way, flips the switch back.
+  const [isFullscreen, setIsFullscreen] = useState(
+    () => typeof document !== "undefined" && !!document.fullscreenElement,
+  );
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    } else {
+      void document.documentElement.requestFullscreen().catch(() => {
+        // blocked (e.g. not triggered by a user action); nothing to do
+      });
+    }
+  }, []);
+  useEffect(() => {
+    // Option+F (Alt+F): e.code, since Option+F types "ƒ" on macOS
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      if (e.code !== "KeyF") return;
+      const t = e.target as HTMLElement | null;
+      if (
+        t &&
+        (t.isContentEditable ||
+          ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))
+      ) {
+        return;
+      }
+      e.preventDefault();
+      toggleFullscreen();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [toggleFullscreen]);
+
   const navigate = useNavigate();
   useEffect(() => {
     const tabs: Record<string, string> = {
@@ -459,6 +498,31 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
                         <span
                           className={`absolute top-[3px] left-[3px] w-3.5 h-3.5 rounded bg-white ${
                             isDark ? "translate-x-4" : ""
+                          }`}
+                        />
+                      </span>
+                    </button>
+                    <button
+                      onClick={toggleFullscreen}
+                      role="switch"
+                      aria-checked={isFullscreen}
+                      title={`Shortcut: ${SHORTCUT_MOD}F · Esc to exit`}
+                      className="flex items-center justify-between px-3 py-2 text-sm font-medium text-left rounded-lg bg-gray-bg-2 hover:bg-gray-el-bg-hover text-gray-text"
+                    >
+                      <span className="flex items-center gap-2">
+                        Full screen
+                        <kbd className="font-sans text-xs leading-none text-gray-text-dim">
+                          {SHORTCUT_MOD}F
+                        </kbd>
+                      </span>
+                      <span
+                        className={`relative w-9 h-5 rounded-md ${
+                          isFullscreen ? "ui-dot-on" : "bg-gray-border-hover"
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-[3px] left-[3px] w-3.5 h-3.5 rounded bg-white ${
+                            isFullscreen ? "translate-x-4" : ""
                           }`}
                         />
                       </span>
