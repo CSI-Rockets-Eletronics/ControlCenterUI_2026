@@ -103,12 +103,8 @@ export const ControlButtons = memo(function ControlButtons() {
           color="danger"
           overrideEnabled={isEnginePrime}
         />
-        <CommandButton
-          label="FIRE"
-          command="STATE_FIRE"
-          color="warning"
-          overrideEnabled={isEnginePrime}
-        />
+        {/* No FIRE here: it skipped the Calibration/Operation/Fire arming
+            switches. FIRE lives only in Firing control, behind arming. */}
         <button
           onClick={() => setHealthOpen(true)}
           className="flex flex-col items-center justify-center p-1 border-2 border-transparent cursor-pointer rounded-card bg-gray-bg-2 text-gray-text hover:bg-gray-el-bg-hover transition-all"
