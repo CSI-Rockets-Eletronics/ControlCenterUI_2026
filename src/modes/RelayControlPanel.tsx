@@ -74,7 +74,9 @@ const StateButton = memo(function StateButton({
             : "cursor-pointer hover:bg-gray-el-bg-hover",
       ].join(" ")}
     >
-      <div className="text-sm font-bold leading-tight text-center">{label}</div>
+      <div className="text-sm font-semibold leading-tight text-center">
+        {label}
+      </div>
     </button>
   );
 });
@@ -202,10 +204,10 @@ export const RelayControlPanel = memo(function RelayControlPanel() {
             isOn ? "ui-dot-on" : "bg-red-solid"
           }`}
         />
-        <div className="text-xs font-bold leading-tight text-center">
+        <div className="text-xs font-semibold leading-tight text-center">
           {relay.label}
         </div>
-        <div className="text-xs font-semibold opacity-70">
+        <div className="text-xs font-medium opacity-70">
           {isOn ? "OPEN" : "CLOSED"}
         </div>
       </button>
@@ -308,10 +310,10 @@ export const RelayControlPanel = memo(function RelayControlPanel() {
                         isOn ? "ui-dot-on" : "bg-red-solid"
                       }`}
                     />
-                    <div className="text-xs font-bold leading-tight text-center">
+                    <div className="text-xs font-semibold leading-tight text-center">
                       {relay.label}
                     </div>
-                    <div className="text-xs font-semibold opacity-70">
+                    <div className="text-xs font-medium opacity-70">
                       {isOn ? "OPEN" : "CLOSED"}
                     </div>
                   </button>
@@ -337,7 +339,7 @@ export const RelayControlPanel = memo(function RelayControlPanel() {
                   : "cursor-pointer hover:bg-gray-el-bg-hover",
               ].join(" ")}
             >
-              <div className="text-sm font-bold leading-tight text-center">
+              <div className="text-sm font-semibold leading-tight text-center">
                 Engine Prime
               </div>
             </button>
@@ -353,7 +355,7 @@ export const RelayControlPanel = memo(function RelayControlPanel() {
                   : "cursor-pointer hover:bg-gray-el-bg-hover",
               ].join(" ")}
             >
-              <div className="text-sm font-bold leading-tight text-center">
+              <div className="text-sm font-semibold leading-tight text-center">
                 Fire
               </div>
             </button>
@@ -369,7 +371,7 @@ export const RelayControlPanel = memo(function RelayControlPanel() {
                   : "cursor-pointer hover:bg-gray-el-bg-hover",
               ].join(" ")}
             >
-              <div className="text-sm font-bold leading-tight text-center">
+              <div className="text-sm font-semibold leading-tight text-center">
                 Abort
               </div>
             </button>

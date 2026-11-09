@@ -62,7 +62,7 @@ const PulseButton = memo(function PulseButton({
       onClick={handleClick}
       disabled={isPending}
       className={[
-        "min-w-[72px] px-5 py-2 rounded-lg border-2 transition-all text-base font-bold whitespace-nowrap",
+        "min-w-[72px] px-5 py-2 rounded-lg border-2 transition-all text-base font-semibold whitespace-nowrap",
         isActive
           ? "ui-active"
           : isPending
