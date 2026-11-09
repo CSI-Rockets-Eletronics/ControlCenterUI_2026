@@ -13,6 +13,16 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: releaseTag,
       emptyOutDir: true,
+      rollupOptions: {
+        output: {
+          // Split large third-party libraries into separate cacheable chunks.
+          manualChunks: {
+            react: ["react", "react-dom", "react-router-dom"],
+            charts: ["recharts"],
+            state: ["xstate", "@xstate/react", "zustand", "zod"],
+          },
+        },
+      },
     },
     base: basePath,
   };
