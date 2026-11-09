@@ -477,7 +477,7 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
         <div className="flex items-center gap-2">
           <Link
             to={`/${environmentKey}/control${location.search}`}
-            className={`inline-flex items-center px-6 py-2 rounded-lg font-semibold whitespace-nowrap transition-all ${
+            className={`inline-flex items-center px-6 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
               isControl
                 ? "ui-selected "
                 : "bg-gray-el-bg text-gray-text hover:bg-gray-el-bg-hover"
@@ -491,7 +491,7 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
           </Link>
           <Link
             to={`/${environmentKey}/pid${location.search}`}
-            className={`inline-flex items-center px-6 py-2 rounded-lg font-semibold whitespace-nowrap transition-all ${
+            className={`inline-flex items-center px-6 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
               isPid
                 ? "ui-selected "
                 : "bg-gray-el-bg text-gray-text hover:bg-gray-el-bg-hover"
@@ -505,7 +505,7 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
           </Link>
           <Link
             to={`/${environmentKey}/data${location.search}`}
-            className={`inline-flex items-center px-6 py-2 rounded-lg font-semibold whitespace-nowrap transition-all ${
+            className={`inline-flex items-center px-6 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
               isData
                 ? "ui-selected "
                 : "bg-gray-el-bg text-gray-text hover:bg-gray-el-bg-hover"
