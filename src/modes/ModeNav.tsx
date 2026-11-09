@@ -401,7 +401,7 @@ export const ModeNav = memo(function ModeNav({ currentPath }: Props) {
             {/* 40px tile, same height and rounding as the header pills; black/white
                 (inverted in dark mode) with the logo in the opposite color */}
             <span className="inline-flex items-center justify-center w-10 h-10 rounded-md shrink-0 ui-selected">
-              <span aria-hidden className="w-7 h-7" style={LOGO_STYLE} />
+              <span aria-hidden className="w-8 h-8" style={LOGO_STYLE} />
             </span>
             Rocket Control Center
           </Link>
