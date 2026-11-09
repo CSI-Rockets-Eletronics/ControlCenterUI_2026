@@ -41,6 +41,9 @@ const themed = ({ light, dark }: { light: string; dark: string }) =>
 
 // #8338ec is too dim on the dark background
 const COPV_PURPLE = { light: "#8338ec", dark: "#a970ff" };
+// dark: Ramp-style yellow nudged slightly green; too pale on white, so
+// light mode keeps the cyan
+const OXTANK_COLOR = { light: "#00d4ff", dark: "#dcf25a" };
 
 export const SIGNAL_METADATA: Record<
   SignalType,
@@ -61,8 +64,20 @@ export const SIGNAL_METADATA: Record<
     },
   },
 
-  oxtank_1_psi: { label: "Oxtank 1", unit: "PSI", color: "#00d4ff" },
-  oxtank_2_psi: { label: "Oxtank 2", unit: "PSI", color: "#00d4ff" },
+  oxtank_1_psi: {
+    label: "Oxtank 1",
+    unit: "PSI",
+    get color() {
+      return themed(OXTANK_COLOR);
+    },
+  },
+  oxtank_2_psi: {
+    label: "Oxtank 2",
+    unit: "PSI",
+    get color() {
+      return themed(OXTANK_COLOR);
+    },
+  },
 
   pilot_pres_psi: { label: "Pilot Pressure", unit: "PSI", color: "#7209b7" },
   qd_pres_psi: { label: "QD Pressure", unit: "PSI", color: "#560bad" },
