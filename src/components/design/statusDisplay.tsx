@@ -28,7 +28,7 @@ export const StatusDisplay = memo(function StatusDisplay({
   const blockClick = disabled || !onClick;
 
   return (
-    <div className="flex flex-col px-4 py-3 border rounded-lg gap-4 text-gray-text bg-gray-bg-2 border-gray-border">
+    <div className="flex flex-col px-4 py-3 rounded-lg gap-4 text-gray-text bg-gray-bg-2">
       <div className="flex items-center gap-6">
         <p className="text-gray-text">{label}</p>
         <button

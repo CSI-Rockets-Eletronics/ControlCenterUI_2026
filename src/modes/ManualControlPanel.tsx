@@ -41,21 +41,21 @@ const CommandButton = memo(function CommandButton({
 
   const colors = {
     primary: {
-      base: "bg-blue-solid hover:bg-blue-solid-hover text-white shadow-lg",
+      base: "bg-blue-solid hover:bg-blue-solid-hover text-white ",
       disabled: "bg-gray-el-bg text-gray-text-dim cursor-not-allowed",
-      active: "bg-green-solid text-white shadow-lg ring-2 ring-green-border",
+      active: "bg-green-solid text-white ring-2 ring-green-border",
       pending: "bg-blue-solid-hover text-white animate-pulse",
     },
     danger: {
-      base: "bg-red-solid hover:bg-red-solid-hover text-white shadow-lg",
+      base: "bg-red-solid hover:bg-red-solid-hover text-white ",
       disabled: "bg-gray-el-bg text-gray-text-dim cursor-not-allowed",
-      active: "bg-red-solid text-white shadow-lg ring-2 ring-red-border",
+      active: "bg-red-solid text-white ring-2 ring-red-border",
       pending: "bg-red-solid-hover text-white animate-pulse",
     },
     warning: {
-      base: "bg-yellow-solid hover:bg-yellow-solid-hover text-white shadow-lg",
+      base: "bg-yellow-solid hover:bg-yellow-solid-hover text-white ",
       disabled: "bg-gray-el-bg text-gray-text-dim cursor-not-allowed",
-      active: "bg-yellow-solid text-white shadow-lg ring-2 ring-yellow-border",
+      active: "bg-yellow-solid text-white ring-2 ring-yellow-border",
       pending: "bg-yellow-solid-hover text-white animate-pulse",
     },
   };
@@ -81,7 +81,7 @@ const CommandButton = memo(function CommandButton({
 
 export const ManualControlPanel = memo(function ManualControlPanel() {
   return (
-    <div className="flex flex-col p-6 border bg-gray-el-bg rounded-xl border-gray-border">
+    <div className="flex flex-col p-6 ui-section">
       <p className="mb-1 text-lg font-bold text-gray-text">
         Manual fire control
       </p>

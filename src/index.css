@@ -2,12 +2,196 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+/* BDO Grotesk variable font (public/fonts). One file covers weights 300-900
+   (Light through Black). Static .otf/.ttf per weight are kept alongside. */
+@font-face {
+  font-family: "bdoGrotesk";
+  src:
+    url("/fonts/BDOGrotesk-VF.ttf") format("truetype-variations"),
+    url("/fonts/BDOGrotesk-VF.ttf") format("truetype");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+html {
+  font-family:
+    bdoGrotesk, "bdoGrotesk Fallback", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em; /* -0.64px at 32px */
+}
+
+/* Theme colors as RGB channels so Tailwind opacity modifiers keep working.
+   Light values match the original palette; html.dark swaps them. */
+:root {
+  /* Neutral surfaces sampled from the reference cards */
+  --gray-bg-1: 253 253 253; /* page #fdfdfd */
+  --gray-bg-2: 250 250 250; /* card #fafafa */
+  --gray-el-bg: 240 240 240; /* tile #f0f0f0 */
+  --gray-el-bg-hover: 232 232 232;
+  --gray-border: 219 219 219; /* card border #dbdbdb */
+  --gray-border-hover: 204 204 204;
+  --gray-solid: 138 138 138;
+  --gray-text: 20 20 20; /* #141414 */
+  --gray-text-dim: 85 85 85; /* #555 */
+  --gray-section: 243 243 243; /* section #f3f3f3 */
+  --active: 34 186 117; /* bright mint green #22ba75, white text on top */
+  --selected: 0 0 0; /* selected tab / active item: pure black */
+  --selected-text: 255 255 255;
+  --tank-fill: 0 0 0; /* P&ID tank fill: pure black */
+  --tank-text: 255 255 255;
+  --blue-bg: 231 245 255;
+  --blue-border: 116 192 252;
+  --blue-solid: 34 139 230;
+  --blue-solid-hover: 28 126 214;
+  --blue-text: 25 113 194;
+  --green-bg: 211 249 216;
+  --green-border: 140 233 154;
+  --green-solid: 55 178 77;
+  --green-solid-hover: 47 158 68;
+  --green-text: 43 138 62;
+  --red-bg: 255 224 224;
+  --red-border: 255 168 168;
+  --red-solid: 240 62 62;
+  --red-solid-hover: 224 49 49;
+  --red-text: 201 42 42;
+  --yellow-bg: 255 243 191;
+  --yellow-border: 255 212 59;
+  --yellow-solid: 250 176 5;
+  --yellow-solid-hover: 245 159 0;
+  --yellow-text: 230 119 0;
+  color-scheme: light;
+}
+
+html.dark {
+  --gray-bg-1: 17 17 17;
+  --gray-bg-2: 30 30 30; /* card */
+  --gray-el-bg: 38 38 38; /* tile */
+  --gray-el-bg-hover: 46 46 46;
+  --gray-border: 52 52 52;
+  --gray-border-hover: 66 66 66;
+  --gray-solid: 140 140 140;
+  --gray-text: 237 237 237;
+  --gray-text-dim: 163 163 163;
+  --gray-section: 24 24 24;
+  --active: 34 176 112;
+  /* inverted in dark mode so "black" selection stays visible on the dark page */
+  --selected: 255 255 255; /* pure white in dark mode */
+  --selected-text: 0 0 0;
+  --tank-fill: 255 255 255; /* pure white in dark mode */
+  --tank-text: 0 0 0;
+  --blue-bg: 27 42 58;
+  --blue-border: 28 126 214;
+  --blue-solid: 34 139 230;
+  --blue-solid-hover: 28 126 214;
+  --blue-text: 116 192 252;
+  --green-bg: 27 48 35;
+  --green-border: 47 158 68;
+  --green-solid: 47 158 68;
+  --green-solid-hover: 43 138 62;
+  --green-text: 140 233 154;
+  --red-bg: 58 29 32;
+  --red-border: 201 42 42;
+  --red-solid: 224 49 49;
+  --red-solid-hover: 201 42 42;
+  --red-text: 255 168 168;
+  --yellow-bg: 58 47 18;
+  --yellow-border: 245 159 0;
+  --yellow-solid: 245 159 0;
+  --yellow-solid-hover: 240 140 0;
+  --yellow-text: 255 212 59;
+  color-scheme: dark;
+}
+
 /* Bright white/green/red theme */
 
 @layer components {
+  /* Reference card system:
+     section = outer panel, flat #f3f3f3, near-square corners
+     card    = #fafafa with 2px #dbdbdb border
+     tile    = #f0f0f0 block inside a card */
+  .ui-section {
+    background-color: rgb(var(--gray-section));
+    border-radius: 2px;
+  }
+
+  .ui-card {
+    background-color: rgb(var(--gray-bg-2));
+    /* transparent, so size stays the same and state colors can still show */
+    border: 2px solid transparent;
+    border-radius: 12px;
+  }
+
+  .ui-tile {
+    background-color: rgb(var(--gray-el-bg));
+    border-radius: 8px;
+  }
+
+  /* Active / on state for buttons: solid black fill, white text
+     (inverted in dark mode, same as .ui-selected). Status dots on top use
+     .ui-dot-on so "open" still reads green. */
+  .ui-active {
+    background-color: rgb(var(--selected));
+    border-color: rgb(var(--selected));
+    color: rgb(var(--selected-text));
+  }
+
+  /* Hover on clickable active buttons: blend 12% toward the text color
+     (lighter black in light mode, darker white in dark mode) */
+  button.ui-active:not(:disabled):hover {
+    background-color: color-mix(
+      in srgb,
+      rgb(var(--selected)) 88%,
+      rgb(var(--selected-text))
+    );
+    border-color: color-mix(
+      in srgb,
+      rgb(var(--selected)) 88%,
+      rgb(var(--selected-text))
+    );
+  }
+
+  /* Green status dot (open valve / armed): steady, no animation */
+  .ui-dot-on {
+    background-color: #2bd67b;
+  }
+
+  /* Mint "open" pill, e.g. the P&ID valve table */
+  .ui-open {
+    background-color: rgb(var(--active));
+    color: #fff;
+  }
+
+  /* Selected tab / item: black fill, white text (inverted in dark mode) */
+  .ui-selected {
+    background-color: rgb(var(--selected));
+    border-color: rgb(var(--selected));
+    color: rgb(var(--selected-text));
+  }
+  .ui-selected .text-gray-text {
+    color: inherit;
+  }
+  .ui-selected .text-gray-text-dim {
+    color: inherit;
+    opacity: 0.7;
+  }
+
+  /* corner radius alone, for cards whose colors change with state */
+  .rounded-card {
+    border-radius: 10px;
+  }
+
+  /* Sentence-case header with tight tracking, like "Prediction markets" */
+  .ui-section-title {
+    font-size: 18px;
+    line-height: 24px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: rgb(var(--gray-text));
+  }
+
   /* Panel backgrounds */
   .panel-bg {
-    @apply bg-white border border-gray-border rounded-xl shadow-sm;
+    @apply bg-gray-bg-1 border border-gray-border rounded-xl;
   }
 
   /* Text styles */
@@ -21,15 +205,15 @@
 
   /* Buttons */
   .btn-primary {
-    @apply bg-blue-solid hover:bg-blue-solid-hover text-white rounded-lg px-6 py-2 font-semibold transition-all shadow-md;
+    @apply bg-blue-solid hover:bg-blue-solid-hover text-white rounded-lg px-6 py-2 font-semibold transition-all;
   }
 
   .btn-danger {
-    @apply bg-red-solid hover:bg-red-solid-hover text-white rounded-lg px-6 py-2 font-semibold transition-all shadow-md;
+    @apply bg-red-solid hover:bg-red-solid-hover text-white rounded-lg px-6 py-2 font-semibold transition-all;
   }
 
   .btn-success {
-    @apply bg-green-solid hover:bg-green-solid-hover text-white rounded-lg px-6 py-2 font-semibold transition-all shadow-md;
+    @apply bg-green-solid hover:bg-green-solid-hover text-white rounded-lg px-6 py-2 font-semibold transition-all;
   }
 
   /* Status indicators */
@@ -61,17 +245,17 @@
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
-  background: #f8f9fa;
+  background: rgb(var(--gray-bg-2));
   border-radius: 4px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #ced4da;
+  background: rgb(var(--gray-border-hover));
   border-radius: 4px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: #adb5bd;
+  background: rgb(var(--gray-solid));
 }
 
 /* Legacy scrollable class for backward compatibility */
@@ -86,21 +270,40 @@
 }
 
 .scrollable::-webkit-scrollbar-track {
-  background: #f8f9fa;
+  background: rgb(var(--gray-bg-2));
   border-radius: 4px;
 }
 
 .scrollable::-webkit-scrollbar-thumb {
-  background: #ced4da;
+  background: rgb(var(--gray-border-hover));
   border-radius: 4px;
 }
 
 .scrollable::-webkit-scrollbar-thumb:hover {
-  background: #adb5bd;
+  background: rgb(var(--gray-solid));
 }
 
 /* Global styles */
 body {
-  background: #ffffff;
-  color: #212529;
+  background: rgb(var(--gray-bg-1));
+  color: rgb(var(--gray-text));
+}
+
+/* Instant UI: state and hover color changes apply immediately instead of
+   animating (the 150ms transitions made the controls feel laggy). */
+*,
+*::before,
+*::after {
+  transition: none !important;
+}
+
+/* P&ID: diagram part enlarged while its table row is hovered. Opts back in
+   to a short transition (overrides the global no-transition rule). */
+.pid-hl {
+  /* origin is set inline in diagram (viewBox) coordinates */
+  transform-box: view-box;
+  transition: transform 120ms ease-out !important;
+}
+.pid-hl.is-hl {
+  transform: scale(1.1);
 }

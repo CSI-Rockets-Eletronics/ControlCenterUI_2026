@@ -16,7 +16,7 @@ export const Panel = memo(function Panel({
     <div
       className={twMerge(
         "p-4 border rounded-lg",
-        color === "gray" && "bg-gray-bg-2 border-gray-border",
+        color === "gray" && "bg-gray-bg-2 border-transparent",
         color === "red" && "bg-red-bg-2 border-red-border",
         color === "yellow" && "bg-yellow-bg-2 border-yellow-border",
         color === "green" && "bg-green-bg-2 border-green-border",

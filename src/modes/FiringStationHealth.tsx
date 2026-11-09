@@ -84,9 +84,9 @@ export const FiringStationHealth = memo(function FiringStationHealth({
       : "OK";
 
   const healthColors = {
-    OK: "bg-white text-green-text border-green-solid border-2",
-    Warning: "bg-white text-yellow-text border-yellow-solid border-2",
-    Fault: "bg-white text-red-text border-red-solid border-2",
+    OK: "bg-gray-bg-1 text-green-text border-green-solid border-2",
+    Warning: "bg-gray-bg-1 text-yellow-text border-yellow-solid border-2",
+    Fault: "bg-gray-bg-1 text-red-text border-red-solid border-2",
   };
 
   const getChannelStatus = (current: number): "ok" | "warning" | "fault" => {
@@ -96,15 +96,15 @@ export const FiringStationHealth = memo(function FiringStationHealth({
   };
 
   const statusColors = {
-    ok: "bg-white text-green-text border-green-solid border-2",
-    warning: "bg-white text-yellow-text border-yellow-solid border-2",
-    fault: "bg-white text-red-text border-red-solid border-2",
+    ok: "bg-gray-bg-1 text-green-text border-green-solid border-2",
+    warning: "bg-gray-bg-1 text-yellow-text border-yellow-solid border-2",
+    fault: "bg-gray-bg-1 text-red-text border-red-solid border-2",
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="flex flex-col w-full max-w-4xl overflow-hidden border shadow-2xl bg-gray-el-bg rounded-2xl border-gray-border max-h-[90vh]">
-        <div className="flex items-center justify-between p-6 bg-white border-b border-gray-border">
+      <div className="flex flex-col w-full max-w-4xl overflow-hidden ui-section max-h-[90vh]">
+        <div className="flex items-center justify-between p-6 border-b bg-gray-bg-1 border-gray-border">
           <h2 className="text-2xl font-bold text-gray-text">
             FIRING STATION HEALTH
           </h2>
@@ -173,7 +173,7 @@ export const FiringStationHealth = memo(function FiringStationHealth({
 
           <button
             onClick={handleToggleExpanded}
-            className="flex items-center justify-between w-full px-6 py-4 font-semibold bg-white border rounded-xl hover:bg-gray-bg-2 text-gray-text transition-colors border-gray-border"
+            className="flex items-center justify-between w-full px-6 py-4 font-semibold bg-gray-bg-2 rounded-xl hover:bg-gray-el-bg-hover text-gray-text transition-colors"
           >
             <span>CHANNEL DETAILS</span>
             <span className="text-2xl">{expanded ? "−" : "+"}</span>

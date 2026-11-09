@@ -47,7 +47,7 @@ const CommandButton = memo(function CommandButton({
 
   const getDotColor = () => {
     if (pending) return "bg-blue-solid animate-pulse";
-    if (isActive) return "bg-green-solid animate-pulse";
+    if (isActive) return "ui-dot-on";
     if (!isEnabled) return "bg-gray-solid";
     if (color === "danger") return "bg-red-solid";
     if (color === "warning") return "bg-yellow-solid";
@@ -55,16 +55,16 @@ const CommandButton = memo(function CommandButton({
   };
 
   const getBackgroundColor = () => {
-    if (isActive) return "bg-green-bg border-green-solid text-green-text";
-    if (!isEnabled) return "bg-gray-bg-2 border-gray-border text-gray-text-dim";
-    return "bg-gray-bg-2 border-gray-border text-gray-text hover:bg-gray-el-bg-hover";
+    if (isActive) return "ui-active";
+    if (!isEnabled) return "bg-gray-bg-2 border-transparent text-gray-text-dim";
+    return "bg-gray-bg-2 border-transparent text-gray-text hover:bg-gray-el-bg-hover";
   };
 
   return (
     <button
       onClick={handleClick}
       disabled={!isEnabled || pending}
-      className={`rounded-xl border-2 transition-all flex flex-col items-center justify-center p-1 ${getBackgroundColor()} ${
+      className={`rounded-card border-2 transition-all flex flex-col items-center justify-center p-1 ${getBackgroundColor()} ${
         !isEnabled || pending ? "cursor-not-allowed" : "cursor-pointer"
       }`}
     >
@@ -87,10 +87,8 @@ export const ControlButtons = memo(function ControlButtons() {
   const isEnginePrime = fsState === "ENGINE_PRIME";
 
   return (
-    <div className="flex flex-col h-full p-2 border bg-gray-el-bg rounded-xl border-gray-border">
-      <h2 className="mb-2 text-xs font-bold tracking-widest uppercase text-gray-text">
-        COMMAND CENTER
-      </h2>
+    <div className="flex flex-col h-full p-4 ui-section">
+      <h2 className="mb-3 ui-section-title">Command center</h2>
       <div className="flex-1 grid grid-cols-2 gap-2">
         <CommandButton label="GN2 STANDBY" command="STATE_GN2_STANDBY" />
         <CommandButton
@@ -113,7 +111,7 @@ export const ControlButtons = memo(function ControlButtons() {
         />
         <button
           onClick={() => setHealthOpen(true)}
-          className="flex flex-col items-center justify-center p-1 border-2 cursor-pointer rounded-xl bg-gray-bg-2 border-gray-border text-gray-text hover:bg-gray-el-bg-hover transition-all"
+          className="flex flex-col items-center justify-center p-1 border-2 border-transparent cursor-pointer rounded-card bg-gray-bg-2 text-gray-text hover:bg-gray-el-bg-hover transition-all"
         >
           <div className="mb-1 rounded-full w-2.5 h-2.5 bg-blue-solid" />
           <div className="text-xs font-bold leading-tight text-center">
