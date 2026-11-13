@@ -1044,12 +1044,9 @@ export const PidMode = memo(function PidMode() {
               ))}
             </div>
           </div>
-          {/* card hugs the diagram: largest box with the SVG's aspect
-              (viewBox 1080x780) that fits the space, centered */}
-          <div className="flex items-center justify-center flex-1 min-h-0 [container-type:size]">
-            <div className="p-4 w-[min(100cqw,calc(100cqh*1080/780))] aspect-[1080/780] ui-pid-card">
-              <PidDiagram colored={graphs} />
-            </div>
+          {/* card fills the panel; the SVG keeps its aspect, centered */}
+          <div className="flex-1 min-h-0 p-4 ui-pid-card">
+            <PidDiagram colored={graphs} />
           </div>
         </div>
       </div>
