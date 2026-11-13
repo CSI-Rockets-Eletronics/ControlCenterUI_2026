@@ -19,7 +19,7 @@ interface ViewPrefsState {
   /** Signal shown large in the Focus view. */
   focusSignal: SignalType | null;
   setFocusSignal: (signal: SignalType) => void;
-  /** P&ID layout: tables + diagram, or graphs + diagram (half and half). */
+  /** P&ID layout: graphs + diagram (half and half, default), or tables + diagram. */
   pidView: PidView;
   setPidView: (view: PidView) => void;
 }
@@ -33,7 +33,7 @@ export const useViewPrefsStore = create<ViewPrefsState>()(
       setDataView: (dataView) => set({ dataView }),
       focusSignal: null,
       setFocusSignal: (focusSignal) => set({ focusSignal }),
-      pidView: "tables",
+      pidView: "graphs",
       setPidView: (pidView) => set({ pidView }),
     }),
     {

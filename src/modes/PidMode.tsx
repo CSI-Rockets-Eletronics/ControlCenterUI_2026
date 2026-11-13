@@ -974,8 +974,8 @@ const PidDiagram = memo(function PidDiagram({ colored }: { colored: boolean }) {
 });
 
 const PID_VIEWS: { key: PidView; label: string }[] = [
-  { key: "tables", label: "Tables" },
   { key: "graphs", label: "Graphs" },
+  { key: "tables", label: "Tables" },
 ];
 
 const ViewTab = memo(function ViewTab({
