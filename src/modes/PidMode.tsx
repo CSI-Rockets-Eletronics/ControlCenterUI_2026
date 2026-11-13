@@ -14,7 +14,12 @@ import { useLaunchMachineSelector } from "@/components/launchMachineProvider";
 import { type SignalType, useTelemetryStore } from "@/stores/telemetryStore";
 import { type PidView, useViewPrefsStore } from "@/stores/viewPrefsStore";
 
+import { PanZoomSvg } from "./PanZoomSvg";
 import { pidColor, PidGraphs } from "./PidGraphs";
+
+/** Full drawing area of the diagram (the "fit" view), with a 24-unit
+ *  margin so the drawing doesn't touch the card edge. */
+const PID_BASE_BOX = { x: -24, y: -44, w: 1128, h: 828 };
 
 /**
  * Live P&ID, redrawn from public/Fluids 25-26 P&ID-Main.png.
@@ -690,12 +695,7 @@ const PidDiagram = memo(function PidDiagram({ colored }: { colored: boolean }) {
   const c = (signal: Parameters<typeof pidColor>[0]) =>
     colored ? pidColor(signal) : undefined;
   return (
-    <svg
-      viewBox="0 -20 1080 780"
-      className="w-full h-full"
-      role="img"
-      aria-label="Live fluids P&ID"
-    >
+    <PanZoomSvg base={PID_BASE_BOX} ariaLabel="Live fluids P&ID">
       {/* Regions */}
       <rect
         x="20"
@@ -969,7 +969,7 @@ const PidDiagram = memo(function PidDiagram({ colored }: { colored: boolean }) {
       <Hl id="gauge-qd">
         <Gauge x={650} y={250} label="QD" value={qd} color={c("qd_pres_psi")} />
       </Hl>
-    </svg>
+    </PanZoomSvg>
   );
 });
 
@@ -1045,7 +1045,7 @@ export const PidMode = memo(function PidMode() {
             </div>
           </div>
           {/* card fills the panel; the SVG keeps its aspect, centered */}
-          <div className="flex-1 min-h-0 p-4 ui-pid-card">
+          <div className="flex-1 min-h-0 overflow-hidden ui-pid-card">
             <PidDiagram colored={graphs} />
           </div>
         </div>
