@@ -120,30 +120,39 @@ reads 100% until it's topped up, and readings below empty go negative.
 - **Show pF until calibrated.** Have the P&ID show capacitance instead of a
   percent until real calibration numbers exist.
 
-### 5. Pi script command numbers not checked
+### 5. Pi script checked against firmware and UI (2026-11-13)
 
-`main_fs_pi.py` (separate `pi-serial-uploader` repo) maps UI command names
-to firmware numbers. It must match `enum class FsCommand` in
-`main/include/packets.h` (e.g. `STATE_FIRE = 20`, `RESTART = 110`). Not
-reviewed; that repo was not on this machine.
+Read `main_fs_pi.py` in `pi-serial-uploader` (commit `1369f5c`, "add
+igniter_backup") and compared it with `main/include/packets.h` and the UI's
+`src/lib/serverSchemas.ts`. **The chain matches on paper:**
 
-Also: `STATE_FIRE_MANUAL_DOME_PILOT_OPEN` is still in the UI's command list
-(`fsCommandSchema`) but has no firmware number.
+- **Commands:** every number in the Pi's `FsCommands` equals
+  `enum class FsCommand` in `packets.h` (`STATE_FIRE = 20`, `RESTART = 110`,
+  ...). The 10-byte command packet layout matches `FsCommandPacket`.
+- **States:** the Pi's `FsState` matches the firmware enum, and every name it
+  sends is in the UI's `fsStateSchema`.
+- **Telemetry:** all six packet layouts (sizes 14, 51, 20, 25, 17, 26) match
+  the firmware structs field for field, and the JSON keys the Pi uploads are
+  the ones the UI's schemas read (including `cap_fill_base` /
+  `cap_fill_actual`, so the LOX fix in item 4 is right).
+
+Still open:
+
+- Not run end to end on hardware yet; Wednesday's test is the real check.
+- The UI still lists `STATE_FIRE_MANUAL_DOME_PILOT_OPEN` and `EREG_SET_GAINS`,
+  which the Pi can't map. Nothing in the current UI sends them (only the
+  unrouted old view in `src/components/`). If one is sent, the Pi logs
+  "Invalid command" and drops it, so no wrong command reaches the board.
+- `LoadCell1` / `LoadCell2` / `RadioGround` are not produced by this script
+  (they come from elsewhere or not at all).
 
 **Options**
 
-- ★ **Single source of truth.** Generate a `commands.json`
-  (`{ name: number }`) from `enum class FsCommand` in `packets.h` with a
-  small script, and have both `main_fs_pi.py` and the UI's
-  `fsCommandSchema` read it. A mismatch becomes impossible, not just
-  unlikely.
-- **CI check.** Cheaper: a script (like the one used for
-  `test_send_command.py`) that parses `packets.h` and `main_fs_pi.py` and
-  fails if names or numbers differ. Run it in each repo's CI.
-- **Drop the stale command.** Remove `STATE_FIRE_MANUAL_DOME_PILOT_OPEN` /
-  `_CLOSE` from `fsCommandSchema` and its uses
-  (`src/modes/ManualControlPanel.tsx`, `src/components/StandbyStateSelection.tsx`),
-  or add it to firmware if it's still wanted.
+- ★ **Drop the stale commands.** Remove `STATE_FIRE_MANUAL_DOME_PILOT_OPEN`
+  and `EREG_SET_GAINS` from `fsCommandSchema` (and the old-view uses), or add
+  them to firmware + Pi if still wanted.
+- **CI check.** A script that parses `packets.h` and `main_fs_pi.py` and fails
+  if names or numbers differ, so this stays true.
 
 ## Testing / shipping
 
