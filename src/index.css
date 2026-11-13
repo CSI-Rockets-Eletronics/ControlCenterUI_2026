@@ -80,7 +80,7 @@ html.dark {
   --selected-text: 0 0 0;
   --tank-fill: 255 255 255; /* pure white in dark mode */
   --tank-text: 0 0 0;
-  --pid-bg: 0 0 0; /* pure black in dark mode */
+  --pid-bg: 20 20 20; /* #141414 in dark mode */
   --blue-bg: 27 42 58;
   --blue-border: 28 126 214;
   --blue-solid: 34 139 230;
@@ -116,7 +116,7 @@ html.dark {
     border-radius: 2px;
   }
 
-  /* P&ID diagram card: like .ui-card, but black (dark) / white (light) */
+  /* P&ID diagram card: like .ui-card, but darker (dark) / white (light) */
   .ui-pid-card {
     background-color: rgb(var(--pid-bg));
     border-radius: 12px;
