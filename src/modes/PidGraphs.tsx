@@ -11,6 +11,7 @@ import {
 import {
   COPV_PURPLE,
   decimate,
+  DISABLED_SIGNALS,
   OXTANK_COLOR,
   themed,
   useTelemetryStore,
@@ -150,9 +151,17 @@ const PidGraph = memo(function PidGraph({ config }: { config: GraphConfig }) {
                 className="text-lg font-normal tabular-nums"
                 style={{ color: pidColor(key) }}
               >
-                {latest[key] === null ? "--" : fix(latest[key]!, 0)}
+                {DISABLED_SIGNALS.has(key)
+                  ? "off"
+                  : latest[key] === null
+                    ? "--"
+                    : fix(latest[key]!, 0)}
               </span>
-              <span className="text-xs text-gray-text-dim">{config.unit}</span>
+              {!DISABLED_SIGNALS.has(key) && (
+                <span className="text-xs text-gray-text-dim">
+                  {config.unit}
+                </span>
+              )}
             </span>
           ))}
         </div>
@@ -160,7 +169,9 @@ const PidGraph = memo(function PidGraph({ config }: { config: GraphConfig }) {
       <div className="flex-1 min-h-0">
         {data.length === 0 ? (
           <div className="flex items-center justify-center h-full text-xs text-gray-text-dim">
-            Waiting for data...
+            {config.signals.every(({ key }) => DISABLED_SIGNALS.has(key))
+              ? "Sensors off: not read by firmware yet"
+              : "Waiting for data..."}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">

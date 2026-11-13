@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
+  DISABLED_SIGNALS,
   type PlotConfig,
   SIGNAL_METADATA,
   type SignalType,
@@ -60,24 +61,36 @@ const SignalCard = memo(function SignalCard({
       </div>
 
       <div className="font-normal leading-tight text-[clamp(22px,3.6vh,36px)] tracking-[-0.02em] tabular-nums text-gray-text">
-        {fmt(latest, 2)}
-        <span className="ml-1 text-sm font-normal tracking-normal text-gray-text-dim">
-          {meta.unit}
-        </span>
+        {DISABLED_SIGNALS.has(signal) ? (
+          <span className="text-gray-text-dim">Sensor off</span>
+        ) : (
+          <>
+            {fmt(latest, 2)}
+            <span className="ml-1 text-sm font-normal tracking-normal text-gray-text-dim">
+              {meta.unit}
+            </span>
+          </>
+        )}
       </div>
 
-      <div className="flex text-xs leading-4 whitespace-nowrap tabular-nums gap-2.5 text-gray-text-dim">
-        <span>
-          min <span className="text-gray-text">{fmt(min)}</span>
-        </span>
-        {/* hidden on narrow cards (<1280px) so min and max never get cut off */}
-        <span className="hidden xl:inline">
-          avg <span className="text-gray-text">{fmt(avg)}</span>
-        </span>
-        <span>
-          max <span className="text-gray-text">{fmt(max)}</span>
-        </span>
-      </div>
+      {DISABLED_SIGNALS.has(signal) ? (
+        <div className="text-xs leading-4 text-gray-text-dim">
+          Not read by firmware yet
+        </div>
+      ) : (
+        <div className="flex text-xs leading-4 whitespace-nowrap tabular-nums gap-2.5 text-gray-text-dim">
+          <span>
+            min <span className="text-gray-text">{fmt(min)}</span>
+          </span>
+          {/* hidden on narrow cards (<1280px) so min and max never get cut off */}
+          <span className="hidden xl:inline">
+            avg <span className="text-gray-text">{fmt(avg)}</span>
+          </span>
+          <span>
+            max <span className="text-gray-text">{fmt(max)}</span>
+          </span>
+        </div>
+      )}
     </div>
   );
 });
@@ -142,10 +155,16 @@ const SidebarCard = memo(function SidebarCard({
         </span>
       </div>
       <div className="mt-1 text-lg font-normal tabular-nums text-gray-text">
-        {fmt(latest, 2)}
-        <span className="ml-1 text-xs font-normal text-gray-text-dim">
-          {meta.unit}
-        </span>
+        {DISABLED_SIGNALS.has(signal) ? (
+          <span className="text-gray-text-dim">Sensor off</span>
+        ) : (
+          <>
+            {fmt(latest, 2)}
+            <span className="ml-1 text-xs font-normal text-gray-text-dim">
+              {meta.unit}
+            </span>
+          </>
+        )}
       </div>
     </button>
   );

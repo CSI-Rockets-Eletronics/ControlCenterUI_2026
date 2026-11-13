@@ -9,7 +9,7 @@ import { fsStateToCommand } from "@/lib/serverSchemaUtils";
 
 interface CommandButtonProps {
   label: string;
-  command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">;
+  command: Exclude<FsCommand, "STATE_CUSTOM">;
   color?: "primary" | "danger" | "warning";
 }
 

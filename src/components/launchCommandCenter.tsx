@@ -23,13 +23,6 @@ export const LaunchCommandCenter = memo(function LaunchCommandCenter() {
       {manualFire ? (
         <>
           <LaunchControlEntry
-            label="FIRE DOME PILOT OPEN"
-            fadeIfDisabled
-            type="fs-command"
-            executeCommand="STATE_FIRE_MANUAL_DOME_PILOT_OPEN"
-            stopCommand="STATE_GN2_STANDBY"
-          />
-          <LaunchControlEntry
             label="FIRE DOME PILOT CLOSE"
             fadeIfDisabled
             type="fs-command"

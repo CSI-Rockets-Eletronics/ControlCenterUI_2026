@@ -73,6 +73,14 @@ Firing control, behind arming.
 
 ### 3. Pilot and QD pressure are not real readings (firmware)
 
+**UI side done (2026-11-13):** `DISABLED_SIGNALS` in
+`src/stores/telemetryStore.ts` drops `pilot_pres_psi` / `qd_pres_psi`
+samples on arrival (hardware and simulator alike). The P&ID gauges and
+Readings rows, the P&ID Pilot and QD graph, and the Data display cards show
+"Sensor off". The header's pilot over-pressure warning can't fire from these
+fake values. Remove the entries once firmware reads the sensors. The firmware
+fix below is still open.
+
 In `main/devices/dev_fs_lox_gn2_transducers.h` the `pilot_pres` reading is
 commented out ("DISABLED") and `qd_pres` is hard-coded to `0.0f`. On
 hardware the UI's Pilot and QD values are stale or 0. The simulator invents
@@ -139,18 +147,17 @@ igniter_backup") and compared it with `main/include/packets.h` and the UI's
 Still open:
 
 - Not run end to end on hardware yet; Wednesday's test is the real check.
-- The UI still lists `STATE_FIRE_MANUAL_DOME_PILOT_OPEN` and `EREG_SET_GAINS`,
-  which the Pi can't map. Nothing in the current UI sends them (only the
-  unrouted old view in `src/components/`). If one is sent, the Pi logs
+- If the UI ever sends a name the Pi doesn't know, the Pi logs
   "Invalid command" and drops it, so no wrong command reaches the board.
 - `LoadCell1` / `LoadCell2` / `RadioGround` are not produced by this script
   (they come from elsewhere or not at all).
 
 **Options**
 
-- ★ **Drop the stale commands.** Remove `STATE_FIRE_MANUAL_DOME_PILOT_OPEN`
-  and `EREG_SET_GAINS` from `fsCommandSchema` (and the old-view uses), or add
-  them to firmware + Pi if still wanted.
+- **Done (2026-11-13): dropped the stale commands.** Removed
+  `STATE_FIRE_MANUAL_DOME_PILOT_OPEN` and `EREG_SET_GAINS` from
+  `fsCommandSchema` and the old view's "FIRE DOME PILOT OPEN" buttons. Add
+  them back only together with a firmware + Pi number.
 - **CI check.** A script that parses `packets.h` and `main_fs_pi.py` and fails
   if names or numbers differ, so this stays true.
 

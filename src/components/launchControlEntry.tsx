@@ -24,8 +24,8 @@ type Props = {
 } & (
   | {
       type: "fs-command";
-      executeCommand: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">;
-      stopCommand: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS"> | null;
+      executeCommand: Exclude<FsCommand, "STATE_CUSTOM">;
+      stopCommand: Exclude<FsCommand, "STATE_CUSTOM"> | null;
       field?: undefined;
     }
   | {

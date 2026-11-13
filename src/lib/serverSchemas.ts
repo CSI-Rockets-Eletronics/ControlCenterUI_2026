@@ -15,6 +15,8 @@ export const DEVICES = {
 
 export const DEFAULT_SERVER = "https://csi-fs-pi-data-server.ngrok.io";
 
+// Must match FsCommands in pi-serial-uploader main_fs_pi.py and
+// enum class FsCommand in firmware packets.h; the Pi drops any other name.
 export const fsCommandSchema = z.enum([
   "STATE_CUSTOM",
   "STATE_ABORT",
@@ -28,13 +30,11 @@ export const fsCommandSchema = z.enum([
   "STATE_FIRE",
   "STATE_FIRE_MANUAL_PRESS_PILOT",
   "STATE_FIRE_MANUAL_DOME_PILOT_CLOSE",
-  "STATE_FIRE_MANUAL_DOME_PILOT_OPEN",
   "STATE_FIRE_MANUAL_IGNITER",
   "STATE_FIRE_MANUAL_RUN",
   "EREG_CLOSED",
   "EREG_STAGE_1",
   "EREG_STAGE_2",
-  "EREG_SET_GAINS",
   "RECALIBRATE_TRANSDUCERS",
   "RESTART",
 ]);
@@ -54,20 +54,12 @@ const customFsCommandMessageSchema = z.object({
   igniter_backup: z.boolean(),
 });
 
-const eregSetGainsMessageSchema = z.object({
-  command: z.literal("EREG_SET_GAINS"),
-  kp: z.number(),
-  ki: z.number(),
-  kd: z.number(),
-});
-
 const baseFsCommandMessageSchema = z.object({
-  command: fsCommandSchema.exclude(["STATE_CUSTOM", "EREG_SET_GAINS"]),
+  command: fsCommandSchema.exclude(["STATE_CUSTOM"]),
 });
 
 export const fsCommandMessageSchema = z.discriminatedUnion("command", [
   customFsCommandMessageSchema,
-  eregSetGainsMessageSchema,
   baseFsCommandMessageSchema,
 ]);
 

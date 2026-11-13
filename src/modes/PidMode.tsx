@@ -11,7 +11,11 @@ import {
 } from "react";
 
 import { useLaunchMachineSelector } from "@/components/launchMachineProvider";
-import { type SignalType, useTelemetryStore } from "@/stores/telemetryStore";
+import {
+  DISABLED_SIGNALS,
+  type SignalType,
+  useTelemetryStore,
+} from "@/stores/telemetryStore";
 import { type PidView, useViewPrefsStore } from "@/stores/viewPrefsStore";
 
 import { PanZoomSvg } from "./PanZoomSvg";
@@ -61,6 +65,13 @@ const fmt = (v: number | null, d = 0) => {
   // tiny negatives like -0.3 round to "-0"; show plain "0"
   return /^-0(\.0+)?$/.test(out) ? out.slice(1) : out;
 };
+
+/** Readout for a sensor the firmware doesn't read yet (DISABLED_SIGNALS). */
+const offOr = (v: number | null, signal: SignalType) =>
+  DISABLED_SIGNALS.has(signal) ? "Sensor off" : fmt(v);
+/** Unit for a reading, or undefined when the sensor is off. */
+const offUnit = (signal: SignalType) =>
+  DISABLED_SIGNALS.has(signal) ? undefined : "psi";
 
 type Relays = Partial<
   Record<
@@ -648,8 +659,18 @@ const PidTables = memo(function PidTables() {
           <Row label="COPV 2" value={fmt(copv2)} unit="psi" hl="copv2" />
           <Row label="Oxtank 1" value={fmt(oxtank1)} unit="psi" hl="oxtank1" />
           <Row label="Oxtank 2" value={fmt(oxtank2)} unit="psi" hl="oxtank2" />
-          <Row label="Pilot" value={fmt(pilot)} unit="psi" hl="pilot" />
-          <Row label="QD" value={fmt(qd)} unit="psi" hl="qd" />
+          <Row
+            label="Pilot"
+            value={offOr(pilot, "pilot_pres_psi")}
+            unit={offUnit("pilot_pres_psi")}
+            hl="pilot"
+          />
+          <Row
+            label="QD"
+            value={offOr(qd, "qd_pres_psi")}
+            unit={offUnit("qd_pres_psi")}
+            hl="qd"
+          />
           <Row label="LOX level" value={fmt(loxLevel)} unit="%" hl="lox" />
           <Row label="E-Reg" value={eregLabel} hl="ereg" />
           <Row label="Station state" value={fsState ?? "--"} />
@@ -964,10 +985,18 @@ const PidDiagram = memo(function PidDiagram({ colored }: { colored: boolean }) {
           label="Pilot"
           value={pilot}
           color={c("pilot_pres_psi")}
+          unit={offUnit("pilot_pres_psi") ?? "sensor off"}
         />
       </Hl>
       <Hl id="gauge-qd">
-        <Gauge x={650} y={250} label="QD" value={qd} color={c("qd_pres_psi")} />
+        <Gauge
+          x={650}
+          y={250}
+          label="QD"
+          value={qd}
+          color={c("qd_pres_psi")}
+          unit={offUnit("qd_pres_psi") ?? "sensor off"}
+        />
       </Hl>
     </PanZoomSvg>
   );

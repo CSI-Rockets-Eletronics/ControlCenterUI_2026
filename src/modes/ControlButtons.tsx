@@ -12,7 +12,7 @@ import { FiringStationHealth } from "./FiringStationHealth";
 
 interface CommandButtonProps {
   label: string;
-  command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">;
+  command: Exclude<FsCommand, "STATE_CUSTOM">;
   color?: "primary" | "danger" | "warning";
   overrideEnabled?: boolean; // bypass canExecute when true
 }

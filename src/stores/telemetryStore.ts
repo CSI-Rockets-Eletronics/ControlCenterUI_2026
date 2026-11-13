@@ -40,6 +40,18 @@ export const themed = ({ light, dark }: { light: string; dark: string }) =>
     : light;
 
 // #8338ec is too dim on the dark background
+/**
+ * Sensors the firmware doesn't read yet (dev_fs_lox_gn2_transducers.h:
+ * pilot_pres is commented out, qd_pres is hard-coded 0). Samples for these
+ * are dropped on arrival, so no stale/zero value ever looks like a reading,
+ * and the UI labels them "sensor off". Remove an entry once firmware sends
+ * real data.
+ */
+export const DISABLED_SIGNALS: ReadonlySet<SignalType> = new Set<SignalType>([
+  "pilot_pres_psi",
+  "qd_pres_psi",
+]);
+
 export const COPV_PURPLE = { light: "#8338ec", dark: "#a970ff" };
 // dark: Ramp-style yellow nudged slightly green; too pale on white, so
 // light mode keeps the cyan
@@ -285,6 +297,7 @@ export const useTelemetryStore = create<TelemetryState>()(
     version: 0,
 
     appendSample: (signal, sample) => {
+      if (DISABLED_SIGNALS.has(signal)) return;
       const buffer = get().buffers.get(signal);
       if (!buffer) {
         console.warn(`Buffer not found for signal: ${signal}`);

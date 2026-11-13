@@ -10,26 +10,17 @@ import { type FsCommand } from "@/lib/serverSchemas";
 const PULSE_COMMANDS = [
   {
     label: "1/4s",
-    command: "STATE_GN2_PULSE_FILL_A" as Exclude<
-      FsCommand,
-      "STATE_CUSTOM" | "EREG_SET_GAINS"
-    >,
+    command: "STATE_GN2_PULSE_FILL_A" as Exclude<FsCommand, "STATE_CUSTOM">,
     state: "GN2_PULSE_FILL_A",
   },
   {
     label: "1s",
-    command: "STATE_GN2_PULSE_FILL_B" as Exclude<
-      FsCommand,
-      "STATE_CUSTOM" | "EREG_SET_GAINS"
-    >,
+    command: "STATE_GN2_PULSE_FILL_B" as Exclude<FsCommand, "STATE_CUSTOM">,
     state: "GN2_PULSE_FILL_B",
   },
   {
     label: "5s",
-    command: "STATE_GN2_PULSE_FILL_C" as Exclude<
-      FsCommand,
-      "STATE_CUSTOM" | "EREG_SET_GAINS"
-    >,
+    command: "STATE_GN2_PULSE_FILL_C" as Exclude<FsCommand, "STATE_CUSTOM">,
     state: "GN2_PULSE_FILL_C",
   },
 ] as const;
@@ -38,12 +29,10 @@ const PULSE_COMMANDS = [
 
 interface PulseButtonProps {
   label: string;
-  command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">;
+  command: Exclude<FsCommand, "STATE_CUSTOM">;
   isActive: boolean;
   isPending: boolean;
-  onClick: (
-    command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">,
-  ) => void;
+  onClick: (command: Exclude<FsCommand, "STATE_CUSTOM">) => void;
 }
 
 const PulseButton = memo(function PulseButton({
@@ -80,7 +69,7 @@ export const PulseFill = memo(function PulseFill() {
   const launchActorRef = useLaunchMachineActorRef();
   const [pending, setPending] = useState<Exclude<
     FsCommand,
-    "STATE_CUSTOM" | "EREG_SET_GAINS"
+    "STATE_CUSTOM"
   > | null>(null);
 
   const fsState = useLaunchMachineSelector(
@@ -88,7 +77,7 @@ export const PulseFill = memo(function PulseFill() {
   );
 
   const handleClick = useCallback(
-    (command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">) => {
+    (command: Exclude<FsCommand, "STATE_CUSTOM">) => {
       const snapshot = launchActorRef.getSnapshot();
       if (!snapshot) return;
 

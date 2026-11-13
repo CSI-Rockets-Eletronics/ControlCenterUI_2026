@@ -18,7 +18,7 @@ const Entry = memo(function Entry({
   onlyIfActive = false,
 }: {
   label: string;
-  command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">;
+  command: Exclude<FsCommand, "STATE_CUSTOM">;
   inRow?: boolean;
   onlyIfActive?: boolean;
 }) {
@@ -77,11 +77,6 @@ export const StandbyStateSelection = memo(function StandbyStateSelection() {
       <Entry label="GN2 STANDBY" command="STATE_GN2_STANDBY" />
       <Entry label="GN2 FILL" command="STATE_GN2_FILL" />
       <Entry onlyIfActive label="FIRE" command="STATE_FIRE" />
-      <Entry
-        onlyIfActive
-        label="FIRE DOME PILOT OPEN"
-        command="STATE_FIRE_MANUAL_DOME_PILOT_OPEN"
-      />
       <Entry
         onlyIfActive
         label="FIRE DOME PILOT CLOSE"
