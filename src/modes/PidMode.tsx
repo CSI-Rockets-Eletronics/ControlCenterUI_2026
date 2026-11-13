@@ -340,7 +340,7 @@ function Valve({
     <g>
       {/* solid backing in the panel color hides the pipe inside the valve,
           so lines stop at the valve's border */}
-      <path d={d} style={{ fill: "rgb(var(--gray-section))" }} />
+      <path d={d} style={{ fill: "rgb(var(--pid-bg))" }} />
       <path
         d={d}
         fill={color}
@@ -1044,8 +1044,12 @@ export const PidMode = memo(function PidMode() {
               ))}
             </div>
           </div>
-          <div className="flex-1 min-h-0">
-            <PidDiagram colored={graphs} />
+          {/* card hugs the diagram: largest box with the SVG's aspect
+              (viewBox 1080x780) that fits the space, centered */}
+          <div className="flex items-center justify-center flex-1 min-h-0 [container-type:size]">
+            <div className="p-4 w-[min(100cqw,calc(100cqh*1080/780))] aspect-[1080/780] ui-pid-card">
+              <PidDiagram colored={graphs} />
+            </div>
           </div>
         </div>
       </div>

@@ -39,6 +39,7 @@ html {
   --selected-text: 255 255 255;
   --tank-fill: 0 0 0; /* P&ID tank fill: pure black */
   --tank-text: 255 255 255;
+  --pid-bg: 255 255 255; /* P&ID diagram card: white */
   --blue-bg: 231 245 255;
   --blue-border: 116 192 252;
   --blue-solid: 34 139 230;
@@ -79,6 +80,7 @@ html.dark {
   --selected-text: 0 0 0;
   --tank-fill: 255 255 255; /* pure white in dark mode */
   --tank-text: 0 0 0;
+  --pid-bg: 0 0 0; /* pure black in dark mode */
   --blue-bg: 27 42 58;
   --blue-border: 28 126 214;
   --blue-solid: 34 139 230;
@@ -112,6 +114,12 @@ html.dark {
   .ui-section {
     background-color: rgb(var(--gray-section));
     border-radius: 2px;
+  }
+
+  /* P&ID diagram card: like .ui-card, but black (dark) / white (light) */
+  .ui-pid-card {
+    background-color: rgb(var(--pid-bg));
+    border-radius: 12px;
   }
 
   .ui-card {
