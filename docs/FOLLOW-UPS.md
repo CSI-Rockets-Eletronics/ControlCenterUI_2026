@@ -113,7 +113,14 @@ them swapped, so on hardware the LOX level would have shown the raw pF value
 level, the P&ID clamps it to 0–100, and the simulator sends the same shape
 as firmware. (The 140% came from the old simulator's values.)
 
-**Still open (firmware):** `CapacitanceToHeightPercent` scales against the
+**Context (checked 2026-11-13):** `dev_cap_fill.h` is identical to last
+year's (`avionics-software-2025-2026`), so this is a known limitation, not a
+regression, and not blocking. The old UI also had the two field labels
+swapped, which is probably why the numbers never looked right. No special LOX
+fill is needed: watch the capacitance (pF) during a fill, and note pF empty
+and full whenever a fill happens anyway.
+
+**Still open (firmware, low priority):** `CapacitanceToHeightPercent` scales against the
 highest capacitance seen since boot, not a fixed "full" value. So right
 after boot any reading at or above empty shows ~100%, a partly filled tank
 reads 100% until it's topped up, and readings below empty go negative.
