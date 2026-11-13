@@ -4,6 +4,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { type SignalType } from "@/stores/telemetryStore";
 
 export type DataView = "cards" | "graphs" | "focus";
+export type PidView = "tables" | "graphs";
 
 interface ViewPrefsState {
   /**
@@ -18,6 +19,9 @@ interface ViewPrefsState {
   /** Signal shown large in the Focus view. */
   focusSignal: SignalType | null;
   setFocusSignal: (signal: SignalType) => void;
+  /** P&ID layout: tables + diagram, or graphs + diagram (half and half). */
+  pidView: PidView;
+  setPidView: (view: PidView) => void;
 }
 
 export const useViewPrefsStore = create<ViewPrefsState>()(
@@ -29,6 +33,8 @@ export const useViewPrefsStore = create<ViewPrefsState>()(
       setDataView: (dataView) => set({ dataView }),
       focusSignal: null,
       setFocusSignal: (focusSignal) => set({ focusSignal }),
+      pidView: "tables",
+      setPidView: (pidView) => set({ pidView }),
     }),
     {
       name: "viewPrefs",

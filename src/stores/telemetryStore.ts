@@ -33,17 +33,17 @@ export type SignalType =
  * Signal color that changes with the theme. Read at render time; charts
  * redraw every ~200 ms, so a theme switch shows up almost immediately.
  */
-const themed = ({ light, dark }: { light: string; dark: string }) =>
+export const themed = ({ light, dark }: { light: string; dark: string }) =>
   typeof document !== "undefined" &&
   document.documentElement.classList.contains("dark")
     ? dark
     : light;
 
 // #8338ec is too dim on the dark background
-const COPV_PURPLE = { light: "#8338ec", dark: "#a970ff" };
+export const COPV_PURPLE = { light: "#8338ec", dark: "#a970ff" };
 // dark: Ramp-style yellow nudged slightly green; too pale on white, so
 // light mode keeps the cyan
-const OXTANK_COLOR = { light: "#00d4ff", dark: "#dcf25a" };
+export const OXTANK_COLOR = { light: "#00d4ff", dark: "#dcf25a" };
 
 export const SIGNAL_METADATA: Record<
   SignalType,

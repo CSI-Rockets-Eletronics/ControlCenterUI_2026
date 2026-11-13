@@ -12,6 +12,9 @@ import {
 
 import { useLaunchMachineSelector } from "@/components/launchMachineProvider";
 import { type SignalType, useTelemetryStore } from "@/stores/telemetryStore";
+import { type PidView, useViewPrefsStore } from "@/stores/viewPrefsStore";
+
+import { pidColor, PidGraphs } from "./PidGraphs";
 
 /**
  * Live P&ID, redrawn from public/Fluids 25-26 P&ID-Main.png.
@@ -31,7 +34,7 @@ function useLatest(signal: SignalType): number | null {
 }
 
 /** "filling" / "draining" when a signal moved more than `minChange` over ~2 s. */
-function useTrend(signal: SignalType, minChange: number) {
+function useTrend(signal: SignalType, minChange: number): Trend {
   useTelemetryStore((s) => s.buffers);
   const now = Date.now() * 1000;
   const samples = useTelemetryStore
@@ -374,12 +377,15 @@ function Gauge({
   label,
   value,
   unit = "psi",
+  color,
 }: {
   x: number;
   y: number;
   label: string;
   value: number | null;
   unit?: string;
+  /** Graphs view: ring and number in the signal's line color */
+  color?: string;
 }) {
   return (
     <g>
@@ -387,8 +393,9 @@ function Gauge({
         cx={x}
         cy={y}
         r={30}
-        className="fill-gray-bg-2 stroke-gray-text"
-        strokeWidth="2"
+        className={`fill-gray-bg-2 ${color ? "" : "stroke-gray-text"}`}
+        style={color ? { stroke: color } : undefined}
+        strokeWidth={color ? 2.5 : 2}
       />
       <text
         x={x}
@@ -402,8 +409,11 @@ function Gauge({
         x={x}
         y={y + 12}
         textAnchor="middle"
-        className="font-normal fill-gray-text text-[13px]"
-        style={{ fontVariantNumeric: "tabular-nums" }}
+        className={`font-normal text-[13px] ${color ? "" : "fill-gray-text"}`}
+        style={{
+          fontVariantNumeric: "tabular-nums",
+          ...(color ? { fill: color } : {}),
+        }}
       >
         {fmt(value)}
       </text>
@@ -559,9 +569,7 @@ const VALVE_ROWS = [
   ["igniter_backup", "Igniter Backup"],
 ] as const;
 
-export const PidMode = memo(function PidMode() {
-  const [hover, setHover] = useState<string | null>(null);
-  const hoverCtx = useMemo(() => ({ hover, setHover }), [hover]);
+function usePidData() {
   const copv = avg(useLatest("copv_1_psi"), useLatest("copv_2_psi"));
   const oxtank = avg(useLatest("oxtank_1_psi"), useLatest("oxtank_2_psi"));
   const loxRaw = useLatest("cap_fill_base");
@@ -593,316 +601,451 @@ export const PidMode = memo(function PidMode() {
         ? "Closed"
         : "--";
 
+  return {
+    copv,
+    oxtank,
+    loxLevel,
+    pilot,
+    loxTrend,
+    copvTrend,
+    qd,
+    copv1,
+    copv2,
+    oxtank1,
+    oxtank2,
+    fsState,
+    relays,
+    eregLabel,
+  };
+}
+
+/** Left column of the Tables view: live values and valve states. */
+const PidTables = memo(function PidTables() {
+  const {
+    loxLevel,
+    pilot,
+    qd,
+    copv1,
+    copv2,
+    oxtank1,
+    oxtank2,
+    fsState,
+    relays,
+    eregLabel,
+  } = usePidData();
+  return (
+    <div className="flex flex-col h-full min-h-0 overflow-y-auto gap-2">
+      {/* both tables share the column height; rows spread to fill it */}
+      <div className="flex flex-col flex-1 p-4 ui-section">
+        <h2 className="mb-1 ui-section-title">Readings</h2>
+        <div className="flex flex-col flex-1 divide-y divide-gray-border">
+          <Row label="COPV 1" value={fmt(copv1)} unit="psi" hl="copv1" />
+          <Row label="COPV 2" value={fmt(copv2)} unit="psi" hl="copv2" />
+          <Row label="Oxtank 1" value={fmt(oxtank1)} unit="psi" hl="oxtank1" />
+          <Row label="Oxtank 2" value={fmt(oxtank2)} unit="psi" hl="oxtank2" />
+          <Row label="Pilot" value={fmt(pilot)} unit="psi" hl="pilot" />
+          <Row label="QD" value={fmt(qd)} unit="psi" hl="qd" />
+          <Row label="LOX level" value={fmt(loxLevel)} unit="%" hl="lox" />
+          <Row label="E-Reg" value={eregLabel} hl="ereg" />
+          <Row label="Station state" value={fsState ?? "--"} />
+        </div>
+      </div>
+      <div className="flex flex-col flex-1 p-4 ui-section">
+        <h2 className="mb-1 ui-section-title">Valves</h2>
+        <div className="flex flex-col flex-1 divide-y divide-gray-border">
+          {VALVE_ROWS.map(([key, label]) => (
+            <ValveRow
+              key={key}
+              id={`valve-${key}`}
+              label={label}
+              open={relays?.[key]}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/**
+ * The live diagram. `colored` (Graphs view): gauges and the LOX tank use the
+ * same color as their line in the graphs on the left.
+ */
+const PidDiagram = memo(function PidDiagram({ colored }: { colored: boolean }) {
+  const {
+    copv,
+    oxtank,
+    loxLevel,
+    pilot,
+    loxTrend,
+    copvTrend,
+    qd,
+    copv1,
+    copv2,
+    oxtank1,
+    oxtank2,
+    relays,
+    eregLabel,
+  } = usePidData();
+  const c = (signal: Parameters<typeof pidColor>[0]) =>
+    colored ? pidColor(signal) : undefined;
+  return (
+    <svg
+      viewBox="0 -20 1080 780"
+      className="w-full h-full"
+      role="img"
+      aria-label="Live fluids P&ID"
+    >
+      {/* Regions */}
+      <rect
+        x="20"
+        y="20"
+        width="560"
+        height="720"
+        rx="40"
+        fill="none"
+        className="stroke-gray-solid"
+        strokeWidth="2"
+        strokeDasharray="4 4"
+      />
+      <text
+        x="300"
+        y="-6"
+        textAnchor="middle"
+        className="font-medium fill-gray-text text-[14px]"
+      >
+        Vehicle
+      </text>
+      <rect
+        x="720"
+        y="20"
+        width="340"
+        height="420"
+        rx="40"
+        fill="none"
+        className="stroke-gray-solid"
+        strokeWidth="2"
+        strokeDasharray="4 4"
+      />
+      <text
+        x="890"
+        y="-6"
+        textAnchor="middle"
+        className="font-medium fill-gray-text text-[14px]"
+      >
+        Ground support equipment
+      </text>
+
+      {/* Plumbing */}
+      <Line d="M300 220 V280" />
+      {/* COPV -> ereg */}
+      <Line d="M300 320 V360" />
+      {/* ereg -> LOX tank */}
+      <Line d="M300 250 H140 V318" />
+      {/* COPV -> pilot */}
+      <Line d="M140 342 V420 H112" />
+      {/* pilot -> depress */}
+      <Line d="M300 660 V678" />
+      {/* LOX tank -> run valve area */}
+      <Line d="M300 250 H780" />
+      {/* COPV -> GN2 QD -> GSE */}
+      <Line d="M780 250 V140 H848" />
+      <Line d="M872 140 H960 V170" />
+      {/* fill solenoid -> supply */}
+      <Line d="M780 250 V318" />
+      {/* drain */}
+      <Line d="M300 600 H460 V560 H780 V422" />
+      {/* LOX line -> GSE LOX */}
+
+      {/* gauge connectors: drawn with the pipes, under every symbol, so an
+                  enlarged tank or gauge covers them instead of being crossed */}
+      <line
+        x1="360"
+        y1="150"
+        x2="480"
+        y2="150"
+        className="stroke-gray-text"
+        strokeWidth="2"
+      />
+      <line
+        x1="360"
+        y1="480"
+        x2="480"
+        y2="480"
+        className="stroke-gray-text"
+        strokeWidth="2"
+      />
+      <line
+        x1="100"
+        y1="250"
+        x2="140"
+        y2="250"
+        className="stroke-gray-text"
+        strokeWidth="2"
+      />
+      {/* Sensors */}
+
+      {/* Tanks */}
+      <Hl id="tank-copv">
+        <Tank
+          id="copv"
+          x={240}
+          y={50}
+          w={120}
+          h={170}
+          fill={copv === null ? null : copv / COPV_RATED_PSI}
+          color={THEME_FILL}
+          trend={copvTrend}
+          title={["Nitrogen COPV"]}
+          lines={[
+            `${fmt(copv)} psi`,
+            `${fmt(copv === null ? null : (100 * copv) / COPV_RATED_PSI)}% of rated`,
+          ]}
+        />
+      </Hl>
+      <Hl id="tank-lox">
+        <Tank
+          id="lox"
+          x={240}
+          y={360}
+          w={120}
+          h={300}
+          fill={loxLevel === null ? null : loxLevel / 100}
+          color={c("cap_fill_base") ?? THEME_FILL}
+          trend={loxTrend}
+          title={["Liquid oxygen", "tank"]}
+          lines={[
+            `${fmt(loxLevel)}% full`,
+            `${fmt(oxtank)} psi (max ${LOX_TANK_RATED_PSI})`,
+          ]}
+        />
+      </Hl>
+      <Tank
+        id="supply"
+        x={925}
+        y={170}
+        w={70}
+        h={200}
+        fill={null}
+        color="#9ca3af"
+        title={["GN2", "supply"]}
+        lines={["no sensor"]}
+      />
+
+      {/* E-Reg */}
+      <Hl id="ereg" cx={300} cy={300}>
+        <rect
+          x="280"
+          y="280"
+          width="40"
+          height="40"
+          rx="6"
+          className="fill-gray-bg-2 stroke-gray-text"
+          strokeWidth="2"
+        />
+        <text
+          x="300"
+          y="305"
+          textAnchor="middle"
+          className="font-bold fill-gray-text text-[13px]"
+        >
+          M
+        </text>
+        {/* same "Name · state" style as the valve labels */}
+        <text x="330" y="304" className="fill-gray-text text-[12px]">
+          E-Reg
+          <tspan className="fill-gray-text-dim">
+            {" · "}
+            {eregLabel.toLowerCase()}
+          </tspan>
+        </text>
+      </Hl>
+
+      {/* Valves */}
+      <Hl id="valve-press_pilot">
+        <Valve
+          x={140}
+          y={330}
+          open={relays?.press_pilot}
+          label="Press Pilot"
+          vertical
+        />
+      </Hl>
+      <Hl id="valve-depress">
+        <Valve
+          x={100}
+          y={420}
+          open={relays?.depress}
+          label="Depress"
+          labelSide="below"
+        />
+      </Hl>
+      <Hl id="valve-run">
+        <Valve x={300} y={690} open={relays?.run} label="Run" vertical />
+      </Hl>
+      <Hl id="valve-gn2_fill">
+        <Valve
+          x={860}
+          y={140}
+          open={relays?.gn2_fill}
+          label="GN2 Fill"
+          labelSide="below"
+        />
+      </Hl>
+      <Hl id="valve-gn2_drain">
+        <Valve
+          x={780}
+          y={330}
+          open={relays?.gn2_drain}
+          label="Drain"
+          vertical
+        />
+      </Hl>
+      <Hl id="valve-lox_disconnect">
+        <Valve
+          x={780}
+          y={410}
+          open={relays?.lox_disconnect}
+          label="LOX Disconnect"
+          vertical
+        />
+      </Hl>
+      <Hl id="valve-lox_fill">
+        <Valve
+          x={650}
+          y={560}
+          open={relays?.lox_fill}
+          label="LOX Fill"
+          labelSide="below"
+        />
+      </Hl>
+
+      {/* two transducers each: COPV 1/2 and Oxtank 1/2 */}
+      <Hl id="gauge-copv1">
+        <Gauge
+          x={430}
+          y={150}
+          label="COPV 1"
+          value={copv1}
+          color={c("copv_1_psi")}
+        />
+      </Hl>
+      <Hl id="gauge-copv2">
+        <Gauge
+          x={510}
+          y={150}
+          label="COPV 2"
+          value={copv2}
+          color={c("copv_2_psi")}
+        />
+      </Hl>
+      <Hl id="gauge-oxtank1">
+        <Gauge
+          x={430}
+          y={480}
+          label="Oxtank 1"
+          value={oxtank1}
+          color={c("oxtank_1_psi")}
+        />
+      </Hl>
+      <Hl id="gauge-oxtank2">
+        <Gauge
+          x={510}
+          y={480}
+          label="Oxtank 2"
+          value={oxtank2}
+          color={c("oxtank_2_psi")}
+        />
+      </Hl>
+      <Hl id="gauge-pilot">
+        <Gauge
+          x={70}
+          y={250}
+          label="Pilot"
+          value={pilot}
+          color={c("pilot_pres_psi")}
+        />
+      </Hl>
+      <Hl id="gauge-qd">
+        <Gauge x={650} y={250} label="QD" value={qd} color={c("qd_pres_psi")} />
+      </Hl>
+    </svg>
+  );
+});
+
+const PID_VIEWS: { key: PidView; label: string }[] = [
+  { key: "tables", label: "Tables" },
+  { key: "graphs", label: "Graphs" },
+];
+
+const ViewTab = memo(function ViewTab({
+  view,
+  label,
+  selected,
+  onSelect,
+}: {
+  view: PidView;
+  label: string;
+  selected: boolean;
+  onSelect: (view: PidView) => void;
+}) {
+  const handleClick = useCallback(() => onSelect(view), [onSelect, view]);
+  return (
+    <button
+      role="tab"
+      aria-selected={selected}
+      onClick={handleClick}
+      className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+        selected ? "ui-selected" : "text-gray-text-dim hover:text-gray-text"
+      }`}
+    >
+      {label}
+    </button>
+  );
+});
+
+export const PidMode = memo(function PidMode() {
+  const [hover, setHover] = useState<string | null>(null);
+  const hoverCtx = useMemo(() => ({ hover, setHover }), [hover]);
+  const view = useViewPrefsStore((s) => s.pidView);
+  const setView = useViewPrefsStore((s) => s.setPidView);
+  const graphs = view === "graphs";
+
   return (
     <HoverCtx.Provider value={hoverCtx}>
-      <div className="h-full p-4 grid grid-cols-[300px,1fr] gap-2">
-        {/* Left: live values and valve states */}
-        <div className="flex flex-col h-full min-h-0 overflow-y-auto gap-2">
-          {/* both tables share the column height; rows spread to fill it */}
-          <div className="flex flex-col flex-1 p-4 ui-section">
-            <h2 className="mb-1 ui-section-title">Readings</h2>
-            <div className="flex flex-col flex-1 divide-y divide-gray-border">
-              <Row label="COPV 1" value={fmt(copv1)} unit="psi" hl="copv1" />
-              <Row label="COPV 2" value={fmt(copv2)} unit="psi" hl="copv2" />
-              <Row
-                label="Oxtank 1"
-                value={fmt(oxtank1)}
-                unit="psi"
-                hl="oxtank1"
-              />
-              <Row
-                label="Oxtank 2"
-                value={fmt(oxtank2)}
-                unit="psi"
-                hl="oxtank2"
-              />
-              <Row label="Pilot" value={fmt(pilot)} unit="psi" hl="pilot" />
-              <Row label="QD" value={fmt(qd)} unit="psi" hl="qd" />
-              <Row label="LOX level" value={fmt(loxLevel)} unit="%" hl="lox" />
-              <Row label="E-Reg" value={eregLabel} hl="ereg" />
-              <Row label="Station state" value={fsState ?? "--"} />
-            </div>
-          </div>
-          <div className="flex flex-col flex-1 p-4 ui-section">
-            <h2 className="mb-1 ui-section-title">Valves</h2>
-            <div className="flex flex-col flex-1 divide-y divide-gray-border">
-              {VALVE_ROWS.map(([key, label]) => (
-                <ValveRow
-                  key={key}
-                  id={`valve-${key}`}
-                  label={label}
-                  open={relays?.[key]}
+      <div
+        className={`h-full p-4 grid gap-2 ${graphs ? "grid-cols-2" : "grid-cols-[300px,1fr]"}`}
+      >
+        {graphs ? <PidGraphs /> : <PidTables />}
+
+        {/* Right: diagram. The layout toggle lives here so it stays put
+            when switching views. */}
+        <div className="flex flex-col h-full min-h-0 p-4 ui-section">
+          <div className="flex items-center justify-between mb-3">
+            <h2
+              className="ui-section-title"
+              title={`COPV fill = pressure vs ${COPV_RATED_PSI} psi rating · LOX fill = capacitive level sensor`}
+            >
+              P&amp;ID
+            </h2>
+            <div
+              role="tablist"
+              aria-label="P&ID layout"
+              className="flex p-1 rounded-lg bg-gray-el-bg gap-1"
+            >
+              {PID_VIEWS.map((v) => (
+                <ViewTab
+                  key={v.key}
+                  view={v.key}
+                  label={v.label}
+                  selected={view === v.key}
+                  onSelect={setView}
                 />
               ))}
             </div>
           </div>
-        </div>
-
-        {/* Right: diagram */}
-        <div className="flex flex-col h-full min-h-0 p-4 ui-section">
-          <h2
-            className="mb-3 ui-section-title"
-            title={`COPV fill = pressure vs ${COPV_RATED_PSI} psi rating · LOX fill = capacitive level sensor`}
-          >
-            P&amp;ID
-          </h2>
           <div className="flex-1 min-h-0">
-            <svg
-              viewBox="0 -20 1080 780"
-              className="w-full h-full"
-              role="img"
-              aria-label="Live fluids P&ID"
-            >
-              {/* Regions */}
-              <rect
-                x="20"
-                y="20"
-                width="560"
-                height="720"
-                rx="40"
-                fill="none"
-                className="stroke-gray-solid"
-                strokeWidth="2"
-                strokeDasharray="4 4"
-              />
-              <text
-                x="300"
-                y="-6"
-                textAnchor="middle"
-                className="font-medium fill-gray-text text-[14px]"
-              >
-                Vehicle
-              </text>
-              <rect
-                x="720"
-                y="20"
-                width="340"
-                height="420"
-                rx="40"
-                fill="none"
-                className="stroke-gray-solid"
-                strokeWidth="2"
-                strokeDasharray="4 4"
-              />
-              <text
-                x="890"
-                y="-6"
-                textAnchor="middle"
-                className="font-medium fill-gray-text text-[14px]"
-              >
-                Ground support equipment
-              </text>
-
-              {/* Plumbing */}
-              <Line d="M300 220 V280" />
-              {/* COPV -> ereg */}
-              <Line d="M300 320 V360" />
-              {/* ereg -> LOX tank */}
-              <Line d="M300 250 H140 V318" />
-              {/* COPV -> pilot */}
-              <Line d="M140 342 V420 H112" />
-              {/* pilot -> depress */}
-              <Line d="M300 660 V678" />
-              {/* LOX tank -> run valve area */}
-              <Line d="M300 250 H780" />
-              {/* COPV -> GN2 QD -> GSE */}
-              <Line d="M780 250 V140 H848" />
-              <Line d="M872 140 H960 V170" />
-              {/* fill solenoid -> supply */}
-              <Line d="M780 250 V318" />
-              {/* drain */}
-              <Line d="M300 600 H460 V560 H780 V422" />
-              {/* LOX line -> GSE LOX */}
-
-              {/* gauge connectors: drawn with the pipes, under every symbol, so an
-                  enlarged tank or gauge covers them instead of being crossed */}
-              <line
-                x1="360"
-                y1="150"
-                x2="480"
-                y2="150"
-                className="stroke-gray-text"
-                strokeWidth="2"
-              />
-              <line
-                x1="360"
-                y1="480"
-                x2="480"
-                y2="480"
-                className="stroke-gray-text"
-                strokeWidth="2"
-              />
-              <line
-                x1="100"
-                y1="250"
-                x2="140"
-                y2="250"
-                className="stroke-gray-text"
-                strokeWidth="2"
-              />
-              {/* Sensors */}
-
-              {/* Tanks */}
-              <Hl id="tank-copv">
-                <Tank
-                  id="copv"
-                  x={240}
-                  y={50}
-                  w={120}
-                  h={170}
-                  fill={copv === null ? null : copv / COPV_RATED_PSI}
-                  color={THEME_FILL}
-                  trend={copvTrend}
-                  title={["Nitrogen COPV"]}
-                  lines={[
-                    `${fmt(copv)} psi`,
-                    `${fmt(copv === null ? null : (100 * copv) / COPV_RATED_PSI)}% of rated`,
-                  ]}
-                />
-              </Hl>
-              <Hl id="tank-lox">
-                <Tank
-                  id="lox"
-                  x={240}
-                  y={360}
-                  w={120}
-                  h={300}
-                  fill={loxLevel === null ? null : loxLevel / 100}
-                  color={THEME_FILL}
-                  trend={loxTrend}
-                  title={["Liquid oxygen", "tank"]}
-                  lines={[
-                    `${fmt(loxLevel)}% full`,
-                    `${fmt(oxtank)} psi (max ${LOX_TANK_RATED_PSI})`,
-                  ]}
-                />
-              </Hl>
-              <Tank
-                id="supply"
-                x={925}
-                y={170}
-                w={70}
-                h={200}
-                fill={null}
-                color="#9ca3af"
-                title={["GN2", "supply"]}
-                lines={["no sensor"]}
-              />
-
-              {/* E-Reg */}
-              <Hl id="ereg" cx={300} cy={300}>
-                <rect
-                  x="280"
-                  y="280"
-                  width="40"
-                  height="40"
-                  rx="6"
-                  className="fill-gray-bg-2 stroke-gray-text"
-                  strokeWidth="2"
-                />
-                <text
-                  x="300"
-                  y="305"
-                  textAnchor="middle"
-                  className="font-bold fill-gray-text text-[13px]"
-                >
-                  M
-                </text>
-                {/* same "Name · state" style as the valve labels */}
-                <text x="330" y="304" className="fill-gray-text text-[12px]">
-                  E-Reg
-                  <tspan className="fill-gray-text-dim">
-                    {" · "}
-                    {eregLabel.toLowerCase()}
-                  </tspan>
-                </text>
-              </Hl>
-
-              {/* Valves */}
-              <Hl id="valve-press_pilot">
-                <Valve
-                  x={140}
-                  y={330}
-                  open={relays?.press_pilot}
-                  label="Press Pilot"
-                  vertical
-                />
-              </Hl>
-              <Hl id="valve-depress">
-                <Valve
-                  x={100}
-                  y={420}
-                  open={relays?.depress}
-                  label="Depress"
-                  labelSide="below"
-                />
-              </Hl>
-              <Hl id="valve-run">
-                <Valve
-                  x={300}
-                  y={690}
-                  open={relays?.run}
-                  label="Run"
-                  vertical
-                />
-              </Hl>
-              <Hl id="valve-gn2_fill">
-                <Valve
-                  x={860}
-                  y={140}
-                  open={relays?.gn2_fill}
-                  label="GN2 Fill"
-                  labelSide="below"
-                />
-              </Hl>
-              <Hl id="valve-gn2_drain">
-                <Valve
-                  x={780}
-                  y={330}
-                  open={relays?.gn2_drain}
-                  label="Drain"
-                  vertical
-                />
-              </Hl>
-              <Hl id="valve-lox_disconnect">
-                <Valve
-                  x={780}
-                  y={410}
-                  open={relays?.lox_disconnect}
-                  label="LOX Disconnect"
-                  vertical
-                />
-              </Hl>
-              <Hl id="valve-lox_fill">
-                <Valve
-                  x={650}
-                  y={560}
-                  open={relays?.lox_fill}
-                  label="LOX Fill"
-                  labelSide="below"
-                />
-              </Hl>
-
-              {/* two transducers each: COPV 1/2 and Oxtank 1/2 */}
-              <Hl id="gauge-copv1">
-                <Gauge x={430} y={150} label="COPV 1" value={copv1} />
-              </Hl>
-              <Hl id="gauge-copv2">
-                <Gauge x={510} y={150} label="COPV 2" value={copv2} />
-              </Hl>
-              <Hl id="gauge-oxtank1">
-                <Gauge x={430} y={480} label="Oxtank 1" value={oxtank1} />
-              </Hl>
-              <Hl id="gauge-oxtank2">
-                <Gauge x={510} y={480} label="Oxtank 2" value={oxtank2} />
-              </Hl>
-              <Hl id="gauge-pilot">
-                <Gauge x={70} y={250} label="Pilot" value={pilot} />
-              </Hl>
-              <Hl id="gauge-qd">
-                <Gauge x={650} y={250} label="QD" value={qd} />
-              </Hl>
-            </svg>
+            <PidDiagram colored={graphs} />
           </div>
         </div>
       </div>
