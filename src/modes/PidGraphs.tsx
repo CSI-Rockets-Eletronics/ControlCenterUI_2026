@@ -30,7 +30,6 @@ export type PidSignal =
   | "oxtank_1_psi"
   | "oxtank_2_psi"
   | "pilot_pres_psi"
-  | "qd_pres_psi"
   | "cap_fill_base";
 
 /** One distinct color per signal, light / dark. COPV 1 and Oxtank 1 keep
@@ -41,7 +40,6 @@ const PID_COLORS: Record<PidSignal, { light: string; dark: string }> = {
   oxtank_1_psi: OXTANK_COLOR,
   oxtank_2_psi: { light: "#ea580c", dark: "#fb923c" },
   pilot_pres_psi: { light: "#16a34a", dark: "#4ade80" },
-  qd_pres_psi: { light: "#2563eb", dark: "#60a5fa" },
   cap_fill_base: { light: "#0d9488", dark: "#2dd4bf" },
 };
 
@@ -73,12 +71,9 @@ const GRAPHS: GraphConfig[] = [
     ],
   },
   {
-    title: "Pilot and QD",
+    title: "Pilot",
     unit: "psi",
-    signals: [
-      { key: "pilot_pres_psi", label: "Pilot" },
-      { key: "qd_pres_psi", label: "QD" },
-    ],
+    signals: [{ key: "pilot_pres_psi", label: "Pilot" }],
   },
   {
     title: "LOX level",
@@ -170,7 +165,9 @@ const PidGraph = memo(function PidGraph({ config }: { config: GraphConfig }) {
         {data.length === 0 ? (
           <div className="flex items-center justify-center h-full text-xs text-gray-text-dim">
             {config.signals.every(({ key }) => DISABLED_SIGNALS.has(key))
-              ? "Sensors off: not read by firmware yet"
+              ? config.signals.length > 1
+                ? "Sensors off: not read by firmware yet"
+                : "Sensor off: not read by firmware yet"
               : "Waiting for data..."}
           </div>
         ) : (

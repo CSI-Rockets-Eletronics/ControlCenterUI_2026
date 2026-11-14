@@ -71,7 +71,18 @@ Firing control, behind arming.
 
 ## Data accuracy
 
-### 3. Pilot and QD pressure are not real readings (firmware)
+### 3. Pilot pressure is not a real reading (firmware); QD removed
+
+**Update (2026-11-13, from office hours):** the QD pressure sensor no longer
+exists, so QD was removed from the UI entirely (P&ID gauge and row, graph,
+Data display card). Firmware and the Pi still send `qd_pres` as 0; the UI
+ignores it. Pilot pressure is still installed: re-enabling it in firmware is
+Aruzhan's (hardware/firmware). Note the old pilot ADC config uses the same
+bus/address/channel as COPV 1 (`i2c3`, `VIN`, `SingleEnded_0`), which may be
+why it was disabled. When it's live, remove `pilot_pres_psi` from
+`DISABLED_SIGNALS`.
+
+Original notes:
 
 **UI side done (2026-11-13):** `DISABLED_SIGNALS` in
 `src/stores/telemetryStore.ts` drops `pilot_pres_psi` / `qd_pres_psi`

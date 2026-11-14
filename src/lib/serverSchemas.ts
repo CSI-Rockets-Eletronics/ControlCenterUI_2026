@@ -107,6 +107,7 @@ export const fsLoxGn2TransducersRecordSchema = z.object({
   oxtank_1: z.number(),
   oxtank_2: z.number(),
   pilot_pres: z.number(),
+  // still sent by firmware as 0; the QD sensor was removed, UI ignores it
   qd_pres: z.number(),
   copv_1_median: z.number(),
   copv_2_median: z.number(),

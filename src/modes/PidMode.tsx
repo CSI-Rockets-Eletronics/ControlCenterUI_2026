@@ -464,7 +464,6 @@ const HL_MAP: Record<string, string[]> = {
   oxtank1: ["tank-lox", "gauge-oxtank1"],
   oxtank2: ["tank-lox", "gauge-oxtank2"],
   pilot: ["gauge-pilot"],
-  qd: ["gauge-qd"],
   lox: ["tank-lox"],
   ereg: ["ereg"],
 };
@@ -594,7 +593,6 @@ function usePidData() {
   const pilot = useLatest("pilot_pres_psi");
   const loxTrend = useTrend("cap_fill_base", 0.8);
   const copvTrend = useTrend("copv_1_psi", 15);
-  const qd = useLatest("qd_pres_psi");
   const copv1 = useLatest("copv_1_psi");
   const copv2 = useLatest("copv_2_psi");
   const oxtank1 = useLatest("oxtank_1_psi");
@@ -624,7 +622,6 @@ function usePidData() {
     pilot,
     loxTrend,
     copvTrend,
-    qd,
     copv1,
     copv2,
     oxtank1,
@@ -640,7 +637,6 @@ const PidTables = memo(function PidTables() {
   const {
     loxLevel,
     pilot,
-    qd,
     copv1,
     copv2,
     oxtank1,
@@ -664,12 +660,6 @@ const PidTables = memo(function PidTables() {
             value={offOr(pilot, "pilot_pres_psi")}
             unit={offUnit("pilot_pres_psi")}
             hl="pilot"
-          />
-          <Row
-            label="QD"
-            value={offOr(qd, "qd_pres_psi")}
-            unit={offUnit("qd_pres_psi")}
-            hl="qd"
           />
           <Row label="LOX level" value={fmt(loxLevel)} unit="%" hl="lox" />
           <Row label="E-Reg" value={eregLabel} hl="ereg" />
@@ -705,7 +695,6 @@ const PidDiagram = memo(function PidDiagram({ colored }: { colored: boolean }) {
     pilot,
     loxTrend,
     copvTrend,
-    qd,
     copv1,
     copv2,
     oxtank1,
@@ -986,16 +975,6 @@ const PidDiagram = memo(function PidDiagram({ colored }: { colored: boolean }) {
           value={pilot}
           color={c("pilot_pres_psi")}
           unit={offUnit("pilot_pres_psi") ?? "sensor off"}
-        />
-      </Hl>
-      <Hl id="gauge-qd">
-        <Gauge
-          x={650}
-          y={250}
-          label="QD"
-          value={qd}
-          color={c("qd_pres_psi")}
-          unit={offUnit("qd_pres_psi") ?? "sensor off"}
         />
       </Hl>
     </PanZoomSvg>

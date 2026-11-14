@@ -87,11 +87,6 @@ class BackendConnectionManager {
         timestamp,
         value: data.pilot_pres,
       });
-
-      store.appendSample("qd_pres_psi", {
-        timestamp,
-        value: data.qd_pres,
-      });
     }
 
     if (deviceStates.fsInjectorTransducers) {
