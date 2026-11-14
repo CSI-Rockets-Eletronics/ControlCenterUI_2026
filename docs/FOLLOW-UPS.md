@@ -231,6 +231,12 @@ Status: both branches pushed, draft PRs open (avionics #1, UI #2).
     tall; or a compact density (smaller buttons/padding) under a
     `max-height` media query; or collapse Manual relay control into the gear
     menu on small screens.
+- **Clarified 2026-11-13:** the settings "Old view" toggle is live and is not
+  this. It renders `src/modes/ElectronicsRegulator`, `SolenoidTimers` and
+  `ControlButtons`. An import trace from `src/main.tsx` found 29 unreachable
+  files in `src/components/` (only `launchMachineProvider`, `design/button`,
+  `design/panel` are used) plus `src/modes/ManualControlPanel.tsx` and
+  `src/modes/StatusPanel.tsx`. Deleting those doesn't affect Old view.
 - `src/components/` still contains the previous UI (`controlCenter.tsx`,
   `launchCommandCenter.tsx`, `cautionPanel.tsx`, ...). No route renders it,
   but it still has FIRE buttons. Consider deleting it so it can't be wired
