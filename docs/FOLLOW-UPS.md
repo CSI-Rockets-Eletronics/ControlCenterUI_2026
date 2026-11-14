@@ -225,26 +225,15 @@ Status: both branches pushed, draft PRs open (avionics #1, UI #2).
 
 ## Smaller notes
 
-- Small windows (about 1024×768): the top row leaves little room, so the Live
-  telemetry charts get short. Shorter relay/firing buttons would help.
-  - Options: a `min-h` on the telemetry row with page scroll below ~800px
-    tall; or a compact density (smaller buttons/padding) under a
-    `max-height` media query; or collapse Manual relay control into the gear
-    menu on small screens.
-- **Clarified 2026-11-13:** the settings "Old view" toggle is live and is not
-  this. It renders `src/modes/ElectronicsRegulator`, `SolenoidTimers` and
-  `ControlButtons`. An import trace from `src/main.tsx` found 29 unreachable
-  files in `src/components/` (only `launchMachineProvider`, `design/button`,
-  `design/panel` are used) plus `src/modes/ManualControlPanel.tsx` and
-  `src/modes/StatusPanel.tsx`. Deleting those doesn't affect Old view.
-- `src/components/` still contains the previous UI (`controlCenter.tsx`,
-  `launchCommandCenter.tsx`, `cautionPanel.tsx`, ...). No route renders it,
-  but it still has FIRE buttons. Consider deleting it so it can't be wired
-  back in by accident.
-  - Options: ★ delete `src/components/` files no route imports (check with
-    `bunx knip` or a grep for imports first); or move them to `legacy/`
-    excluded from the build; or at minimum remove the FIRE buttons there.
-- The E-Reg "Stage 1 / Stage 2" descriptions in the old view ("Slow fill to
+- **Done (2026-11-13): deleted the unreachable old UI.** An import trace from
+  `src/main.tsx` found 31 files nothing could reach: 29 in `src/components/`
+  (`controlCenter.tsx`, `launchCommandCenter.tsx`, `preFirePanel.tsx`, ...,
+  several with FIRE buttons) plus `src/modes/ManualControlPanel.tsx` and
+  `src/modes/StatusPanel.tsx`. All removed. The settings "Old view" toggle
+  is unaffected: it uses `src/modes/ElectronicsRegulator`, `SolenoidTimers`
+  and `ControlButtons`. Kept `src/lib/coolprop.ts` and `src/lib/date.ts`
+  (also unreferenced now, but small helpers that may be reused).
+- The E-Reg "Stage 1 / Stage 2" descriptions in Old view (`src/modes/ElectronicsRegulator.tsx`) ("Slow fill to
   450 PSI", "PID-controlled, launch") don't match the firmware, where both
   stages target 450 psi. Confirm with the avionics team.
   - Options: change the text to match firmware (both stages → 450 psi); or
