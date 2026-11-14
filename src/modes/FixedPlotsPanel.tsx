@@ -1,4 +1,11 @@
-import { memo, useMemo } from "react";
+import {
+  createContext,
+  memo,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   Legend,
   Line,
@@ -9,9 +16,66 @@ import {
   YAxis,
 } from "recharts";
 
-import { SIGNAL_METADATA, useTelemetryStore } from "@/stores/telemetryStore";
+import {
+  decimate,
+  SIGNAL_METADATA,
+  useTelemetryStore,
+  useThrottledTelemetryVersion,
+} from "@/stores/telemetryStore";
 
 import { PulseFill } from "./PulseFill";
+
+/** Set by the panel: expand (in the grid) or close (in the popup). */
+const PlotFrameCtx = createContext<{
+  onExpand?: () => void;
+  onClose?: () => void;
+}>({});
+
+const ICON_PROPS = {
+  width: 14,
+  height: 14,
+  viewBox: "0 0 14 14",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.6,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+};
+
+function PlotHeader({ title, unit }: { title: string; unit: string }) {
+  const { onExpand, onClose } = useContext(PlotFrameCtx);
+  const action = onClose ?? onExpand;
+  return (
+    <div className="flex items-center justify-between mb-2">
+      <h3 className="font-medium text-[16px] tracking-[-0.01em] text-gray-text">
+        {title}
+      </h3>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-gray-text-dim">{unit}</span>
+        {action && (
+          <button
+            type="button"
+            onClick={action}
+            aria-label={onClose ? `Close ${title}` : `Expand ${title}`}
+            title={onClose ? "Close (Esc)" : "Expand"}
+            className="inline-flex items-center justify-center w-6 h-6 -my-1 rounded-md text-gray-text-dim hover:bg-gray-el-bg hover:text-gray-text"
+          >
+            {onClose ? (
+              <svg {...ICON_PROPS}>
+                <path d="M3.5 3.5l7 7M10.5 3.5l-7 7" />
+              </svg>
+            ) : (
+              <svg {...ICON_PROPS}>
+                <path d="M8.5 2.5h3v3M11.5 2.5 8 6M5.5 11.5h-3v-3M2.5 11.5 6 8" />
+              </svg>
+            )}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const SECONDARY_DASH = "6 3";
 const FILL_LEVEL_DOMAIN: [number, number] = [0, 100];
@@ -20,14 +84,12 @@ const COPV_CONFIG = {
   title: "COPV Pressure",
   signals: ["copv_1_psi", "copv_2_psi"] as const,
   unit: "PSI",
-  height: 200,
 };
 
 const OXTANK_CONFIG = {
   title: "Oxtank Pressure",
   signals: ["oxtank_1_psi", "oxtank_2_psi"] as const,
   unit: "PSI",
-  height: 200,
 };
 
 const MULTI_SIGNAL_CONFIGS = [
@@ -41,17 +103,19 @@ const MULTI_SIGNAL_CONFIGS = [
       "cap_fill_board_temp_c",
     ] as const,
     unit: "°C",
-    height: 250,
   },
   {
     title: "Load Cells",
     signals: ["load_cell_1_lbs", "load_cell_2_lbs"] as const,
     unit: "lbs",
-    height: 200,
   },
 ] as const;
 
 const TIME_RANGE_SECONDS = 120;
+
+// Charts stretch to fill their card (no fixed px heights) so the whole
+// Live telemetry grid fits the window without scrolling.
+const FILL_HEIGHT = { flex: "1 1 0px", minHeight: 0 } as const;
 
 const X_AXIS_TICK_STYLE = { fontSize: 10 } as const;
 const X_AXIS_LABEL = {
@@ -63,17 +127,21 @@ const X_AXIS_LABEL = {
 const Y_AXIS_TICK_STYLE = { fontSize: 10 } as const;
 
 const TOOLTIP_CONTENT_STYLE = {
-  backgroundColor: "#fff",
-  border: "1px solid #ccc",
+  backgroundColor: "rgb(var(--gray-bg-1))",
+  border: "none",
   borderRadius: "4px",
   fontSize: "11px",
 } as const;
 
 const LEGEND_WRAPPER_STYLE = { fontSize: "10px" } as const;
 
-const fillLevelTooltipFormatter = (value: number) => `${value.toFixed(1)} %`;
+/** toFixed without "-0" for small negatives around zero. */
+const fix = (v: number, digits: number) =>
+  v.toFixed(digits).replace(/^-(0(\.0+)?)$/, "$1");
 
-const capBaseTooltipFormatter = (value: number) => `${value.toFixed(3)} pF`;
+const fillLevelTooltipFormatter = (value: number) => `${fix(value, 1)} %`;
+
+const capBaseTooltipFormatter = (value: number) => `${fix(value, 3)} pF`;
 
 type PressureConfig = typeof COPV_CONFIG | typeof OXTANK_CONFIG;
 
@@ -82,14 +150,15 @@ const PressurePlot = memo(function PressurePlot({
 }: {
   config: PressureConfig;
 }) {
-  const store = useTelemetryStore();
+  // redraw at most ~5x/s, not on every data batch
+  const tick = useThrottledTelemetryVersion();
 
   const { chartData, latestValues } = useMemo(() => {
     const now = Date.now() * 1000;
     const startTime = now - TIME_RANGE_SECONDS * 1e6;
 
     const allSamples = config.signals.map((signal) =>
-      store.getSamples(signal, startTime, now),
+      useTelemetryStore.getState().getSamples(signal, startTime, now),
     );
 
     const timestamps = new Set<number>();
@@ -98,14 +167,18 @@ const PressurePlot = memo(function PressurePlot({
     );
 
     const sortedTimestamps = Array.from(timestamps).sort((a, b) => a - b);
+    // timestamp -> value per signal (was an O(n^2) .find per point)
+    const byTime = allSamples.map(
+      (samples) => new Map(samples.map((s) => [s.timestamp, s.value])),
+    );
 
     const data = sortedTimestamps.map((timestamp) => {
       const dataPoint: Record<string, number> = {
         time: (timestamp - now) / 1e6,
       };
       config.signals.forEach((signal, idx) => {
-        const sample = allSamples[idx].find((s) => s.timestamp === timestamp);
-        if (sample) dataPoint[signal] = sample.value;
+        const value = byTime[idx].get(timestamp);
+        if (value !== undefined) dataPoint[signal] = value;
       });
       return dataPoint;
     });
@@ -116,22 +189,21 @@ const PressurePlot = memo(function PressurePlot({
       latest[signal] = last[signal] ?? null;
     });
 
-    return { chartData: data, latestValues: latest };
-  }, [config.signals, store]);
+    return { chartData: decimate(data), latestValues: latest };
+    // tick: recompute when the throttled telemetry version changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.signals, tick]);
 
   const hasData = chartData.length > 0;
   const accentColor = SIGNAL_METADATA[config.signals[0]].color;
 
   return (
-    <div className="p-3 border rounded-lg bg-gray-bg-1 border-gray-border">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-bold text-gray-text">{config.title}</h3>
-        <span className="text-xs text-gray-text-dim">{config.unit}</span>
-      </div>
+    <div className="flex flex-col h-full min-h-0 p-3 ui-card">
+      <PlotHeader title={config.title} unit={config.unit} />
 
       {!hasData && (
         <div
-          style={{ height: `${config.height}px` }}
+          style={FILL_HEIGHT}
           className="flex items-center justify-center text-xs text-gray-text-dim"
         >
           Waiting for data...
@@ -140,8 +212,11 @@ const PressurePlot = memo(function PressurePlot({
 
       {hasData && (
         <>
-          <div className="flex" style={{ gap: 0, alignItems: "stretch" }}>
-            <div style={{ flex: 1, minWidth: 0, height: `${config.height}px` }}>
+          <div
+            className="flex"
+            style={{ gap: 0, alignItems: "stretch", ...FILL_HEIGHT }}
+          >
+            <div style={{ flex: 1, minWidth: 0 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
                   <XAxis
@@ -161,7 +236,7 @@ const PressurePlot = memo(function PressurePlot({
                   <Legend
                     wrapperStyle={LEGEND_WRAPPER_STYLE}
                     align="left"
-                    verticalAlign="top"
+                    verticalAlign="middle"
                     layout="vertical"
                     iconType="line"
                   />
@@ -221,41 +296,20 @@ const PressurePlot = memo(function PressurePlot({
                       </span>
                     </div>
                     <span
-                      className="font-mono font-semibold tabular-nums"
+                      className="font-normal tabular-nums"
                       style={{
-                        fontSize: "1.6rem",
+                        fontSize: "2.25rem",
                         lineHeight: 1.1,
                         color: accentColor,
                       }}
                     >
-                      {val !== null ? val.toFixed(0) : "--"}
+                      {val !== null ? fix(val, 0) : "--"}
                     </span>
                     <span className="text-xs text-gray-text-dim">PSI</span>
                   </div>
                 );
               })}
             </div>
-          </div>
-
-          <div className="flex flex-wrap pt-2 mt-2 border-t gap-3 border-gray-border">
-            {config.signals.map((signal) => {
-              const val = latestValues[signal];
-              return (
-                <div key={signal} className="flex items-baseline gap-1.5">
-                  <div
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: accentColor }}
-                  />
-                  <span className="text-xs text-gray-text-dim">
-                    {SIGNAL_METADATA[signal].label}:
-                  </span>
-                  <span className="font-mono text-xs font-semibold text-gray-text tabular-nums">
-                    {val !== null ? val.toFixed(1) : "--"}
-                  </span>
-                  <span className="text-xs text-gray-text-dim">PSI</span>
-                </div>
-              );
-            })}
           </div>
         </>
       )}
@@ -270,14 +324,15 @@ const MultiSignalPlot = memo(function MultiSignalPlot({
 }: {
   config: MultiSignalConfig;
 }) {
-  const store = useTelemetryStore();
+  // redraw at most ~5x/s, not on every data batch
+  const tick = useThrottledTelemetryVersion();
 
   const chartData = useMemo(() => {
     const now = Date.now() * 1000;
     const startTime = now - TIME_RANGE_SECONDS * 1e6;
 
     const allSamples = config.signals.map((signal) =>
-      store.getSamples(signal, startTime, now),
+      useTelemetryStore.getState().getSamples(signal, startTime, now),
     );
 
     const timestamps = new Set<number>();
@@ -286,34 +341,38 @@ const MultiSignalPlot = memo(function MultiSignalPlot({
     );
 
     const sortedTimestamps = Array.from(timestamps).sort((a, b) => a - b);
+    // timestamp -> value per signal (was an O(n^2) .find per point)
+    const byTime = allSamples.map(
+      (samples) => new Map(samples.map((s) => [s.timestamp, s.value])),
+    );
 
-    return sortedTimestamps.map((timestamp) => {
-      const dataPoint: Record<string, number> = {
-        time: (timestamp - now) / 1e6,
-      };
-      config.signals.forEach((signal, idx) => {
-        const sample = allSamples[idx].find((s) => s.timestamp === timestamp);
-        if (sample) dataPoint[signal] = sample.value;
-      });
-      return dataPoint;
-    });
-  }, [config.signals, store]);
+    return decimate(
+      sortedTimestamps.map((timestamp) => {
+        const dataPoint: Record<string, number> = {
+          time: (timestamp - now) / 1e6,
+        };
+        config.signals.forEach((signal, idx) => {
+          const value = byTime[idx].get(timestamp);
+          if (value !== undefined) dataPoint[signal] = value;
+        });
+        return dataPoint;
+      }),
+    );
+    // tick: recompute when the throttled telemetry version changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.signals, tick]);
 
   const hasData = chartData.length > 0;
 
+  const compactFooter = config.signals.length > 2;
+
   return (
-    <div
-      className="p-3 border rounded-lg bg-gray-bg-1 border-gray-border"
-      style={{ height: `${config.height + 80}px` }}
-    >
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-bold text-gray-text">{config.title}</h3>
-        <span className="text-xs text-gray-text-dim">{config.unit}</span>
-      </div>
+    <div className="flex flex-col h-full min-h-0 p-3 ui-card">
+      <PlotHeader title={config.title} unit={config.unit} />
 
       {!hasData && (
         <div
-          style={{ height: `${config.height}px` }}
+          style={FILL_HEIGHT}
           className="flex items-center justify-center text-xs text-gray-text-dim"
         >
           Waiting for data...
@@ -322,7 +381,7 @@ const MultiSignalPlot = memo(function MultiSignalPlot({
 
       {hasData && (
         <>
-          <div style={{ height: `${config.height}px` }}>
+          <div style={FILL_HEIGHT}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <XAxis
@@ -342,7 +401,7 @@ const MultiSignalPlot = memo(function MultiSignalPlot({
                 <Legend
                   wrapperStyle={LEGEND_WRAPPER_STYLE}
                   align="left"
-                  verticalAlign="top"
+                  verticalAlign="middle"
                   layout="vertical"
                   iconType="line"
                 />
@@ -362,7 +421,8 @@ const MultiSignalPlot = memo(function MultiSignalPlot({
             </ResponsiveContainer>
           </div>
 
-          <div className="flex flex-wrap pt-2 mt-2 border-t gap-3 border-gray-border">
+          {/* one line: with many signals, drop names (colors match the legend) */}
+          <div className="flex pt-2 mt-2 overflow-hidden border-t gap-3 border-gray-border whitespace-nowrap">
             {config.signals.map((signal) => {
               const latestValue =
                 chartData.length > 0
@@ -374,17 +434,21 @@ const MultiSignalPlot = memo(function MultiSignalPlot({
                     className="w-2 h-2 rounded-full shrink-0"
                     style={{ backgroundColor: SIGNAL_METADATA[signal].color }}
                   />
-                  <span className="text-xs text-gray-text-dim">
-                    {SIGNAL_METADATA[signal].label}:
-                  </span>
-                  <span className="font-mono text-xs font-semibold text-gray-text tabular-nums">
+                  {compactFooter ? null : (
+                    <span className="text-xs text-gray-text-dim">
+                      {SIGNAL_METADATA[signal].label}:
+                    </span>
+                  )}
+                  <span className="text-sm font-normal text-gray-text tabular-nums">
                     {latestValue !== null && latestValue !== undefined
-                      ? latestValue.toFixed(1)
+                      ? fix(latestValue, 1)
                       : "--"}
                   </span>
-                  <span className="text-xs text-gray-text-dim">
-                    {config.unit}
-                  </span>
+                  {compactFooter ? null : (
+                    <span className="text-xs text-gray-text-dim">
+                      {config.unit}
+                    </span>
+                  )}
                 </div>
               );
             })}
@@ -396,38 +460,37 @@ const MultiSignalPlot = memo(function MultiSignalPlot({
 });
 
 const FillLevelPlot = memo(function FillLevelPlot() {
-  const store = useTelemetryStore();
+  // redraw at most ~5x/s, not on every data batch
+  const tick = useThrottledTelemetryVersion();
 
   const { chartData, latestValue } = useMemo(() => {
     const now = Date.now() * 1000;
     const startTime = now - TIME_RANGE_SECONDS * 1e6;
 
-    const samples = store.getSamples("cap_fill_actual", startTime, now);
+    const samples = useTelemetryStore
+      .getState()
+      .getSamples("cap_fill_base", startTime, now);
     const data = samples.map((s) => ({
       time: (s.timestamp - now) / 1e6,
-      cap_fill_actual: s.value,
+      cap_fill_base: s.value,
     }));
 
-    const latest =
-      data.length > 0 ? data[data.length - 1].cap_fill_actual : null;
+    const latest = data.length > 0 ? data[data.length - 1].cap_fill_base : null;
 
-    return { chartData: data, latestValue: latest };
-  }, [store]);
+    return { chartData: decimate(data), latestValue: latest };
+    // tick: recompute when the throttled telemetry version changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tick]);
 
   const hasData = chartData.length > 0;
 
   return (
-    <div className="p-3 border rounded-lg bg-gray-bg-1 border-gray-border">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-bold text-gray-text">
-          Cap Fill Height
-        </span>
-        <span className="text-xs text-gray-text-dim">%</span>
-      </div>
+    <div className="flex flex-col h-full min-h-0 p-3 ui-card">
+      <PlotHeader title={"Cap Fill Height"} unit={"%"} />
 
       {!hasData && (
         <div
-          style={{ height: "160px" }}
+          style={FILL_HEIGHT}
           className="flex items-center justify-center text-xs text-gray-text-dim"
         >
           Waiting for data...
@@ -436,7 +499,7 @@ const FillLevelPlot = memo(function FillLevelPlot() {
 
       {hasData && (
         <>
-          <div style={{ height: "160px" }}>
+          <div style={FILL_HEIGHT}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <XAxis
@@ -459,9 +522,9 @@ const FillLevelPlot = memo(function FillLevelPlot() {
                 />
                 <Line
                   type="monotone"
-                  dataKey="cap_fill_actual"
-                  name={SIGNAL_METADATA["cap_fill_actual"].label}
-                  stroke={SIGNAL_METADATA["cap_fill_actual"].color}
+                  dataKey="cap_fill_base"
+                  name={SIGNAL_METADATA["cap_fill_base"].label}
+                  stroke={SIGNAL_METADATA["cap_fill_base"].color}
                   strokeWidth={2}
                   dot={false}
                   isAnimationActive={false}
@@ -475,14 +538,14 @@ const FillLevelPlot = memo(function FillLevelPlot() {
               <div
                 className="w-2 h-2 rounded-full shrink-0"
                 style={{
-                  backgroundColor: SIGNAL_METADATA["cap_fill_actual"].color,
+                  backgroundColor: SIGNAL_METADATA["cap_fill_base"].color,
                 }}
               />
               <span className="text-xs text-gray-text-dim">
                 Cap fill height:
               </span>
-              <span className="font-mono text-xs font-semibold text-gray-text tabular-nums">
-                {latestValue !== null ? latestValue.toFixed(1) : "--"}
+              <span className="text-sm font-normal text-gray-text tabular-nums">
+                {latestValue !== null ? fix(latestValue, 1) : "--"}
               </span>
               <span className="text-xs text-gray-text-dim">%</span>
             </div>
@@ -494,37 +557,38 @@ const FillLevelPlot = memo(function FillLevelPlot() {
 });
 
 const CapBasePlot = memo(function CapBasePlot() {
-  const store = useTelemetryStore();
+  // redraw at most ~5x/s, not on every data batch
+  const tick = useThrottledTelemetryVersion();
 
   const { chartData, latestValue } = useMemo(() => {
     const now = Date.now() * 1000;
     const startTime = now - TIME_RANGE_SECONDS * 1e6;
 
-    const samples = store.getSamples("cap_fill_base", startTime, now);
+    const samples = useTelemetryStore
+      .getState()
+      .getSamples("cap_fill_actual", startTime, now);
     const data = samples.map((s) => ({
       time: (s.timestamp - now) / 1e6,
-      cap_fill_base: s.value,
+      cap_fill_actual: s.value,
     }));
 
-    const latest = data.length > 0 ? data[data.length - 1].cap_fill_base : null;
+    const latest =
+      data.length > 0 ? data[data.length - 1].cap_fill_actual : null;
 
-    return { chartData: data, latestValue: latest };
-  }, [store]);
+    return { chartData: decimate(data), latestValue: latest };
+    // tick: recompute when the throttled telemetry version changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tick]);
 
   const hasData = chartData.length > 0;
 
   return (
-    <div className="p-3 border rounded-lg bg-gray-bg-1 border-gray-border">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-bold text-gray-text">
-          Cap Fill Capacitance
-        </span>
-        <span className="text-xs text-gray-text-dim">pF</span>
-      </div>
+    <div className="flex flex-col h-full min-h-0 p-3 ui-card">
+      <PlotHeader title={"Cap Fill Capacitance"} unit={"pF"} />
 
       {!hasData && (
         <div
-          style={{ height: "160px" }}
+          style={FILL_HEIGHT}
           className="flex items-center justify-center text-xs text-gray-text-dim"
         >
           Waiting for data...
@@ -533,7 +597,7 @@ const CapBasePlot = memo(function CapBasePlot() {
 
       {hasData && (
         <>
-          <div style={{ height: "160px" }}>
+          <div style={FILL_HEIGHT}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <XAxis
@@ -555,9 +619,9 @@ const CapBasePlot = memo(function CapBasePlot() {
                 />
                 <Line
                   type="monotone"
-                  dataKey="cap_fill_base"
-                  name={SIGNAL_METADATA["cap_fill_base"].label}
-                  stroke={SIGNAL_METADATA["cap_fill_base"].color}
+                  dataKey="cap_fill_actual"
+                  name={SIGNAL_METADATA["cap_fill_actual"].label}
+                  stroke={SIGNAL_METADATA["cap_fill_actual"].color}
                   strokeWidth={1.5}
                   strokeDasharray="5 3"
                   dot={false}
@@ -572,14 +636,14 @@ const CapBasePlot = memo(function CapBasePlot() {
               <div
                 className="w-2 h-2 rounded-full shrink-0"
                 style={{
-                  backgroundColor: SIGNAL_METADATA["cap_fill_base"].color,
+                  backgroundColor: SIGNAL_METADATA["cap_fill_actual"].color,
                 }}
               />
               <span className="text-xs text-gray-text-dim">
                 Cap Fill Capacitance:
               </span>
-              <span className="font-mono text-xs font-semibold text-gray-text tabular-nums">
-                {latestValue !== null ? latestValue.toFixed(3) : "--"}
+              <span className="text-sm font-normal text-gray-text tabular-nums">
+                {latestValue !== null ? fix(latestValue, 3) : "--"}
               </span>
               <span className="text-xs text-gray-text-dim">pF</span>
             </div>
@@ -590,37 +654,70 @@ const CapBasePlot = memo(function CapBasePlot() {
   );
 });
 
+const PLOTS = [
+  () => <PressurePlot config={COPV_CONFIG} />,
+  () => <PressurePlot config={OXTANK_CONFIG} />,
+  () => <MultiSignalPlot config={MULTI_SIGNAL_CONFIGS[0]} />,
+  () => <MultiSignalPlot config={MULTI_SIGNAL_CONFIGS[1]} />,
+  () => <FillLevelPlot />,
+  () => <CapBasePlot />,
+];
+
+const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
+
 export const FixedPlotsPanel = memo(function FixedPlotsPanel() {
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const expandCtx = useMemo(
+    () => PLOTS.map((_, i) => ({ onExpand: () => setExpanded(i) })),
+    [],
+  );
+  const closeCtx = useMemo(() => ({ onClose: () => setExpanded(null) }), []);
+
+  // Esc closes the popup
+  useEffect(() => {
+    if (expanded === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setExpanded(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [expanded]);
+
   return (
-    <div className="flex flex-col h-full border bg-gray-el-bg rounded-xl border-gray-border">
-      <div className="p-3 border-b border-gray-border">
-        <h2 className="text-xs font-bold tracking-widest uppercase text-gray-text">
-          Live Telemetry
-        </h2>
+    <div className="flex flex-col h-full ui-section">
+      <div className="flex items-center justify-between px-4 pt-4 pb-3 gap-4">
+        <h2 className="ui-section-title">Live telemetry</h2>
+        <PulseFill />
       </div>
 
-      <div className="p-3 overflow-y-scroll" style={{ flex: "1 1 0px" }}>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col gap-3">
-            <PressurePlot config={COPV_CONFIG} />
-            <PulseFill />
-            <MultiSignalPlot config={MULTI_SIGNAL_CONFIGS[1]} />
-          </div>
-          <div className="flex flex-col gap-3">
-            <PressurePlot config={OXTANK_CONFIG} />
-            <MultiSignalPlot config={MULTI_SIGNAL_CONFIGS[0]} />
-          </div>
-        </div>
-
-        <div className="flex mt-3 gap-3">
-          <div style={{ flex: "1 1 0" }}>
-            <FillLevelPlot />
-          </div>
-          <div style={{ flex: "1 1 0" }}>
-            <CapBasePlot />
-          </div>
+      <div className="px-4 pb-4 overflow-hidden" style={FILL_HEIGHT}>
+        {/* three charts per row */}
+        <div className="h-full grid grid-cols-3 grid-rows-2 gap-2">
+          {PLOTS.map((Plot, i) => (
+            <PlotFrameCtx.Provider key={i} value={expandCtx[i]}>
+              <Plot />
+            </PlotFrameCtx.Provider>
+          ))}
         </div>
       </div>
+
+      {expanded !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/50"
+          onMouseDown={closeCtx.onClose}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            onMouseDown={stopPropagation}
+            className="w-full p-2 rounded-lg max-w-[1400px] h-[80vh] ui-section"
+          >
+            <PlotFrameCtx.Provider value={closeCtx}>
+              {PLOTS[expanded]()}
+            </PlotFrameCtx.Provider>
+          </div>
+        </div>
+      )}
     </div>
   );
 });

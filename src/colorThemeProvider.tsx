@@ -19,8 +19,15 @@ const ColorThemeContext = createContext({
   toggleDark: () => undefined as void,
 });
 
-function isSystemDarkMode() {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+const STORAGE_KEY = "colorTheme";
+
+/** Saved choice wins; otherwise light, which is what the UI has always shown. */
+function getInitialDark() {
+  try {
+    return localStorage.getItem(STORAGE_KEY) === "dark";
+  } catch {
+    return false;
+  }
 }
 
 export const ColorThemeProvider = memo(function ColorThemeProvider({
@@ -28,11 +35,20 @@ export const ColorThemeProvider = memo(function ColorThemeProvider({
 }: {
   children?: ReactNode;
 }) {
-  const [isDark, setIsDark] = useState(isSystemDarkMode());
+  const [isDark, setIsDark] = useState(getInitialDark);
 
   const toggleDark = useCallback(() => {
     setIsDark((isDark) => !isDark);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", isDark);
+    try {
+      localStorage.setItem(STORAGE_KEY, isDark ? "dark" : "light");
+    } catch {
+      // storage blocked; the toggle still works for this tab
+    }
+  }, [isDark]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

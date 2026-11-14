@@ -5,6 +5,7 @@ import { useTelemetryStore } from "./telemetryStore";
 class BackendConnectionManager {
   private intervalId: NodeJS.Timeout | null = null;
   private deviceStatesCallback: (() => DeviceStates) | null = null;
+  private lastSeenTs = new Map<keyof DeviceStates, number>();
 
   start(getDeviceStates: () => DeviceStates) {
     if (this.intervalId) {
@@ -31,6 +32,7 @@ class BackendConnectionManager {
       clearInterval(this.intervalId);
       this.intervalId = null;
       this.deviceStatesCallback = null;
+      this.lastSeenTs.clear();
       console.log("BackendConnection stopped");
     }
   }
@@ -40,10 +42,23 @@ class BackendConnectionManager {
   }
 
   private processDeviceStates(deviceStates: DeviceStates, timestamp: number) {
-    console.log("loadCell1:", deviceStates.loadCell1);
-    console.log("loadCell2:", deviceStates.loadCell2);
+    // deviceStates holds the last successful poll. Only plot records we
+    // haven't seen, so a dead link shows as a gap instead of a flat "live" line.
+    const fresh = {} as { [K in keyof DeviceStates]: DeviceStates[K] };
+    let anyFresh = false;
+    for (const key of Object.keys(deviceStates) as (keyof DeviceStates)[]) {
+      const record = deviceStates[key];
+      if (record && record.ts !== this.lastSeenTs.get(key)) {
+        this.lastSeenTs.set(key, record.ts);
+        (fresh as Record<string, unknown>)[key] = record;
+        anyFresh = true;
+      }
+    }
+    if (!anyFresh) return;
+    deviceStates = fresh;
 
     const store = useTelemetryStore.getState();
+    store.noteFreshData();
 
     if (deviceStates.fsLoxGn2Transducers) {
       const data = deviceStates.fsLoxGn2Transducers.data;
@@ -71,11 +86,6 @@ class BackendConnectionManager {
       store.appendSample("pilot_pres_psi", {
         timestamp,
         value: data.pilot_pres,
-      });
-
-      store.appendSample("qd_pres_psi", {
-        timestamp,
-        value: data.qd_pres,
       });
     }
 
@@ -209,8 +219,6 @@ class BackendConnectionManager {
         value: data.board_temp,
       });
     }
-
-    store.setConnected(true);
   }
 }
 

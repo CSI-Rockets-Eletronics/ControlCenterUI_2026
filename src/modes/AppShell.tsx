@@ -10,6 +10,7 @@ import { backendConnection } from "@/stores/backendConnection";
 import { ControlMode } from "./ControlMode";
 import { DataDisplayMode } from "./DataDisplayMode";
 import { ModeNav } from "./ModeNav";
+import { PidMode } from "./PidMode";
 
 const AppShellInner = memo(function AppShellInner() {
   const location = useLocation();
@@ -29,15 +30,21 @@ const AppShellInner = memo(function AppShellInner() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-screen bg-gray-bg-1">
       <ModeNav currentPath={location.pathname} />
       <div className="flex-1 overflow-hidden">
         <Routes>
           <Route path="/control" element={<ControlMode />} />
           <Route path="/data" element={<DataDisplayMode />} />
+          <Route path="/pid" element={<PidMode />} />
           <Route path="/:sessionName/control" element={<ControlMode />} />
           <Route path="/:sessionName/data" element={<DataDisplayMode />} />
-          <Route path="*" element={<Navigate to="control" replace />} />
+          <Route path="/:sessionName/pid" element={<PidMode />} />
+          {/* keep ?server= etc.; dropping it silently switches useApi() to DEFAULT_SERVER */}
+          <Route
+            path="*"
+            element={<Navigate to={`control${location.search}`} replace />}
+          />
         </Routes>
       </div>
     </div>
