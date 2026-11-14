@@ -340,7 +340,14 @@ class Station {
     if (cmd === "EREG_STAGE_1") this.eregStage = 1;
     if (cmd === "EREG_STAGE_2") this.eregStage = 2;
     // ereg controller follows these states too (dev_ereg_control.h)
-    if (cmd === "STATE_ABORT") this.eregStage = 0;
+    if (cmd === "STATE_ABORT") {
+      this.eregStage = 0;
+      // ABORT clears manual overrides so only depress stays open. Matches
+      // avionics PR #2 (fix/abort-clears-manual-overrides); boards running
+      // older firmware keep manual valves open through ABORT.
+      for (const k of Object.keys(this.manual) as (keyof typeof this.manual)[])
+        this.manual[k] = false;
+    }
     if (cmd === "STATE_FIRE") this.eregStage = 2;
 
     const next = map[cmd];

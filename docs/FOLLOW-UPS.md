@@ -9,13 +9,14 @@ brainstormed fixes, not decisions. A ★ marks the suggested starting point.
 
 ## Safety
 
-### 1. ABORT does not close manually opened valves (firmware) — intended
+### 1. ABORT does not close manually opened valves (firmware) — fix agreed
 
-**Decided (2026-11-13):** avionics confirmed this is intended behavior. No
-firmware change; the proposed fix (avionics PR #2) was closed. Operator
-procedure: switch manually opened valves off in Manual relay control before
-relying on ABORT. The simulator keeps the same behavior. The notes and
-options below are kept for reference only.
+**Decided (2026-11-13):** the team confirmed ABORT should close all manually
+opened valves, leaving only depress open. Fix: avionics PR #2
+(`fix/abort-clears-manual-overrides`, `1cee64b`) clears the four manual
+overrides on ABORT. The simulator now does the same. Until a board is
+flashed with PR #2, real ABORT still keeps manual valves open, so keep the
+procedure (switch manual valves off before ABORT) until then.
 
 `main/devices/dev_fs_relays.h` keeps four manual overrides (`gn2_drain`,
 `gn2_fill`, `lox_fill`, `lox_disconnect`) set from a `STATE_CUSTOM` command
