@@ -1,5 +1,5 @@
 /* eslint-disable react-perf/jsx-no-new-function-as-prop */
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 
 import {
   useLaunchMachineActorRef,
@@ -171,6 +171,12 @@ export const RelayControlPanel = memo(function RelayControlPanel() {
     operation: false,
     fire: false,
   });
+
+  // ABORT disarms: reset the arming switches so FIRE needs re-arming
+  useEffect(() => {
+    if (fsState === "ABORT")
+      setChecks({ calibration: false, operation: false, fire: false });
+  }, [fsState]);
 
   const allChecked = Object.values(checks).every(Boolean);
   const oldView = useViewPrefsStore((s) => s.oldView);
@@ -346,11 +352,13 @@ export const RelayControlPanel = memo(function RelayControlPanel() {
 
             <button
               onClick={() => handleFsCommand("STATE_FIRE")}
-              disabled={!isEnginePrime && (!canSendFsCommand || !allChecked)}
+              // Arming is always required. ENGINE_PRIME only bypasses the
+              // launch machine's state check, never the arming switches.
+              disabled={!allChecked || (!isEnginePrime && !canSendFsCommand)}
               className={[
                 "rounded-card border-2 transition-all flex flex-col items-center justify-center p-2",
                 "bg-gray-bg-2 border-transparent text-gray-text",
-                !isEnginePrime && (!canSendFsCommand || !allChecked)
+                !allChecked || (!isEnginePrime && !canSendFsCommand)
                   ? "cursor-not-allowed opacity-50"
                   : "cursor-pointer hover:bg-gray-el-bg-hover",
               ].join(" ")}
