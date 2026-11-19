@@ -99,14 +99,6 @@ Readings rows, the P&ID Pilot and QD graph, and the Data display cards show
 fake values. Remove the entries once firmware reads the sensors. The firmware
 fix below is still open.
 
-**Firmware draft (2026-11-18):** avionics branch
-`fix/pilot-and-lox-calibration` (local, not pushed). The old `pilot_pres`
-config was an exact copy of `copv_1` (i2c3, 0x49, A0), so it read COPV 1's
-pin. The draft adds `kPilotEnabled` (false) plus TODO address/channel/scale
-constants. Needs an I2C scan on the bench to find Pilot's real ADC before
-turning it on; a wrong address boot-loops the board. Hovering Pilot in the UI
-explains this (`SIGNAL_NOTES` in `telemetryStore.ts`).
-
 In `main/devices/dev_fs_lox_gn2_transducers.h` the `pilot_pres` reading is
 commented out ("DISABLED") and `qd_pres` is hard-coded to `0.0f`. On
 hardware the UI's Pilot and QD values are stale or 0. The simulator invents
@@ -160,14 +152,6 @@ reads 100% until it's topped up, and readings below empty go negative.
   as empty (or full) and stores it on the board.
 - **Show pF until calibrated.** Have the P&ID show capacitance instead of a
   percent until real calibration numbers exist.
-
-**Status (2026-11-18):** the UI tags Cap Fill Height / LOX level
-"uncalibrated" with a hover note pointing to Cap Fill Capacitance
-(`UNCALIBRATED_SIGNALS` / `SIGNAL_NOTES` in `telemetryStore.ts`; remove the
-entry once calibrated). The two-point calibration is drafted on avionics
-branch `fix/pilot-and-lox-calibration`: `kFullCapacitancePf = 0` keeps the old
-behavior (now clamped 0–100) until the empty and full pF from a real fill are
-filled in.
 
 ### 5. Pi script checked against firmware and UI (2026-11-13)
 

@@ -4,7 +4,6 @@ import {
   DISABLED_SIGNALS,
   type PlotConfig,
   SIGNAL_METADATA,
-  SIGNAL_NOTES,
   type SignalType,
   useTelemetryStore,
   useThrottledTelemetryVersion,
@@ -12,7 +11,6 @@ import {
 import { type DataView, useViewPrefsStore } from "@/stores/viewPrefsStore";
 
 import { FOCUS_PLOT_SEARCH_EVENT, PlotsPanel } from "./PlotsPanel";
-import { SignalNoteTag } from "./SignalNoteTag";
 import { TelemetryPlot } from "./TelemetryPlot";
 
 const SIGNALS = Object.keys(SIGNAL_METADATA) as SignalType[];
@@ -51,10 +49,7 @@ const SignalCard = memo(function SignalCard({
   // Name, live value, then min/avg/max on one line. Font sizes scale with the
   // window height (vh) so all cards still fit on one screen.
   return (
-    <div
-      title={SIGNAL_NOTES[signal]}
-      className="flex flex-col justify-between px-3 py-2 bg-gray-bg-2 rounded-card"
-    >
+    <div className="flex flex-col justify-between px-3 py-2 bg-gray-bg-2 rounded-card">
       <div className="flex items-center min-w-0 gap-2">
         <div
           className="rounded-full w-2.5 h-2.5 shrink-0"
@@ -63,7 +58,6 @@ const SignalCard = memo(function SignalCard({
         <h3 className="font-medium truncate text-[clamp(15px,2.1vh,19px)] tracking-[-0.01em] text-gray-text">
           {meta.label}
         </h3>
-        <SignalNoteTag signal={signal} />
       </div>
 
       <div className="font-normal leading-tight text-[clamp(22px,3.6vh,36px)] tracking-[-0.02em] tabular-nums text-gray-text">
@@ -149,7 +143,6 @@ const SidebarCard = memo(function SidebarCard({
   return (
     <button
       onClick={handleClick}
-      title={SIGNAL_NOTES[signal]}
       aria-pressed={selected}
       className={`w-full px-3 py-2.5 text-left ui-card transition-colors ${
         selected ? "ui-selected" : "hover:bg-gray-el-bg-hover"
@@ -163,7 +156,6 @@ const SidebarCard = memo(function SidebarCard({
         <span className="text-base font-medium truncate tracking-[-0.01em] text-gray-text">
           {meta.label}
         </span>
-        <SignalNoteTag signal={signal} />
       </div>
       <div className="mt-1 text-lg font-normal tabular-nums text-gray-text">
         {DISABLED_SIGNALS.has(signal) ? (

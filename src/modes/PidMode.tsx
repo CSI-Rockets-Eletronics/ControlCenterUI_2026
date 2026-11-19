@@ -13,7 +13,6 @@ import {
 import { useLaunchMachineSelector } from "@/components/launchMachineProvider";
 import {
   DISABLED_SIGNALS,
-  SIGNAL_NOTES,
   type SignalType,
   useTelemetryStore,
 } from "@/stores/telemetryStore";
@@ -21,7 +20,6 @@ import { type PidView, useViewPrefsStore } from "@/stores/viewPrefsStore";
 
 import { PanZoomSvg } from "./PanZoomSvg";
 import { pidColor, PidGraphs } from "./PidGraphs";
-import { SignalNoteTag } from "./SignalNoteTag";
 
 /** Full drawing area of the diagram (the "fit" view), with a 24-unit
  *  margin so the drawing doesn't touch the card edge. */
@@ -515,15 +513,12 @@ function Row({
   value,
   unit,
   hl,
-  signal,
 }: {
   label: string;
   value: string;
   unit?: string;
   /** id of the diagram part(s) to enlarge on hover */
   hl?: string;
-  /** adds the signal's hover note and "uncalibrated" tag, if any */
-  signal?: SignalType;
 }) {
   const { setHover } = useContext(HoverCtx);
   const enter = useCallback(() => setHover(hl ?? null), [setHover, hl]);
@@ -532,13 +527,9 @@ function Row({
     <div
       onMouseEnter={enter}
       onMouseLeave={leave}
-      title={signal && SIGNAL_NOTES[signal]}
       className="flex items-center justify-between flex-1 px-2 py-2 -mx-2 rounded-md hover:bg-gray-el-bg-hover"
     >
-      <span className="flex items-center text-sm gap-2 text-gray-text-dim">
-        {label}
-        {signal && <SignalNoteTag signal={signal} />}
-      </span>
+      <span className="text-sm text-gray-text-dim">{label}</span>
       <span className="text-sm font-normal tabular-nums text-gray-text">
         {value}
         {unit && (
@@ -673,15 +664,8 @@ const PidTables = memo(function PidTables() {
             value={offOr(pilot, "pilot_pres_psi")}
             unit={offUnit("pilot_pres_psi")}
             hl="pilot"
-            signal="pilot_pres_psi"
           />
-          <Row
-            label="LOX level"
-            value={fmt(loxLevel)}
-            unit="%"
-            hl="lox"
-            signal="cap_fill_base"
-          />
+          <Row label="LOX level" value={fmt(loxLevel)} unit="%" hl="lox" />
           <Row label="E-Reg" value={eregLabel} hl="ereg" />
           <Row label="Station state" value={fsState ?? "--"} />
         </div>

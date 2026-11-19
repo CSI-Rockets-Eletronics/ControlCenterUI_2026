@@ -50,29 +50,6 @@ export const DISABLED_SIGNALS: ReadonlySet<SignalType> = new Set<SignalType>([
   "pilot_pres_psi",
 ]);
 
-/**
- * Signals that show a value but can't be trusted yet. The UI tags them
- * "uncalibrated". Remove an entry once firmware is calibrated.
- */
-export const UNCALIBRATED_SIGNALS: ReadonlySet<SignalType> =
-  new Set<SignalType>(["cap_fill_base"]);
-
-/**
- * Hover notes explaining the state of a reading. Keep in sync with
- * docs/FOLLOW-UPS.md (items 3 and 4).
- */
-export const SIGNAL_NOTES: Partial<Record<SignalType, string>> = {
-  pilot_pres_psi:
-    "Not read by firmware yet. Its old config pointed at COPV 1's ADC pin, so it was turned off. " +
-    "A fix is drafted (avionics branch fix/pilot-and-lox-calibration) and needs Pilot's real ADC address from the bench.",
-  cap_fill_base:
-    "Uncalibrated. Firmware scales against the highest reading since boot, so this reads ~100% while filling. " +
-    "Use Cap Fill Capacitance (pF) to judge the LOX level for now.",
-  cap_fill_actual:
-    "Raw probe capacitance. Rises as LOX fills; use this to judge the level until fill % is calibrated. " +
-    "Note the empty and full pF during a fill: those values calibrate fill %.",
-};
-
 export const COPV_PURPLE = { light: "#8338ec", dark: "#a970ff" };
 // dark: Ramp-style yellow nudged slightly green; too pale on white, so
 // light mode keeps the cyan

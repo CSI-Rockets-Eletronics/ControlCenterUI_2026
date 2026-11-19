@@ -19,14 +19,11 @@ import {
 import {
   decimate,
   SIGNAL_METADATA,
-  SIGNAL_NOTES,
-  type SignalType,
   useTelemetryStore,
   useThrottledTelemetryVersion,
 } from "@/stores/telemetryStore";
 
 import { PulseFill } from "./PulseFill";
-import { SignalNoteTag } from "./SignalNoteTag";
 
 /** Set by the panel: expand (in the grid) or close (in the popup). */
 const PlotFrameCtx = createContext<{
@@ -46,29 +43,14 @@ const ICON_PROPS = {
   "aria-hidden": true,
 };
 
-function PlotHeader({
-  title,
-  unit,
-  signal,
-}: {
-  title: string;
-  unit: string;
-  /** adds the signal's hover note and "uncalibrated" tag, if any */
-  signal?: SignalType;
-}) {
+function PlotHeader({ title, unit }: { title: string; unit: string }) {
   const { onExpand, onClose } = useContext(PlotFrameCtx);
   const action = onClose ?? onExpand;
   return (
     <div className="flex items-center justify-between mb-2">
-      <div
-        className="flex items-center min-w-0 gap-2"
-        title={signal && SIGNAL_NOTES[signal]}
-      >
-        <h3 className="font-medium text-[16px] tracking-[-0.01em] text-gray-text">
-          {title}
-        </h3>
-        {signal && <SignalNoteTag signal={signal} />}
-      </div>
+      <h3 className="font-medium text-[16px] tracking-[-0.01em] text-gray-text">
+        {title}
+      </h3>
       <div className="flex items-center gap-2">
         <span className="text-xs text-gray-text-dim">{unit}</span>
         {action && (
@@ -516,7 +498,7 @@ const FillLevelPlot = memo(function FillLevelPlot() {
 
   return (
     <div className="flex flex-col h-full min-h-0 p-3 ui-card">
-      <PlotHeader title={"Cap Fill Height"} unit={"%"} signal="cap_fill_base" />
+      <PlotHeader title={"Cap Fill Height"} unit={"%"} />
 
       {!hasData && (
         <div
@@ -619,11 +601,7 @@ const CapBasePlot = memo(function CapBasePlot() {
 
   return (
     <div className="flex flex-col h-full min-h-0 p-3 ui-card">
-      <PlotHeader
-        title={"Cap Fill Capacitance"}
-        unit={"pF"}
-        signal="cap_fill_actual"
-      />
+      <PlotHeader title={"Cap Fill Capacitance"} unit={"pF"} />
 
       {!hasData && (
         <div
