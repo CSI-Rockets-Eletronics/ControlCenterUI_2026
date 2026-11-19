@@ -799,90 +799,6 @@ manual_gn2_fill = command_packet.gn2_fill;</pre
       <article class="issue">
         <div class="issue-head">
           <div class="chips">
-            <span class="chip info">Known limitation</span
-            ><span class="chip">Firmware, unchanged since last year</span
-            ><span class="chip">Owner: avionics</span
-            ><span class="chip">Not blocking</span>
-          </div>
-          <h3>LOX level percent is self-scaling</h3>
-        </div>
-        <dl class="facets">
-          <dt>Context</dt>
-          <dd>
-            <p>
-              This is not new and not caused by the UI work.
-              <code>dev_cap_fill.h</code> is byte-for-byte the same as last
-              year's (<code>avionics-software-2025-2026</code>, last changed
-              2026-04-29 before cold flow). The probe and board work; only the
-              conversion to a percent is approximate.
-            </p>
-          </dd>
-          <dt>What happens</dt>
-          <dd>
-            <p>
-              The board turns probe capacitance (pF) into a percent using a
-              fixed "empty" value and the
-              <em>highest reading seen since boot</em> as "full". That's a
-              deliberate shortcut: it needs no full-tank number, and it reads
-              correctly once the tank has been filled since boot.
-            </p>
-            <pre>
-// dev_cap_fill.h, CapacitanceToHeightPercent()
-const float kMinCapacitance = 259.074219;  // empty, pF
-if (probe_cap_pf &gt; max_capacitance_pf) max_capacitance_pf = probe_cap_pf;
-height_percent = (probe_cap_pf - kMinCapacitance) / (max - kMinCapacitance) * 100;</pre
-            >
-            <p>
-              The catch: while the tank is <em>filling</em>, each new reading is
-              the new maximum, so the percent sits near 100% the whole way up.
-              With an empty tank right after boot it reads noise. After a fill
-              (holding, or draining) it is accurate.
-            </p>
-          </dd>
-          <dt>Already fixed (UI)</dt>
-          <dd>
-            <p>
-              The old UI had the two field labels swapped: the chart called "Cap
-              Fill Height (%)" was plotting raw pF, and "Capacitance" was
-              plotting the percent. That's why the numbers may never have looked
-              right. The new UI reads <code>cap_fill_base</code> as the level
-              and clamps it to 0–100 on the P&amp;ID. Confirmed against the Pi
-              script.
-            </p>
-          </dd>
-          <dt>What's needed</dt>
-          <dd>
-            <p>
-              Nothing for Wednesday. No special LOX fill is needed to calibrate:
-              if the tank gets filled during normal operations anyway, just note
-              the capacitance empty and full.
-            </p>
-          </dd>
-          <dt>Actions</dt>
-          <dd>
-            <ul class="actions">
-              <li class="rec">
-                <div>
-                  <b>Watch the capacitance, not the percent, during a fill.</b>
-                  "Cap Fill Capacitance" (pF) on the Data display rises directly
-                  with level and needs no calibration.
-                </div>
-              </li>
-              <li>
-                <div>
-                  <b>Whenever a fill happens anyway:</b> jot down the pF reading
-                  empty and full. With those two numbers, firmware can use a
-                  fixed scale and clamp to 0–100.
-                </div>
-              </li>
-            </ul>
-          </dd>
-        </dl>
-      </article>
-
-      <article class="issue">
-        <div class="issue-head">
-          <div class="chips">
             <span class="chip ok">Answered</span
             ><span class="chip">Data source</span
             ><span class="chip">Owner: Aruzhan (load cells)</span
@@ -1051,29 +967,65 @@ python write_records.py http://localhost:3000 0 LoadCell2</pre
     </div>
 
     <div class="group" style="margin-top: 12px">
-      <h3>Needs a firmware change (not blocking Wednesday)</h3>
+      <h3>Firmware behavior, confirmed intended</h3>
     </div>
     <div class="issues">
       <article class="issue">
         <div class="issue-head">
           <div class="chips">
-            <span class="chip warn">Data accuracy</span
-            ><span class="chip">Firmware, same as last year</span
-            ><span class="chip">Owner: Aruzhan</span
-            ><span class="chip ok">UI side done</span>
+            <span class="chip ok">Intended</span
+            ><span class="chip">Confirmed by electronics lead, 2026-11-18</span
+            ><span class="chip">Firmware, unchanged since last year</span>
           </div>
-          <h3>Pilot pressure isn't read</h3>
+          <h3>LOX level percent scales to the highest reading</h3>
         </div>
         <dl class="facets">
-          <dt>From office hours</dt>
+          <dt>What happens</dt>
           <dd>
             <p>
-              The <b>QD pressure sensor no longer exists</b>, so QD has been
-              removed from the UI completely. The
-              <b>pilot pressure transducer is still installed</b>; getting it
-              read again is hardware/firmware work for Aruzhan.
+              The board turns probe capacitance (pF) into a percent using a
+              fixed "empty" value and the
+              <em>highest reading seen since boot</em> as "full". The
+              electronics lead confirmed this is intended.
+            </p>
+            <pre>
+// dev_cap_fill.h, CapacitanceToHeightPercent()
+const float kMinCapacitance = 259.074219;  // empty, pF
+if (probe_cap_pf &gt; max_capacitance_pf) max_capacitance_pf = probe_cap_pf;
+height_percent = (probe_cap_pf - kMinCapacitance) / (max - kMinCapacitance) * 100;</pre
+            >
+            <p>
+              What to expect on screen: while the tank is filling, each new
+              reading is the new maximum, so the percent sits at 100%. Cap Fill
+              Capacitance (pF) on the Data display shows the raw probe reading
+              alongside it.
             </p>
           </dd>
+          <dt>Already fixed (UI)</dt>
+          <dd>
+            <p>
+              The old UI had the two field labels swapped: the chart called "Cap
+              Fill Height (%)" was plotting raw pF, and "Capacitance" was
+              plotting the percent. The new UI reads <code>cap_fill_base</code>
+              as the level and clamps it to 0–100 on the P&amp;ID. Confirmed
+              against the Pi script.
+            </p>
+          </dd>
+          <dt>What's needed</dt>
+          <dd><p>Nothing.</p></dd>
+        </dl>
+      </article>
+
+      <article class="issue">
+        <div class="issue-head">
+          <div class="chips">
+            <span class="chip ok">Intended</span
+            ><span class="chip">Confirmed by electronics lead, 2026-11-18</span
+            ><span class="chip">Firmware, same as last year</span>
+          </div>
+          <h3>Pilot pressure is not read</h3>
+        </div>
+        <dl class="facets">
           <dt>What happens</dt>
           <dd>
             <pre>
@@ -1082,30 +1034,25 @@ python write_records.py http://localhost:3000 0 LoadCell2</pre
 .pilot_pres = 0.0f,  // DISABLED - pilot_pres.GetLatestPsi(),</pre
             >
             <p>
-              A likely reason it was turned off: the commented-out pilot config
-              uses the <b>same ADC as COPV 1</b> (bus <code>i2c3</code>, address
-              <code>VIN</code>, channel 0). Two sensors can't share that one
-              input, so pilot probably needs its own ADC channel or address.
+              Firmware sends Pilot as a hard-coded 0, and the commented-out
+              pilot config points at the same ADC input as COPV 1 (bus
+              <code>i2c3</code>, address <code>VIN</code>, channel 0). The
+              electronics lead confirmed both are intended. The QD sensor no
+              longer exists, so QD was removed from the UI.
             </p>
           </dd>
-          <dt>Already done</dt>
+          <dt>In the UI</dt>
           <dd>
             <p>
               The UI drops the hard-coded 0 and shows "Sensor off" on the
-              P&amp;ID, its Pilot graph and the Data display. The header's pilot
-              over-pressure warning can't fire on it either.
+              P&amp;ID, its Pilot graph and the Data display, so a 0 never looks
+              like a reading. If firmware starts sending Pilot again, remove
+              <code>pilot_pres_psi</code> from <code>DISABLED_SIGNALS</code> in
+              <code>src/stores/telemetryStore.ts</code>.
             </p>
           </dd>
           <dt>What's needed</dt>
-          <dd>
-            <p>
-              Wire pilot to a free ADC input, update its config in firmware, and
-              re-enable the read. Then remove <code>pilot_pres_psi</code> from
-              <code>DISABLED_SIGNALS</code> in
-              <code>src/stores/telemetryStore.ts</code> and it shows up
-              everywhere again.
-            </p>
-          </dd>
+          <dd><p>Nothing.</p></dd>
         </dl>
       </article>
     </div>
@@ -1200,9 +1147,10 @@ python write_records.py http://localhost:3000 0 LoadCell2</pre
       <li>
         <div>
           <b>Watch every value move.</b> COPV, Oxtank, injector, thermocouples,
-          cap fill, relay currents. Pilot shows "Sensor off" (expected; there is
-          no QD anymore). Load cells show data if their service is running (see
-          open items); Altitude and Acceleration stay empty on a ground test.
+          cap fill, relay currents. Pilot shows "Sensor off" (expected: firmware
+          doesn't send Pilot, by design). Load cells show data if their service
+          is running (see open items); Altitude and Acceleration stay empty on a
+          ground test.
         </div>
         <div class="stop">
           Stop if the header shows a server error: some record doesn't match
