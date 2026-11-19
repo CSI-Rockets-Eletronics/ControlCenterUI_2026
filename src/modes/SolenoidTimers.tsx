@@ -65,7 +65,7 @@ const SolenoidRow = memo(function SolenoidRow({
 }: SolenoidRowProps) {
   if (!timer) {
     return (
-      <div className="flex items-center justify-between px-2 border rounded py-1.5 border-gray-border bg-gray-el-bg">
+      <div className="flex items-center justify-between px-2 ui-tile py-1.5">
         <div className="flex items-center flex-1 gap-2">
           <div className="w-2 h-2 rounded-full shrink-0 bg-gray-solid" />
           <span className="text-xs text-gray-text">{label}</span>
@@ -85,7 +85,7 @@ const SolenoidRow = memo(function SolenoidRow({
         })();
 
   return (
-    <div className="flex items-center justify-between px-2 border rounded py-1.5 border-gray-border bg-gray-el-bg">
+    <div className="flex items-center justify-between px-2 ui-tile py-1.5">
       <div className="flex items-center flex-1 gap-2">
         <div
           className={`w-2 h-2 rounded-full shrink-0 ${timer.isOpen ? "bg-green-solid" : "bg-yellow-solid"}`}
@@ -153,7 +153,7 @@ export const SolenoidTimers = memo(function SolenoidTimers() {
 
   if (!fsStateRecord?.data) {
     return (
-      <div className="p-4 border bg-gray-el-bg rounded-xl border-gray-border">
+      <div className="p-4 ui-section">
         <p className="text-sm text-gray-text-dim">
           Waiting for solenoid data...
         </p>
@@ -300,9 +300,9 @@ export const SolenoidTimers = memo(function SolenoidTimers() {
   ];
 
   return (
-    <div className="flex flex-col p-3 border bg-gray-el-bg rounded-xl border-gray-border gap-2">
+    <div className="flex flex-col p-4 ui-section gap-3">
       <div className="flex items-center justify-between mb-1">
-        <p className="text-sm font-bold text-gray-text">Solenoid Timers</p>
+        <p className="ui-section-title">Solenoid timers</p>
         <p className="font-mono text-xs text-gray-text-dim">{currentState}</p>
       </div>
       <div className="grid grid-cols-2 gap-1.5">

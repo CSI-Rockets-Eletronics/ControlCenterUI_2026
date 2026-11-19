@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
@@ -7,7 +8,6 @@ export type SignalType =
   | "copv_1_psi"
   | "copv_2_psi"
   | "pilot_pres_psi"
-  | "qd_pres_psi"
   | "injector_1_psi"
   | "injector_2_psi"
   | "upper_cc_psi"
@@ -28,18 +28,68 @@ export type SignalType =
   | "cap_fill_base"
   | "cap_fill_board_temp_c";
 
+/**
+ * Signal color that changes with the theme. Read at render time; charts
+ * redraw every ~200 ms, so a theme switch shows up almost immediately.
+ */
+export const themed = ({ light, dark }: { light: string; dark: string }) =>
+  typeof document !== "undefined" &&
+  document.documentElement.classList.contains("dark")
+    ? dark
+    : light;
+
+// #8338ec is too dim on the dark background
+/**
+ * Sensors the firmware doesn't read yet (dev_fs_lox_gn2_transducers.h:
+ * pilot_pres is commented out and sent as 0). Samples for these are dropped
+ * on arrival, so no stale/zero value ever looks like a reading, and the UI
+ * labels them "sensor off". Remove an entry once firmware sends real data.
+ * (QD pressure was removed from the UI entirely: the sensor is gone.)
+ */
+export const DISABLED_SIGNALS: ReadonlySet<SignalType> = new Set<SignalType>([
+  "pilot_pres_psi",
+]);
+
+export const COPV_PURPLE = { light: "#8338ec", dark: "#a970ff" };
+// dark: Ramp-style yellow nudged slightly green; too pale on white, so
+// light mode keeps the cyan
+export const OXTANK_COLOR = { light: "#00d4ff", dark: "#dcf25a" };
+
 export const SIGNAL_METADATA: Record<
   SignalType,
   { label: string; unit: string; color: string }
 > = {
-  copv_1_psi: { label: "COPV 1", unit: "PSI", color: "#8338ec" },
-  copv_2_psi: { label: "COPV 2", unit: "PSI", color: "#8338ec" },
+  copv_1_psi: {
+    label: "COPV 1",
+    unit: "PSI",
+    get color() {
+      return themed(COPV_PURPLE);
+    },
+  },
+  copv_2_psi: {
+    label: "COPV 2",
+    unit: "PSI",
+    get color() {
+      return themed(COPV_PURPLE);
+    },
+  },
 
-  oxtank_1_psi: { label: "Oxtank 1", unit: "PSI", color: "#00d4ff" },
-  oxtank_2_psi: { label: "Oxtank 2", unit: "PSI", color: "#00d4ff" },
+  oxtank_1_psi: {
+    label: "Oxtank 1",
+    unit: "PSI",
+    get color() {
+      return themed(OXTANK_COLOR);
+    },
+  },
+  oxtank_2_psi: {
+    label: "Oxtank 2",
+    unit: "PSI",
+    get color() {
+      return themed(OXTANK_COLOR);
+    },
+  },
 
   pilot_pres_psi: { label: "Pilot Pressure", unit: "PSI", color: "#7209b7" },
-  qd_pres_psi: { label: "QD Pressure", unit: "PSI", color: "#560bad" },
 
   injector_1_psi: { label: "Injector 1", unit: "PSI", color: "#fb5607" },
   injector_2_psi: { label: "Injector 2", unit: "PSI", color: "#ffbe0b" },
@@ -79,12 +129,14 @@ export const SIGNAL_METADATA: Record<
     color: "#ffbe0b",
   },
 
-  cap_fill_actual: {
+  // Firmware (dev_cap_fill.h): cap_fill_base = fill height in %,
+  // cap_fill_actual = probe capacitance in pF. The names are misleading.
+  cap_fill_base: {
     label: "Cap Fill Height",
     unit: "%",
     color: "#38bdf8",
   },
-  cap_fill_base: {
+  cap_fill_actual: {
     label: "Cap Fill Capacitance",
     unit: "pF",
     color: "#94a3b8",
@@ -100,16 +152,48 @@ class SignalBuffer {
   private buffer: Sample[] = [];
   private maxSize = 100_000;
 
+  // Running stats so cards don't rescan the whole buffer on every render.
+  // min/max cover everything seen this session; sum/count track the buffer.
+  min = Infinity;
+  max = -Infinity;
+  private sum = 0;
+
   append(sample: Sample) {
     this.buffer.push(sample);
+    this.sum += sample.value;
+    if (sample.value < this.min) this.min = sample.value;
+    if (sample.value > this.max) this.max = sample.value;
     if (this.buffer.length > this.maxSize) {
-      this.buffer.shift();
+      const dropped = this.buffer.shift();
+      if (dropped) this.sum -= dropped.value;
     }
   }
 
+  get count() {
+    return this.buffer.length;
+  }
+
+  get avg() {
+    return this.buffer.length ? this.sum / this.buffer.length : NaN;
+  }
+
+  /** First index with timestamp >= t (samples are appended in time order). */
+  private lowerBound(t: number) {
+    let lo = 0;
+    let hi = this.buffer.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >>> 1;
+      if (this.buffer[mid].timestamp < t) lo = mid + 1;
+      else hi = mid;
+    }
+    return lo;
+  }
+
   query(tstart: number, tend: number): Sample[] {
-    return this.buffer.filter(
-      (s) => s.timestamp >= tstart && s.timestamp <= tend,
+    // binary search instead of filtering up to 100k samples per call
+    return this.buffer.slice(
+      this.lowerBound(tstart),
+      this.lowerBound(tend + 1),
     );
   }
 
@@ -123,6 +207,9 @@ class SignalBuffer {
 
   clear() {
     this.buffer = [];
+    this.min = Infinity;
+    this.max = -Infinity;
+    this.sum = 0;
   }
 }
 
@@ -136,14 +223,24 @@ export interface PlotConfig {
 interface TelemetryState {
   buffers: Map<SignalType, SignalBuffer>;
   plots: PlotConfig[];
-  connected: boolean;
+  /** Date.now() of the last successful poll of the data server, or null. */
+  lastServerOkMs: number | null;
+  /** Date.now() of the last time a device sent a record we hadn't seen yet. */
+  lastFreshDataMs: number | null;
+  /**
+   * Bumped once per batch of appended samples (not per sample). Subscribe to
+   * this to re-render on new data.
+   */
+  version: number;
 
   appendSample: (signal: SignalType, sample: Sample) => void;
   addPlot: (signal: SignalType) => void;
   removePlot: (plotId: string) => void;
   updatePlotTimeRange: (plotId: string, timeRange: number) => void;
   togglePlotPause: (plotId: string) => void;
-  setConnected: (connected: boolean) => void;
+  noteServerOk: () => void;
+  noteServerError: () => void;
+  noteFreshData: () => void;
 
   getSamples: (signal: SignalType, tstart: number, tend: number) => Sample[];
   getLatestSample: (signal: SignalType) => Sample | null;
@@ -156,7 +253,6 @@ const initializeBuffers = () => {
     "copv_1_psi",
     "copv_2_psi",
     "pilot_pres_psi",
-    "qd_pres_psi",
     "injector_1_psi",
     "injector_2_psi",
     "upper_cc_psi",
@@ -186,20 +282,36 @@ const initializeBuffers = () => {
   return buffers;
 };
 
+let commitScheduled = false;
+
 export const useTelemetryStore = create<TelemetryState>()(
   subscribeWithSelector((set, get) => ({
     buffers: initializeBuffers(),
     plots: [],
-    connected: false,
+    lastServerOkMs: null,
+    lastFreshDataMs: null,
+    version: 0,
 
     appendSample: (signal, sample) => {
+      if (DISABLED_SIGNALS.has(signal)) return;
       const buffer = get().buffers.get(signal);
       if (!buffer) {
         console.warn(`Buffer not found for signal: ${signal}`);
         return;
       }
       buffer.append(sample);
-      set({ buffers: new Map(get().buffers) });
+      // Coalesce: every append in the same tick triggers a single update,
+      // instead of one store update (and app-wide re-render) per sample.
+      if (!commitScheduled) {
+        commitScheduled = true;
+        queueMicrotask(() => {
+          commitScheduled = false;
+          set((state) => ({
+            buffers: new Map(state.buffers),
+            version: state.version + 1,
+          }));
+        });
+      }
     },
 
     addPlot: (signal) => {
@@ -232,9 +344,9 @@ export const useTelemetryStore = create<TelemetryState>()(
       });
     },
 
-    setConnected: (connected) => {
-      set({ connected });
-    },
+    noteServerOk: () => set({ lastServerOkMs: Date.now() }),
+    noteServerError: () => set({ lastServerOkMs: null }),
+    noteFreshData: () => set({ lastFreshDataMs: Date.now() }),
 
     getSamples: (signal, tstart, tend) => {
       const buffer = get().buffers.get(signal);
@@ -247,3 +359,66 @@ export const useTelemetryStore = create<TelemetryState>()(
     },
   })),
 );
+
+/** How long without a good poll / new record before we call the link down. */
+export const LINK_TIMEOUT_MS = 3000;
+
+export type LinkStatus = "connected" | "noData" | "disconnected";
+
+export function getLinkStatus(
+  lastServerOkMs: number | null,
+  lastFreshDataMs: number | null,
+  now = Date.now(),
+): LinkStatus {
+  if (lastServerOkMs === null || now - lastServerOkMs > LINK_TIMEOUT_MS) {
+    return "disconnected";
+  }
+  if (lastFreshDataMs === null || now - lastFreshDataMs > LINK_TIMEOUT_MS) {
+    return "noData";
+  }
+  return "connected";
+}
+
+/**
+ * Re-render on new telemetry, but at most once per `intervalMs`. Charts use
+ * this so redraws don't track every data batch.
+ */
+export function useThrottledTelemetryVersion(intervalMs = 200) {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    let last = 0;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const unsub = useTelemetryStore.subscribe(
+      (s) => s.version,
+      () => {
+        const now = Date.now();
+        const wait = intervalMs - (now - last);
+        if (wait <= 0) {
+          last = now;
+          setTick((t) => t + 1);
+        } else if (!timer) {
+          timer = setTimeout(() => {
+            timer = null;
+            last = Date.now();
+            setTick((t) => t + 1);
+          }, wait);
+        }
+      },
+    );
+    return () => {
+      unsub();
+      if (timer) clearTimeout(timer);
+    };
+  }, [intervalMs]);
+  return tick;
+}
+
+/** Keep at most `max` points, evenly spaced, always including the last one. */
+export function decimate<T>(points: T[], max = 400): T[] {
+  if (points.length <= max) return points;
+  const step = points.length / max;
+  const out: T[] = [];
+  for (let i = 0; i < max - 1; i++) out.push(points[Math.floor(i * step)]);
+  out.push(points[points.length - 1]);
+  return out;
+}

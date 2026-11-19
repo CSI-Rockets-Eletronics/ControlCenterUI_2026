@@ -1,0 +1,1379 @@
+<title>Firing Station Readiness</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap"
+/>
+<style>
+  /* Layout: one reading column; signal chain as a horizontal strip that stacks on phones;
+   issues as plain sections with a status rail of chips, not boxed cards. */
+  :root {
+    --bg: #f6f7f8;
+    --surface: #ffffff;
+    --ink: #15191e;
+    --ink-dim: #5a636e;
+    --rule: #dde1e6;
+    --accent: #c2410c; /* test-stand orange, used sparingly */
+    --ok: #1f7a4d;
+    --ok-bg: #e3f3ea;
+    --warn: #9a5b00;
+    --warn-bg: #fdf0d5;
+    --crit: #b42318;
+    --crit-bg: #fde4e1;
+    --info: #2b5797;
+    --info-bg: #e4ecf8;
+    --code-bg: #eef0f3;
+    --display: "Space Grotesk", "IBM Plex Sans", system-ui, sans-serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #111315;
+      --surface: #181b1e;
+      --ink: #e8eaed;
+      --ink-dim: #9aa3ad;
+      --rule: #2a2f35;
+      --accent: #f08a4b;
+      --ok: #6fd3a0;
+      --ok-bg: #16301f;
+      --warn: #f2bb5c;
+      --warn-bg: #352712;
+      --crit: #ff8f85;
+      --crit-bg: #3a1714;
+      --info: #8db4f0;
+      --info-bg: #15243a;
+      --code-bg: #22262b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #111315;
+    --surface: #181b1e;
+    --ink: #e8eaed;
+    --ink-dim: #9aa3ad;
+    --rule: #2a2f35;
+    --accent: #f08a4b;
+    --ok: #6fd3a0;
+    --ok-bg: #16301f;
+    --warn: #f2bb5c;
+    --warn-bg: #352712;
+    --crit: #ff8f85;
+    --crit-bg: #3a1714;
+    --info: #8db4f0;
+    --info-bg: #15243a;
+    --code-bg: #22262b;
+    color-scheme: dark;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.6 var(--body);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 40px 64px;
+  }
+  .wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--display);
+    text-wrap: balance;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  h1 {
+    font-size: clamp(28px, 5vw, 40px);
+    line-height: 1.1;
+    font-weight: 600;
+  }
+  h2 {
+    font-size: 22px;
+    font-weight: 600;
+  }
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  p {
+    margin: 0;
+    max-width: 68ch;
+  }
+  code {
+    font: 13px/1.4 var(--mono);
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+    overflow-wrap: anywhere;
+  }
+  pre {
+    margin: 0;
+    font: 12.5px/1.55 var(--mono);
+    background: var(--code-bg);
+    padding: 12px 14px;
+    border-radius: 6px;
+    overflow-x: auto;
+  }
+  a {
+    color: var(--info);
+  }
+  .eyebrow {
+    font: 500 12px/1 var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .dim {
+    color: var(--ink-dim);
+  }
+
+  header {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    font: 13px var(--mono);
+    color: var(--ink-dim);
+  }
+  .lede {
+    font-size: 17px;
+    max-width: 64ch;
+  }
+
+  /* bottom line */
+  .bottom {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-radius: 0 6px 6px 0;
+  }
+  .bottom ul {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* signal chain */
+  .section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .chain {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    overflow-x: auto;
+  }
+  .node {
+    flex: 1 1 0;
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .node b {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .node span {
+    font-size: 12.5px;
+    color: var(--ink-dim);
+  }
+  .node code {
+    font-size: 11.5px;
+  }
+  .link {
+    flex: 0 0 104px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 6px;
+    text-align: center;
+  }
+  .link .line {
+    width: 100%;
+    height: 2px;
+    background: currentColor;
+    position: relative;
+  }
+  .link .line::after {
+    content: "";
+    position: absolute;
+    right: -1px;
+    top: -4px;
+    border: 5px solid transparent;
+    border-left-color: currentColor;
+    border-right: 0;
+  }
+  .link small {
+    font: 500 11px/1.3 var(--mono);
+  }
+  .link.ok {
+    color: var(--ok);
+  }
+  .link.warn {
+    color: var(--warn);
+  }
+  @media (max-width: 680px) {
+    .chain {
+      flex-direction: column;
+    }
+    .link {
+      flex: 0 0 auto;
+      flex-direction: row;
+      padding: 8px 0;
+      justify-content: flex-start;
+      gap: 10px;
+    }
+    .link .line {
+      width: 2px;
+      height: 22px;
+    }
+    .link .line::after {
+      right: -4px;
+      top: auto;
+      bottom: -1px;
+      border: 5px solid transparent;
+      border-top-color: currentColor;
+      border-bottom: 0;
+    }
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    font-size: 13px;
+    color: var(--ink-dim);
+  }
+
+  /* chips */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    font: 500 11.5px/1 var(--mono);
+    padding: 5px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    background: var(--code-bg);
+    color: var(--ink-dim);
+  }
+  .chip.crit {
+    background: var(--crit-bg);
+    color: var(--crit);
+  }
+  .chip.warn {
+    background: var(--warn-bg);
+    color: var(--warn);
+  }
+  .chip.info {
+    background: var(--info-bg);
+    color: var(--info);
+  }
+  .chip.ok {
+    background: var(--ok-bg);
+    color: var(--ok);
+  }
+
+  /* issues */
+  .group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .group > p {
+    color: var(--ink-dim);
+  }
+  .issues {
+    display: flex;
+    flex-direction: column;
+  }
+  .issue {
+    padding: 24px 0;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .issue-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .facets {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 10px 20px;
+  }
+  .facets > dt {
+    font: 500 12px/1.6 var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+    padding-top: 2px;
+  }
+  .facets > dd {
+    margin: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  @media (max-width: 600px) {
+    .facets {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+    .facets > dd {
+      margin-bottom: 10px;
+    }
+  }
+  .actions {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .actions li {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 6px;
+  }
+  .actions li::before {
+    content: "–";
+    color: var(--ink-dim);
+    text-align: center;
+  }
+  .actions li.rec::before {
+    content: "★";
+    color: var(--accent);
+  }
+  .actions li > div {
+    min-width: 0;
+  }
+
+  /* run order */
+  .steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: s;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .steps li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .steps li::before {
+    content: counter(s);
+    font: 600 15px/1.5 var(--display);
+    color: var(--accent);
+  }
+  .steps li > div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .steps .stop {
+    color: var(--crit);
+    font-weight: 500;
+  }
+
+  /* settled */
+  .settled {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 10px;
+  }
+  .settled li {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+  }
+  .settled li b {
+    font-weight: 600;
+  }
+  .settled code {
+    font-size: 11.5px;
+  }
+
+  .prs {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 560px;
+    font-size: 14px;
+  }
+  .prs th {
+    text-align: left;
+    font: 500 12px/1.4 var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+    padding: 6px 12px 6px 0;
+  }
+  .prs td {
+    padding: 8px 12px 8px 0;
+    border-top: 1px solid var(--rule);
+    vertical-align: middle;
+  }
+  .prs code {
+    font-size: 12px;
+  }
+  footer {
+    font-size: 13px;
+    color: var(--ink-dim);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-top: 1px solid var(--rule);
+    padding-top: 18px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">CSI Rockets · Control Center 2026</div>
+    <h1>Firing station readiness before Wednesday's hardware test</h1>
+    <p class="lede">
+      Does the new control UI actually talk to the firing station? Yes.
+      Everything behind the UI (firmware, Pi bridge script, data server) is last
+      year's code, unchanged, the same code the team ran for cold flow and
+      static fire. Only the UI is new, and it uses the same API and the same
+      field names as the old one. This page covers what the new UI changes, what
+      is still open, and what to do about each item.
+    </p>
+    <div class="meta">
+      <span>Updated 2026-11-13</span>
+      <span>UI branch <code>ui/sim-and-redesign</code> (draft PR #2)</span>
+      <span>Pi script <code>pi-serial-uploader@1369f5c</code></span>
+    </div>
+  </header>
+
+  <section class="bottom" aria-labelledby="bl">
+    <h2 id="bl" style="font-size: 17px">Bottom line</h2>
+    <ul>
+      <li>
+        <b>The backend is proven.</b> This year's firmware is byte-for-byte last
+        year's final code. The Pi script was last changed 2026-05-07. Neither
+        was touched by the UI work.
+      </li>
+      <li>
+        <b>The new UI matches it.</b> Command numbers, packet layouts and field
+        names line up across UI, Pi script and firmware, checked line by line.
+      </li>
+      <li>
+        <b>Wednesday is the first run of the new UI on that stack.</b> Low risk,
+        but do it in order with relays disconnected first (run order below).
+      </li>
+      <li>
+        <b>One longstanding behavior to know:</b> ABORT doesn't close valves
+        opened from Manual relay control. It was the same last year. The team
+        wants ABORT to close them; the fix is in draft PR #2 but not on the
+        board yet, so until it's flashed close manual valves by hand before
+        relying on ABORT.
+      </li>
+      <li>
+        <b>The old version is safe.</b> Nothing has been merged into
+        <code>main</code> in either repo; all changes are draft PRs.
+      </li>
+    </ul>
+  </section>
+
+  <section class="section" aria-labelledby="chain">
+    <div class="eyebrow">How it fits together</div>
+    <h2 id="chain">The signal chain</h2>
+    <p>
+      Telemetry flows left to right; commands flow right to left over the same
+      path. Only the first box is new this year.
+    </p>
+    <div class="chain" role="list">
+      <div class="node node-new" role="listitem">
+        <b>Control UI</b
+        ><span class="chip info" style="align-self: flex-start"
+          >New this year</span
+        ><code>src/lib/serverSchemas.ts</code>
+      </div>
+      <div class="link ok" aria-label="Typed API, compile-checked">
+        <small>same API<br />compile-checked</small>
+        <div class="line"></div>
+      </div>
+      <div class="node" role="listitem">
+        <b>Data server</b><span>On the Pi, via ngrok. Unchanged.</span
+        ><code>data-server-node@42ca501</code>
+      </div>
+      <div class="link ok" aria-label="Ran last year">
+        <small>ran last<br />year</small>
+        <div class="line"></div>
+      </div>
+      <div class="node" role="listitem">
+        <b>Pi bridge script</b
+        ><span>JSON ⇄ binary. Last change 2026-05-07.</span
+        ><code>main_fs_pi.py</code>
+      </div>
+      <div class="link ok" aria-label="Ran last year">
+        <small>ran last<br />year</small>
+        <div class="line"></div>
+      </div>
+      <div class="node" role="listitem">
+        <b>ESP32 firmware</b><span>Identical to 2025-26 final code.</span
+        ><code>packets.h</code>
+      </div>
+    </div>
+    <div class="legend">
+      <span
+        ><span style="color: var(--ok)">■</span> Data server → Pi → firmware ran
+        together in last year's cold flow and static fire (per commit history).
+        UI → server: same API and field names as the old UI, checked line by
+        line.</span
+      >
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="changed">
+    <div class="eyebrow">What's new</div>
+    <h2 id="changed">What the new UI does differently with the data</h2>
+    <p>
+      Almost all of the redesign is visual. These are the only changes in how
+      the UI reads data or sends commands, so they're what Wednesday actually
+      tests.
+    </p>
+    <ul class="settled">
+      <li>
+        <b>Cap-fill labels fixed</b
+        ><span class="dim"
+          >The old UI showed raw pF under "Height (%)" and the percent under
+          "Capacitance". Now each is labeled correctly.</span
+        >
+      </li>
+      <li>
+        <b>QD removed, Pilot "Sensor off"</b
+        ><span class="dim"
+          >The QD sensor is gone, so QD is no longer shown. Pilot is sent as a
+          hard-coded 0 (same as last year) and is labeled "Sensor off" instead
+          of showing it as a reading.</span
+        >
+      </li>
+      <li>
+        <b>Two dead commands removed</b
+        ><span class="dim"
+          ><code>DOME_PILOT_OPEN</code> and <code>EREG_SET_GAINS</code> had no
+          number in firmware or the Pi script; nothing could have sent them
+          anyway.</span
+        >
+      </li>
+      <li>
+        <b>Reconnects on its own</b
+        ><span class="dim"
+          >After a failed request the UI retries every second instead of waiting
+          for a dismiss.</span
+        >
+      </li>
+      <li>
+        <b>Stale data shows as stale</b
+        ><span class="dim"
+          >Charts only plot new records, so a dead link shows as a gap and the
+          header shows the connection state, instead of a flat "live"
+          line.</span
+        >
+      </li>
+      <li>
+        <b>FIRE always needs arming</b
+        ><span class="dim"
+          >The old Command center's unarmed FIRE button is gone.</span
+        >
+      </li>
+    </ul>
+  </section>
+
+  <section class="section" aria-labelledby="open">
+    <div class="eyebrow">Open items</div>
+    <h2 id="open">What's still open</h2>
+
+    <div class="group">
+      <h3>Handle on Wednesday</h3>
+      <p>Safety or first-run items that affect the test itself.</p>
+    </div>
+    <div class="issues">
+      <article class="issue">
+        <div class="issue-head">
+          <div class="chips">
+            <span class="chip crit">Safety</span
+            ><span class="chip ok">Fix agreed</span
+            ><span class="chip info">Draft PR, not flashed</span
+            ><span class="chip">Firmware, same as last year</span
+            ><span class="chip warn">Procedure until flashed</span>
+          </div>
+          <h3>ABORT does not close valves opened from Manual relay control</h3>
+        </div>
+        <dl class="facets">
+          <dt>What happens</dt>
+          <dd>
+            <p>
+              When the UI's Manual relay control sends
+              <code>STATE_CUSTOM</code>, the firmware remembers four valves as
+              "manual overrides": GN2 Drain, GN2 Fill, LOX Fill and LOX
+              Disconnect. It keeps them on in every state, ABORT and STANDBY
+              included.
+            </p>
+            <pre>
+// dev_fs_relays.h, end of UpdateRelayStates()
+relay_states.gn2_fill = relay_states.gn2_fill || manual_gn2_fill;
+relay_states.lox_fill = relay_states.lox_fill || manual_lox_fill;
+// ... same for gn2_drain, lox_disconnect
+
+// UpdateCustomRelayStates(): "persist when leaving CUSTOM state"
+manual_gn2_fill = command_packet.gn2_fill;</pre
+            >
+            <p>
+              So: open GN2 Fill manually, press ABORT, and GN2 Fill stays open.
+            </p>
+          </dd>
+          <dt>Decision</dt>
+          <dd>
+            <p>
+              <b
+                >ABORT should close every manual valve and leave only depress
+                open.</b
+              >
+              Confirmed by the team on 2026-11-13.
+            </p>
+          </dd>
+          <dt>Fix status</dt>
+          <dd>
+            <p>
+              Written in draft PR
+              <a
+                href="https://github.com/CSI-Rockets-Eletronics/avionics-software-2026-2027/pull/2"
+                >avionics-software-2026-2027#2</a
+              >
+              (branch <code>fix/abort-clears-manual-overrides</code>, commit
+              <code>1cee64b</code>): ABORT clears the four manual overrides.
+              Other states are unchanged.
+            </p>
+            <p>
+              <b>Not compiled or flashed yet.</b> Until a board runs it, the
+              firing station behaves the old way. The simulator already has the
+              fix (commit <code>d435bd9</code>), so it shows the new behavior.
+            </p>
+          </dd>
+          <dt>What's missing</dt>
+          <dd>
+            <p>
+              A build, a flash and one bench check: relays disconnected, open
+              GN2 Fill from Manual relay control, send ABORT, confirm only
+              depress is on.
+            </p>
+          </dd>
+          <dt>Actions</dt>
+          <dd>
+            <ul class="actions">
+              <li class="rec">
+                <div>
+                  <b>Flash PR #2 and bench-check it</b>, ideally before
+                  Wednesday.
+                </div>
+              </li>
+              <li class="rec">
+                <div>
+                  <b>Until it's flashed:</b> after any manual relay use, switch
+                  each manually opened valve back off in Manual relay control
+                  before relying on ABORT. Turning a valve off there clears its
+                  override, because the next <code>STATE_CUSTOM</code> rewrites
+                  all four flags.
+                </div>
+              </li>
+              <li>
+                <div>
+                  Optional, later: add the four override flags to the
+                  <code>FsState</code> packet so the UI can show "Manual
+                  override active". Needs a packet change in firmware, Pi script
+                  and UI together.
+                </div>
+              </li>
+            </ul>
+          </dd>
+        </dl>
+      </article>
+
+      <article class="issue">
+        <div class="issue-head">
+          <div class="chips">
+            <span class="chip warn">First run</span
+            ><span class="chip">New UI only</span
+            ><span class="chip">Owner: test crew</span
+            ><span class="chip warn">Wednesday</span>
+          </div>
+          <h3>First run of the new UI on the real stack</h3>
+        </div>
+        <dl class="facets">
+          <dt>What happens</dt>
+          <dd>
+            <p>
+              The stack behind the UI ran last year. The new UI talks to it with
+              the same API and field names, and the simulator speaks the same
+              format. What hasn't happened yet is the new UI connected to the
+              real Pi.
+            </p>
+          </dd>
+          <dt>Why it matters</dt>
+          <dd>
+            <p>
+              Reading code catches mismatched names and numbers. It does not
+              catch setup issues on the day: the Pi server not running, a wrong
+              URL or environment key, a stale build.
+            </p>
+          </dd>
+          <dt>What's missing</dt>
+          <dd>
+            <p>
+              One supervised run with relays disconnected, following the run
+              order below. If anything misbehaves, the old UI on
+              <code>main</code> is a tested fallback (see below).
+            </p>
+          </dd>
+          <dt>Good to know</dt>
+          <dd>
+            <p>
+              If any record from the Pi doesn't match what the UI expects, that
+              whole poll fails and the header shows a server error. It fails
+              loudly instead of showing wrong numbers.
+            </p>
+          </dd>
+        </dl>
+      </article>
+
+      <article class="issue">
+        <div class="issue-head">
+          <div class="chips">
+            <span class="chip info">Known limitation</span
+            ><span class="chip">Firmware, unchanged since last year</span
+            ><span class="chip">Owner: avionics</span
+            ><span class="chip">Not blocking</span>
+          </div>
+          <h3>LOX level percent is self-scaling</h3>
+        </div>
+        <dl class="facets">
+          <dt>Context</dt>
+          <dd>
+            <p>
+              This is not new and not caused by the UI work.
+              <code>dev_cap_fill.h</code> is byte-for-byte the same as last
+              year's (<code>avionics-software-2025-2026</code>, last changed
+              2026-04-29 before cold flow). The probe and board work; only the
+              conversion to a percent is approximate.
+            </p>
+          </dd>
+          <dt>What happens</dt>
+          <dd>
+            <p>
+              The board turns probe capacitance (pF) into a percent using a
+              fixed "empty" value and the
+              <em>highest reading seen since boot</em> as "full". That's a
+              deliberate shortcut: it needs no full-tank number, and it reads
+              correctly once the tank has been filled since boot.
+            </p>
+            <pre>
+// dev_cap_fill.h, CapacitanceToHeightPercent()
+const float kMinCapacitance = 259.074219;  // empty, pF
+if (probe_cap_pf &gt; max_capacitance_pf) max_capacitance_pf = probe_cap_pf;
+height_percent = (probe_cap_pf - kMinCapacitance) / (max - kMinCapacitance) * 100;</pre
+            >
+            <p>
+              The catch: while the tank is <em>filling</em>, each new reading is
+              the new maximum, so the percent sits near 100% the whole way up.
+              With an empty tank right after boot it reads noise. After a fill
+              (holding, or draining) it is accurate.
+            </p>
+          </dd>
+          <dt>Already fixed (UI)</dt>
+          <dd>
+            <p>
+              The old UI had the two field labels swapped: the chart called "Cap
+              Fill Height (%)" was plotting raw pF, and "Capacitance" was
+              plotting the percent. That's why the numbers may never have looked
+              right. The new UI reads <code>cap_fill_base</code> as the level
+              and clamps it to 0–100 on the P&amp;ID. Confirmed against the Pi
+              script.
+            </p>
+          </dd>
+          <dt>What's needed</dt>
+          <dd>
+            <p>
+              Nothing for Wednesday. No special LOX fill is needed to calibrate:
+              if the tank gets filled during normal operations anyway, just note
+              the capacitance empty and full.
+            </p>
+          </dd>
+          <dt>Actions</dt>
+          <dd>
+            <ul class="actions">
+              <li class="rec">
+                <div>
+                  <b>Watch the capacitance, not the percent, during a fill.</b>
+                  "Cap Fill Capacitance" (pF) on the Data display rises directly
+                  with level and needs no calibration.
+                </div>
+              </li>
+              <li>
+                <div>
+                  <b>Whenever a fill happens anyway:</b> jot down the pF reading
+                  empty and full. With those two numbers, firmware can use a
+                  fixed scale and clamp to 0–100.
+                </div>
+              </li>
+            </ul>
+          </dd>
+        </dl>
+      </article>
+
+      <article class="issue">
+        <div class="issue-head">
+          <div class="chips">
+            <span class="chip ok">Answered</span
+            ><span class="chip">Data source</span
+            ><span class="chip">Owner: Aruzhan (load cells)</span
+            ><span class="chip warn">Check Wednesday</span>
+          </div>
+          <h3>Where do load cell and radio data come from?</h3>
+        </div>
+        <dl class="facets">
+          <dt>Load cells</dt>
+          <dd>
+            <p>
+              From the <code>load-cells-futek</code> repo (private, readable
+              with team access). It runs on the same Pi as the firing station,
+              as its own service (<code>run.sh</code>), and uploads to the same
+              data server with the same settings the UI reads:
+            </p>
+            <pre>
+# load-cells-futek/run.sh
+python write_records.py http://localhost:3000 0 LoadCell1
+python write_records.py http://localhost:3000 0 LoadCell2</pre
+            >
+            <p>
+              Same server (<code>localhost:3000</code> on the Pi), same
+              environment key (<code>0</code>, same as the firing station
+              script), device names <code>LoadCell1</code> /
+              <code>LoadCell2</code>, and each record is a plain number in lbs,
+              which is exactly what the UI expects. Last change 2026-04-29
+              (Aruzhan).
+            </p>
+          </dd>
+          <dt>Radio</dt>
+          <dd>
+            <p>
+              <code>RadioGround</code> isn't produced by anything in these
+              repos. It's rocket radio telemetry (GPS altitude, acceleration),
+              so the Altitude and Acceleration cards will be empty on a ground
+              test. That's expected.
+            </p>
+          </dd>
+          <dt>Actions</dt>
+          <dd>
+            <ul class="actions">
+              <li class="rec">
+                <div>
+                  <b>Wednesday:</b> make sure the load cell service is running
+                  and both FUTEK USB units are plugged into the Pi. If the Load
+                  Cells chart stays empty, check that service first.
+                </div>
+              </li>
+              <li>
+                <div>
+                  Nothing needs to be made public. If the repo is opened up
+                  anyway, it's worth a quick look for anything that shouldn't be
+                  public first.
+                </div>
+              </li>
+            </ul>
+          </dd>
+        </dl>
+      </article>
+
+      <article class="issue">
+        <div class="issue-head">
+          <div class="chips">
+            <span class="chip">Optional tool</span
+            ><span class="chip">Not used by the UI</span
+            ><span class="chip">Owner: avionics</span
+            ><span class="chip">Bench, any time</span>
+          </div>
+          <h3>Bench-test <code>test_send_command.py</code></h3>
+        </div>
+        <dl class="facets">
+          <dt>What it is</dt>
+          <dd>
+            <p>
+              A small script in the avionics repo for testing the board without
+              the Pi, server or UI: plug a laptop's USB serial into the ESP32
+              and send one command, e.g.
+              <code>python test_send_command.py COM8 STATE_STANDBY</code>.
+            </p>
+          </dd>
+          <dt>What was wrong</dt>
+          <dd>
+            <p>
+              Its command table was from an older firmware, so it sent the wrong
+              command. The baud rate was wrong too, which probably kept it from
+              connecting at all.
+            </p>
+            <div style="overflow-x: auto">
+              <table
+                style="
+                  border-collapse: collapse;
+                  font-size: 13.5px;
+                  min-width: 360px;
+                "
+              >
+                <thead>
+                  <tr style="text-align: left; color: var(--ink-dim)">
+                    <th style="padding: 4px 14px 4px 0; font-weight: 500">
+                      You typed
+                    </th>
+                    <th style="padding: 4px 14px 4px 0; font-weight: 500">
+                      Old script sent
+                    </th>
+                    <th style="padding: 4px 0; font-weight: 500">
+                      Firmware runs
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-top: 1px solid var(--rule)">
+                    <td style="padding: 4px 14px 4px 0">
+                      <code>STATE_FIRE</code>
+                    </td>
+                    <td style="padding: 4px 14px 4px 0">10</td>
+                    <td style="padding: 4px 0">
+                      <b style="color: var(--crit)">GN2 Fill</b>
+                    </td>
+                  </tr>
+                  <tr style="border-top: 1px solid var(--rule)">
+                    <td style="padding: 4px 14px 4px 0">
+                      <code>STATE_ABORT</code>
+                    </td>
+                    <td style="padding: 4px 14px 4px 0">2</td>
+                    <td style="padding: 4px 0">Standby</td>
+                  </tr>
+                  <tr style="border-top: 1px solid var(--rule)">
+                    <td style="padding: 4px 14px 4px 0">
+                      <code>RESTART</code>
+                    </td>
+                    <td style="padding: 4px 14px 4px 0">0</td>
+                    <td style="padding: 4px 0">Custom (all off)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </dd>
+          <dt>Fix status</dt>
+          <dd>
+            <p>
+              Fixed on <code>fix/test-command-numbers</code> (draft avionics PR
+              #1), checked against <code>packets.h</code>, never run against a
+              board.
+            </p>
+          </dd>
+          <dt>Actions</dt>
+          <dd>
+            <ul class="actions">
+              <li class="rec">
+                <div>
+                  Nothing needed for Wednesday. If anyone uses this script, use
+                  the PR #1 version, not the one on <code>main</code>.
+                </div>
+              </li>
+              <li>
+                <div>
+                  When convenient: <code>pip install pyserial</code>, send each
+                  command once to a board with relays disconnected, confirm each
+                  state in the serial log, note results on PR #1.
+                </div>
+              </li>
+            </ul>
+          </dd>
+        </dl>
+      </article>
+    </div>
+
+    <div class="group" style="margin-top: 12px">
+      <h3>Needs a firmware change (not blocking Wednesday)</h3>
+    </div>
+    <div class="issues">
+      <article class="issue">
+        <div class="issue-head">
+          <div class="chips">
+            <span class="chip warn">Data accuracy</span
+            ><span class="chip">Firmware, same as last year</span
+            ><span class="chip">Owner: Aruzhan</span
+            ><span class="chip ok">UI side done</span>
+          </div>
+          <h3>Pilot pressure isn't read</h3>
+        </div>
+        <dl class="facets">
+          <dt>From office hours</dt>
+          <dd>
+            <p>
+              The <b>QD pressure sensor no longer exists</b>, so QD has been
+              removed from the UI completely. The
+              <b>pilot pressure transducer is still installed</b>; getting it
+              read again is hardware/firmware work for Aruzhan.
+            </p>
+          </dd>
+          <dt>What happens</dt>
+          <dd>
+            <pre>
+// dev_fs_lox_gn2_transducers.h
+//pilot_pres.Tick();  // DISABLED
+.pilot_pres = 0.0f,  // DISABLED - pilot_pres.GetLatestPsi(),</pre
+            >
+            <p>
+              A likely reason it was turned off: the commented-out pilot config
+              uses the <b>same ADC as COPV 1</b> (bus <code>i2c3</code>, address
+              <code>VIN</code>, channel 0). Two sensors can't share that one
+              input, so pilot probably needs its own ADC channel or address.
+            </p>
+          </dd>
+          <dt>Already done</dt>
+          <dd>
+            <p>
+              The UI drops the hard-coded 0 and shows "Sensor off" on the
+              P&amp;ID, its Pilot graph and the Data display. The header's pilot
+              over-pressure warning can't fire on it either.
+            </p>
+          </dd>
+          <dt>What's needed</dt>
+          <dd>
+            <p>
+              Wire pilot to a free ADC input, update its config in firmware, and
+              re-enable the read. Then remove <code>pilot_pres_psi</code> from
+              <code>DISABLED_SIGNALS</code> in
+              <code>src/stores/telemetryStore.ts</code> and it shows up
+              everywhere again.
+            </p>
+          </dd>
+        </dl>
+      </article>
+    </div>
+
+    <div class="group" style="margin-top: 12px">
+      <h3>After Wednesday (UI only, held on purpose)</h3>
+      <p>
+        Each of these is easy, but changing them right before a live test adds
+        risk for no gain.
+      </p>
+    </div>
+    <div class="issues">
+      <article class="issue">
+        <div class="issue-head">
+          <div class="chips">
+            <span class="chip">Safety</span><span class="chip">UI</span>
+          </div>
+          <h3>Local development connects to real hardware by default</h3>
+        </div>
+        <dl class="facets">
+          <dt>What happens</dt>
+          <dd>
+            <p>
+              With no <code>?server=</code> in the URL, the UI connects to the
+              live Pi (<code>csi-fs-pi-data-server.ngrok.io</code>). The
+              SIMULATION / LIVE HARDWARE badge makes it visible, but it should
+              be an explicit choice.
+            </p>
+          </dd>
+          <dt>Why wait</dt>
+          <dd>
+            <p>
+              If anyone runs <code>bun dev</code> on Wednesday to reach the Pi,
+              a new default would quietly point them at the simulator instead.
+            </p>
+          </dd>
+          <dt>Action</dt>
+          <dd>
+            <ul class="actions">
+              <li class="rec">
+                <div>
+                  Default to the simulator only in development builds
+                  (<code>import.meta.env.DEV</code>); production on the Pi stays
+                  as is.
+                </div>
+              </li>
+            </ul>
+          </dd>
+        </dl>
+      </article>
+
+      <article class="issue">
+        <div class="issue-head">
+          <div class="chips">
+            <span class="chip">Polish</span><span class="chip">UI</span>
+          </div>
+          <h3>E-Reg stage descriptions</h3>
+        </div>
+        <dl class="facets">
+          <dt>What happens</dt>
+          <dd>
+            <p>
+              Old view's Electronics regulator panel describes Stage 1 as "Slow
+              fill to 450 PSI" and Stage 2 as "PID-controlled, launch", but in
+              firmware both stages target 450 psi. Confirm the intended behavior
+              with avionics, then fix the text (or the firmware).
+            </p>
+          </dd>
+        </dl>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="run">
+    <div class="eyebrow">Wednesday</div>
+    <h2 id="run">Run order for the first live session</h2>
+    <p>Each step only starts once the previous one checks out.</p>
+    <ol class="steps">
+      <li>
+        <div>
+          <b>Relays disconnected.</b> Valves unplugged, or LEDs on the relay
+          outputs. Igniter disconnected.
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>Open the UI against the Pi.</b> No <code>?server=</code>, or the
+          production build on the Pi. Header shows CONNECTED and LIVE HARDWARE;
+          FS uptime counts up.
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>Watch every value move.</b> COPV, Oxtank, injector, thermocouples,
+          cap fill, relay currents. Pilot shows "Sensor off" (expected; there is
+          no QD anymore). Load cells show data if their service is running (see
+          open items); Altitude and Acceleration stay empty on a ground test.
+        </div>
+        <div class="stop">
+          Stop if the header shows a server error: some record doesn't match
+          what the UI expects.
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>Send each state command once</b> from Firing control and confirm
+          the station state and relay dots change, and match the ESP32 serial
+          log.
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>Test Manual relay control,</b> then switch everything back off by
+          hand before pressing ABORT. Confirm only depress is on. (If PR #2 has
+          been flashed, also try ABORT with a manual valve still open: it should
+          close.)
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>Note the cap-fill capacitance</b> with the tank empty. Optional;
+          useful later for a fixed scale.
+        </div>
+      </li>
+      <li>
+        <div><b>Only then reconnect valves.</b></div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="section" aria-labelledby="branches">
+    <div class="eyebrow">Where things live</div>
+    <h2 id="branches">Branches, pull requests and the old version</h2>
+    <p>
+      Every change is in a draft pull request. <code>main</code> in both repos
+      is still last year's code, so the old UI and firmware stay available as a
+      fallback.
+    </p>
+    <div style="overflow-x: auto">
+      <table class="prs">
+        <thead>
+          <tr>
+            <th>Repo</th>
+            <th>Branch</th>
+            <th>What</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ControlCenterUI_2026</td>
+            <td><code>main</code></td>
+            <td>Old UI (fallback), Aruzhan's <code>b8367b1</code></td>
+            <td><span class="chip ok">Restored</span></td>
+          </tr>
+          <tr>
+            <td>ControlCenterUI_2026</td>
+            <td><code>backup/main-before-rollback</code></td>
+            <td>Saved copy of <code>main</code> before the restore</td>
+            <td><span class="chip">Backup</span></td>
+          </tr>
+          <tr>
+            <td>ControlCenterUI_2026</td>
+            <td><code>ui/sim-and-redesign</code></td>
+            <td>New UI and simulator</td>
+            <td><span class="chip info">Draft PR #2</span></td>
+          </tr>
+          <tr>
+            <td>avionics-software-2026-2027</td>
+            <td><code>main</code></td>
+            <td>Firmware, 2025-26 final</td>
+            <td><span class="chip ok">Untouched</span></td>
+          </tr>
+          <tr>
+            <td>avionics-software-2026-2027</td>
+            <td><code>fix/test-command-numbers</code></td>
+            <td>Bench script fix</td>
+            <td><span class="chip info">Draft PR #1</span></td>
+          </tr>
+          <tr>
+            <td>avionics-software-2026-2027</td>
+            <td><code>fix/abort-clears-manual-overrides</code></td>
+            <td>ABORT fix (agreed)</td>
+            <td><span class="chip info">Draft PR #2</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="dim">
+      Neither <code>main</code> has branch protection, so anyone with write
+      access could still push to it. To lock in the old version, tag it (for
+      example <code>v2025-26-final</code>) or turn on branch protection.
+    </p>
+  </section>
+
+  <section class="section" aria-labelledby="settled">
+    <div class="eyebrow">Done</div>
+    <h2 id="settled">Settled since the last review</h2>
+    <ul class="settled">
+      <li>
+        <b>Firmware unchanged</b
+        ><span class="dim"
+          ><code>main/</code> is identical to
+          <code>avionics-software-2025-2026</code>'s final code.</span
+        >
+      </li>
+      <li>
+        <b>Command numbers match</b
+        ><span class="dim"
+          >Pi <code>FsCommands</code> = firmware
+          <code>enum class FsCommand</code>, every value.</span
+        >
+      </li>
+      <li>
+        <b>Packet layouts match</b
+        ><span class="dim"
+          >All six telemetry packets (14, 51, 20, 25, 17, 26 bytes) field for
+          field.</span
+        >
+      </li>
+      <li>
+        <b>Field names match the UI</b
+        ><span class="dim"
+          >Every JSON key the Pi uploads is one the UI reads.</span
+        >
+      </li>
+      <li>
+        <b>Fallback works</b
+        ><span class="dim"
+          >Old UI on <code>main</code> (<code>b8367b1</code>): fresh install,
+          production build passes, connects and shows live data against the
+          simulator. Checked 2026-11-13.</span
+        >
+      </li>
+      <li>
+        <b>New UI builds for the Pi</b
+        ><span class="dim"
+          ><code>ui/sim-and-redesign</code>: clean install,
+          <code>bun run build</code> passes, the built version connects with no
+          console errors.</span
+        >
+      </li>
+      <li>
+        <b>Old UI files deleted</b
+        ><span class="dim"
+          >31 unreachable files (old <code>src/components/</code> layout,
+          several with FIRE buttons) removed in <code>e7a6e01</code>. Old view
+          still works; build and bundle unchanged.</span
+        >
+      </li>
+      <li>
+        <b>Simulator survives sleep</b
+        ><span class="dim">It no longer freezes after the laptop sleeps.</span>
+      </li>
+    </ul>
+  </section>
+
+  <footer>
+    <span
+      >Full log with every option: <code>docs/FOLLOW-UPS.md</code> on
+      <code>ui/sim-and-redesign</code>.</span
+    >
+    <span
+      >Sources read: <code>ControlCenterUI_2026</code> (new and old UI),
+      <code>avionics-software-2026-2027</code> and
+      <code>avionics-software-2025-2026</code> (<code>main/</code>, diffed),
+      <code>pi-serial-uploader</code> (<code>main_fs_pi.py</code>,
+      <code>uploader.py</code>, history).</span
+    >
+  </footer>
+</div>

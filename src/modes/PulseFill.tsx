@@ -10,26 +10,17 @@ import { type FsCommand } from "@/lib/serverSchemas";
 const PULSE_COMMANDS = [
   {
     label: "1/4s",
-    command: "STATE_GN2_PULSE_FILL_A" as Exclude<
-      FsCommand,
-      "STATE_CUSTOM" | "EREG_SET_GAINS"
-    >,
+    command: "STATE_GN2_PULSE_FILL_A" as Exclude<FsCommand, "STATE_CUSTOM">,
     state: "GN2_PULSE_FILL_A",
   },
   {
     label: "1s",
-    command: "STATE_GN2_PULSE_FILL_B" as Exclude<
-      FsCommand,
-      "STATE_CUSTOM" | "EREG_SET_GAINS"
-    >,
+    command: "STATE_GN2_PULSE_FILL_B" as Exclude<FsCommand, "STATE_CUSTOM">,
     state: "GN2_PULSE_FILL_B",
   },
   {
     label: "5s",
-    command: "STATE_GN2_PULSE_FILL_C" as Exclude<
-      FsCommand,
-      "STATE_CUSTOM" | "EREG_SET_GAINS"
-    >,
+    command: "STATE_GN2_PULSE_FILL_C" as Exclude<FsCommand, "STATE_CUSTOM">,
     state: "GN2_PULSE_FILL_C",
   },
 ] as const;
@@ -38,12 +29,10 @@ const PULSE_COMMANDS = [
 
 interface PulseButtonProps {
   label: string;
-  command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">;
+  command: Exclude<FsCommand, "STATE_CUSTOM">;
   isActive: boolean;
   isPending: boolean;
-  onClick: (
-    command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">,
-  ) => void;
+  onClick: (command: Exclude<FsCommand, "STATE_CUSTOM">) => void;
 }
 
 const PulseButton = memo(function PulseButton({
@@ -62,12 +51,12 @@ const PulseButton = memo(function PulseButton({
       onClick={handleClick}
       disabled={isPending}
       className={[
-        "flex-1 px-3 py-2 rounded-lg border-2 transition-all text-xs font-bold",
+        "min-w-[72px] px-5 py-2 rounded-lg border-2 transition-all text-base font-semibold whitespace-nowrap",
         isActive
-          ? "bg-green-bg border-green-solid text-green-text"
+          ? "ui-active"
           : isPending
             ? "bg-blue-bg border-blue-solid text-blue-text animate-pulse"
-            : "bg-gray-bg-2 border-gray-border text-gray-text hover:bg-gray-el-bg-hover",
+            : "bg-gray-bg-2 border-transparent text-gray-text hover:bg-gray-el-bg-hover",
         isPending ? "cursor-not-allowed" : "cursor-pointer",
       ].join(" ")}
     >
@@ -80,7 +69,7 @@ export const PulseFill = memo(function PulseFill() {
   const launchActorRef = useLaunchMachineActorRef();
   const [pending, setPending] = useState<Exclude<
     FsCommand,
-    "STATE_CUSTOM" | "EREG_SET_GAINS"
+    "STATE_CUSTOM"
   > | null>(null);
 
   const fsState = useLaunchMachineSelector(
@@ -88,7 +77,7 @@ export const PulseFill = memo(function PulseFill() {
   );
 
   const handleClick = useCallback(
-    (command: Exclude<FsCommand, "STATE_CUSTOM" | "EREG_SET_GAINS">) => {
+    (command: Exclude<FsCommand, "STATE_CUSTOM">) => {
       const snapshot = launchActorRef.getSnapshot();
       if (!snapshot) return;
 
@@ -106,11 +95,12 @@ export const PulseFill = memo(function PulseFill() {
     [launchActorRef, pending],
   );
 
+  // Compact inline row so it can sit in the Live telemetry header.
   return (
-    <div className="p-2">
-      <div className="mb-2 text-xs font-semibold text-gray-text">
-        Pulse Fill
-      </div>
+    <div className="flex items-center gap-3">
+      <span className="font-medium text-[15px] tracking-[-0.02em] whitespace-nowrap text-gray-text">
+        Pulse fill
+      </span>
       <div className="flex gap-2">
         {PULSE_COMMANDS.map((pulse) => (
           <PulseButton

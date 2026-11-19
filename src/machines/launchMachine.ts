@@ -30,9 +30,11 @@ import {
   relayCurrentMonitorRecordSchema,
 } from "@/lib/serverSchemas";
 import { fsStateToCommand } from "@/lib/serverSchemaUtils";
+import { useTelemetryStore } from "@/stores/telemetryStore";
 
 const LAUNCH_STATE_FETCH_INTERVAL = 1000;
 const STATION_STATE_FETCH_INTERVAL = 0;
+const NETWORK_ERROR_RETRY_MS = 1000;
 
 export type DeviceRecord<T> = {
   ts: number;
@@ -246,6 +248,9 @@ export function createLaunchMachine(
         networkError: {
           entry: "logNetworkError",
           on: { DISMISS_NETWORK_ERROR: "live" },
+          // Nothing in the current UI sends DISMISS_NETWORK_ERROR, so without
+          // this the UI would stop polling for good after one failed request.
+          after: { [NETWORK_ERROR_RETRY_MS]: "live" },
         },
       },
     },
@@ -273,6 +278,7 @@ export function createLaunchMachine(
           return { deviceStates: event.data };
         }),
         logNetworkError: (_, event) => {
+          useTelemetryStore.getState().noteServerError();
           console.error("Launch machine network error", event);
         },
         addSentMessages: assign((context, event) => {
@@ -317,26 +323,33 @@ export function createLaunchMachine(
 
           const endTs = replayFromSeconds != null ? String(elapsedMicros + replayFromSeconds * 1e6) : undefined;
 
-          const records = await catchError(
-            api.records.multiDevice.get({
-              $query: {
-                environmentKey,
-                sessionName,
-                devices: [
-                  DEVICES.fsState,
-                  DEVICES.fsLoxGn2Transducers,
-                  DEVICES.fsInjectorTransducers,
-                  DEVICES.fsThermocouples,
-                  DEVICES.loadCell1,
-                  DEVICES.loadCell2,
-                  DEVICES.radioGround,
-                  DEVICES.relayCurrentMonitor,
-                  DEVICES.capFill,
-                ].join(","),
-                endTs,
-              },
-            }),
-          );
+          let records;
+          try {
+            records = await catchError(
+              api.records.multiDevice.get({
+                $query: {
+                  environmentKey,
+                  sessionName,
+                  devices: [
+                    DEVICES.fsState,
+                    DEVICES.fsLoxGn2Transducers,
+                    DEVICES.fsInjectorTransducers,
+                    DEVICES.fsThermocouples,
+                    DEVICES.loadCell1,
+                    DEVICES.loadCell2,
+                    DEVICES.radioGround,
+                    DEVICES.relayCurrentMonitor,
+                    DEVICES.capFill,
+                  ].join(","),
+                  endTs,
+                },
+              }),
+            );
+            useTelemetryStore.getState().noteServerOk();
+          } catch (e) {
+            useTelemetryStore.getState().noteServerError();
+            throw e;
+          }
 
           const fsStateRaw = records[DEVICES.fsState];
           const fsLoxGn2TransducersRaw = records[DEVICES.fsLoxGn2Transducers];
