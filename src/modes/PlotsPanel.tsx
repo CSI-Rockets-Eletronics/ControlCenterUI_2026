@@ -1,4 +1,12 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import {
   type PlotConfig,
@@ -405,7 +413,12 @@ const PlotSearch = memo(function PlotSearch({
   );
 });
 
-export const PlotsPanel = memo(function PlotsPanel() {
+export const PlotsPanel = memo(function PlotsPanel({
+  headerRight,
+}: {
+  /** Shown at the right end of the title row (e.g. a view switcher). */
+  headerRight?: ReactNode;
+} = {}) {
   const plots = useTelemetryStore((state) => state.plots);
   const addPlot = useTelemetryStore((state) => state.addPlot);
   const removePlot = useTelemetryStore((state) => state.removePlot);
@@ -455,7 +468,10 @@ export const PlotsPanel = memo(function PlotsPanel() {
   return (
     <div className="flex flex-col h-full p-4 ui-section">
       <div className="mb-4">
-        <h2 className="mb-3 ui-section-title">Telemetry plots</h2>
+        <div className="flex items-center justify-between mb-3 gap-3">
+          <h2 className="ui-section-title">Telemetry plots</h2>
+          {headerRight}
+        </div>
 
         {/* Exactly two rows; pills stretch to fill each row. */}
         <div className="flex flex-col mb-3 gap-2">

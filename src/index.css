@@ -60,6 +60,7 @@ html {
   --yellow-solid: 250 176 5;
   --yellow-solid-hover: 245 159 0;
   --yellow-text: 230 119 0;
+  --lox-tank-text: 255 255 255; /* text over LOX fill: white */
   color-scheme: light;
 }
 
@@ -101,6 +102,7 @@ html.dark {
   --yellow-solid: 245 159 0;
   --yellow-solid-hover: 240 140 0;
   --yellow-text: 255 212 59;
+  --lox-tank-text: 0 0 0; /* text over LOX fill: black */
   color-scheme: dark;
 }
 

@@ -102,7 +102,10 @@ const CardsView = memo(function CardsView() {
   return (
     <div className="h-full p-4">
       <div className="flex flex-col h-full p-4 ui-section">
-        <h2 className="mb-3 ui-section-title">Signals</h2>
+        <div className="flex items-center justify-between mb-3 gap-3">
+          <h2 className="ui-section-title">Signals</h2>
+          <ViewSwitcher />
+        </div>
         <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="min-h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 auto-rows-[minmax(min-content,1fr)] gap-2">
             {SIGNALS.map((signal) => (
@@ -118,7 +121,7 @@ const CardsView = memo(function CardsView() {
 const GraphsView = memo(function GraphsView() {
   return (
     <div className="h-full p-4">
-      <PlotsPanel />
+      <PlotsPanel headerRight={<ViewSwitcher />} />
     </div>
   );
 });
@@ -327,8 +330,14 @@ const FocusView = memo(function FocusView() {
           )}
         </div>
       </div>
-      <div className="min-h-0 p-4 ui-section">
-        <FocusMain key={signal} signal={signal} />
+      <div className="flex flex-col min-h-0 p-4 ui-section">
+        <div className="flex items-center justify-between mb-3 gap-3">
+          <h2 className="ui-section-title">{SIGNAL_METADATA[signal].label}</h2>
+          <ViewSwitcher />
+        </div>
+        <div className="flex-1 min-h-0">
+          <FocusMain key={signal} signal={signal} />
+        </div>
       </div>
     </div>
   );
@@ -360,6 +369,29 @@ const ViewTab = memo(function ViewTab({
   );
 });
 
+/** Cards / Graphs / Focus toggle; sits in each view's title row. */
+const ViewSwitcher = memo(function ViewSwitcher() {
+  const view = useViewPrefsStore((s) => s.dataView);
+  const setView = useViewPrefsStore((s) => s.setDataView);
+  return (
+    <div
+      role="tablist"
+      aria-label="Data display layout"
+      className="flex p-1 bg-white rounded-lg shrink-0 dark:bg-gray-el-bg gap-1"
+    >
+      {VIEWS.map((v) => (
+        <ViewTab
+          key={v.key}
+          view={v.key}
+          label={v.label}
+          selected={view === v.key}
+          onSelect={setView}
+        />
+      ))}
+    </div>
+  );
+});
+
 export const DataDisplayMode = memo(function DataDisplayMode() {
   const view = useViewPrefsStore((s) => s.dataView);
   const setView = useViewPrefsStore((s) => s.setDataView);
@@ -387,24 +419,6 @@ export const DataDisplayMode = memo(function DataDisplayMode() {
 
   return (
     <div className="flex flex-col h-full bg-gray-bg-1">
-      <div className="flex items-center justify-between px-4 pt-4">
-        <h1 className="ui-section-title">Data display</h1>
-        <div
-          role="tablist"
-          aria-label="Data display layout"
-          className="flex p-1 rounded-lg bg-gray-el-bg gap-1"
-        >
-          {VIEWS.map((v) => (
-            <ViewTab
-              key={v.key}
-              view={v.key}
-              label={v.label}
-              selected={view === v.key}
-              onSelect={setView}
-            />
-          ))}
-        </div>
-      </div>
       <div className="flex-1 min-h-0">
         {view === "graphs" ? (
           <GraphsView />

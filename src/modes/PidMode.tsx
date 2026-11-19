@@ -123,6 +123,7 @@ function Tank({
   title,
   lines,
   trend = null,
+  textOnFill,
 }: {
   id: string;
   x: number;
@@ -135,6 +136,8 @@ function Tank({
   title: string[];
   lines: string[];
   trend?: Trend;
+  /** Force the label color over the filled part (default: picked for contrast). */
+  textOnFill?: string;
 }) {
   // corner radius: rounded rectangle, not a full capsule
   const r = Math.min(w * 0.3, 36);
@@ -145,7 +148,8 @@ function Tank({
   // text (dark); colors come from --tank-fill / --tank-text
   const themed = color === THEME_FILL;
   const fillCss = themed ? "rgb(var(--tank-fill))" : color;
-  const onFill = themed ? "rgb(var(--tank-text))" : textColorOn(color);
+  const onFill =
+    textOnFill ?? (themed ? "rgb(var(--tank-text))" : textColorOn(color));
 
   /** Title + readouts. `color` undefined = normal theme text colors. */
   const labels = (onColor: string | undefined) => (
@@ -823,6 +827,7 @@ const PidDiagram = memo(function PidDiagram({ colored }: { colored: boolean }) {
           fill={loxLevel === null ? null : loxLevel / 100}
           color={c("cap_fill_base") ?? THEME_FILL}
           trend={loxTrend}
+          textOnFill="rgb(var(--lox-tank-text))"
           title={["Liquid oxygen", "tank"]}
           lines={[
             `${fmt(loxLevel)}% full`,
@@ -1039,7 +1044,7 @@ export const PidMode = memo(function PidMode() {
             <div
               role="tablist"
               aria-label="P&ID layout"
-              className="flex p-1 rounded-lg bg-gray-el-bg gap-1"
+              className="flex p-1 bg-white rounded-lg dark:bg-gray-el-bg gap-1"
             >
               {PID_VIEWS.map((v) => (
                 <ViewTab
