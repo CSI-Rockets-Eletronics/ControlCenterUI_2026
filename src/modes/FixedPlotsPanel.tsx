@@ -126,6 +126,14 @@ const X_AXIS_LABEL = {
 } as const;
 const Y_AXIS_TICK_STYLE = { fontSize: 10 } as const;
 
+// Short tick labels. Recharts picks "nice" ticks only when the domain is
+// clean; noisy data otherwise gives labels like -0.5417073 that overflow the
+// axis and get clipped. Values under 10 keep one decimal so small ranges
+// (e.g. load cells at rest) don't show duplicate labels.
+const formatTimeTick = (v: number) => `${Math.round(v)}`;
+const formatValueTick = (v: number) =>
+  `${Number(v.toFixed(Math.abs(v) >= 10 ? 0 : 1))}`;
+
 const TOOLTIP_CONTENT_STYLE = {
   backgroundColor: "rgb(var(--gray-bg-1))",
   border: "none",
@@ -223,12 +231,14 @@ const PressurePlot = memo(function PressurePlot({
                     dataKey="time"
                     stroke="#666"
                     tick={X_AXIS_TICK_STYLE}
+                    tickFormatter={formatTimeTick}
                     tickCount={3}
                     label={X_AXIS_LABEL}
                   />
                   <YAxis
                     stroke="#666"
                     tick={Y_AXIS_TICK_STYLE}
+                    tickFormatter={formatValueTick}
                     tickCount={5}
                     width={45}
                   />
@@ -388,12 +398,14 @@ const MultiSignalPlot = memo(function MultiSignalPlot({
                   dataKey="time"
                   stroke="#666"
                   tick={X_AXIS_TICK_STYLE}
+                  tickFormatter={formatTimeTick}
                   tickCount={3}
                   label={X_AXIS_LABEL}
                 />
                 <YAxis
                   stroke="#666"
                   tick={Y_AXIS_TICK_STYLE}
+                  tickFormatter={formatValueTick}
                   tickCount={5}
                   width={45}
                 />
@@ -506,15 +518,20 @@ const FillLevelPlot = memo(function FillLevelPlot() {
                   dataKey="time"
                   stroke="#666"
                   tick={X_AXIS_TICK_STYLE}
+                  tickFormatter={formatTimeTick}
                   tickCount={4}
                   label={X_AXIS_LABEL}
                 />
                 <YAxis
                   stroke="#666"
                   tick={Y_AXIS_TICK_STYLE}
+                  tickFormatter={formatValueTick}
                   tickCount={5}
                   width={40}
                   domain={FILL_LEVEL_DOMAIN}
+                  // Noise near empty reads slightly below 0%; keep the axis
+                  // at 0-100 instead of stretching to fit it.
+                  allowDataOverflow
                 />
                 <Tooltip
                   contentStyle={TOOLTIP_CONTENT_STYLE}
@@ -604,12 +621,14 @@ const CapBasePlot = memo(function CapBasePlot() {
                   dataKey="time"
                   stroke="#666"
                   tick={X_AXIS_TICK_STYLE}
+                  tickFormatter={formatTimeTick}
                   tickCount={4}
                   label={X_AXIS_LABEL}
                 />
                 <YAxis
                   stroke="#666"
                   tick={Y_AXIS_TICK_STYLE}
+                  tickFormatter={formatValueTick}
                   tickCount={5}
                   width={50}
                 />
