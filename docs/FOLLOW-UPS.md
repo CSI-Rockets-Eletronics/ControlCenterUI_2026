@@ -4,7 +4,7 @@ Open items found while building the simulator and the UI redesign
 (branch `ui/sim-and-redesign`). None of these are fixed yet. Items marked
 **firmware** live in `avionics-software-2026-2027`.
 
-Last updated: 2026-11-09. Each item now has an **Options** list:
+Last updated: 2026-11-18. Each item now has an **Options** list:
 brainstormed fixes, not decisions. A ★ marks the suggested starting point.
 
 ## Safety
@@ -78,80 +78,38 @@ Firing control, behind arming.
 
 ## Data accuracy
 
-### 3. Pilot pressure is not a real reading (firmware); QD removed
+### 3. Pilot pressure not read (intended); QD removed
 
-**Update (2026-11-13, from office hours):** the QD pressure sensor no longer
-exists, so QD was removed from the UI entirely (P&ID gauge and row, graph,
-Data display card). Firmware and the Pi still send `qd_pres` as 0; the UI
-ignores it. Pilot pressure is still installed: re-enabling it in firmware is
-Aruzhan's (hardware/firmware). Note the old pilot ADC config uses the same
-bus/address/channel as COPV 1 (`i2c3`, `VIN`, `SingleEnded_0`), which may be
-why it was disabled. When it's live, remove `pilot_pres_psi` from
-`DISABLED_SIGNALS`.
+**Resolved (2026-11-18): intended.** The electronics lead confirmed that
+firmware not reading Pilot, and the pilot ADC config pointing at the same
+input as COPV 1 (`i2c3`, `VIN`, `SingleEnded_0`), are both intentional. No
+firmware change planned.
 
-Original notes:
+**UI:** `DISABLED_SIGNALS` in `src/stores/telemetryStore.ts` drops
+`pilot_pres_psi` samples (firmware sends a hard-coded 0), so the P&ID gauge
+and Readings row, the P&ID Pilot graph and the Data display card show
+"Sensor off" instead of a fake 0. The header's pilot over-pressure warning
+can't fire from it. If firmware ever sends Pilot again, remove the entry.
 
-**UI side done (2026-11-13):** `DISABLED_SIGNALS` in
-`src/stores/telemetryStore.ts` drops `pilot_pres_psi` / `qd_pres_psi`
-samples on arrival (hardware and simulator alike). The P&ID gauges and
-Readings rows, the P&ID Pilot and QD graph, and the Data display cards show
-"Sensor off". The header's pilot over-pressure warning can't fire from these
-fake values. Remove the entries once firmware reads the sensors. The firmware
-fix below is still open.
+**QD (2026-11-13, office hours):** the QD pressure sensor no longer exists,
+so QD was removed from the UI entirely. Firmware and the Pi still send
+`qd_pres` as 0; the UI ignores it.
 
-In `main/devices/dev_fs_lox_gn2_transducers.h` the `pilot_pres` reading is
-commented out ("DISABLED") and `qd_pres` is hard-coded to `0.0f`. On
-hardware the UI's Pilot and QD values are stale or 0. The simulator invents
-values for them, so they look live in simulation.
-
-- Either re-enable them in firmware (confirm which physical PTs they are), or
-  label them "sensor disabled" in the UI.
-
-**Options**
-
-- ★ **UI: mark them disabled now.** Add a `DISABLED_SIGNALS` set
-  (`pilot_pres`, `qd_pres`) in one place. Readings/P&ID show "—" with a
-  "sensor disabled" tooltip, and plots/cards skip them. Remove an entry once
-  firmware sends real data.
-- **Firmware: re-enable.** Confirm wiring and ADC channels with avionics,
-  uncomment the `pilot_pres` read, and replace the `qd_pres = 0.0f`
-  placeholder with the real channel.
-- **Firmware sends NaN / a validity bit.** Disabled sensors send `NaN` (or a
-  `valid` mask), and the UI greys out anything not valid. More general;
-  needs a schema change.
-- **Simulator honesty.** Have the sim send 0 / NaN for these too, so
-  simulation matches hardware.
-
-### 4. LOX level: field mix-up fixed; firmware calibration still open
+### 4. LOX level: field mix-up fixed; fill % scaling is intended
 
 **Fixed (UI + sim):** firmware `dev_cap_fill.h` sends `cap_fill_base` =
 fill height (%) and `cap_fill_actual` = probe capacitance (pF). The UI had
 them swapped, so on hardware the LOX level would have shown the raw pF value
 (~259+ at empty) as a percent. The UI now reads `cap_fill_base` as the
 level, the P&ID clamps it to 0–100, and the simulator sends the same shape
-as firmware. (The 140% came from the old simulator's values.)
+as firmware. (The 140% came from the old simulator's values.) The old UI
+also had the two field labels swapped.
 
-**Context (checked 2026-11-13):** `dev_cap_fill.h` is identical to last
-year's (`avionics-software-2025-2026`), so this is a known limitation, not a
-regression, and not blocking. The old UI also had the two field labels
-swapped, which is probably why the numbers never looked right. No special LOX
-fill is needed: watch the capacitance (pF) during a fill, and note pF empty
-and full whenever a fill happens anyway.
-
-**Still open (firmware, low priority):** `CapacitanceToHeightPercent` scales against the
-highest capacitance seen since boot, not a fixed "full" value. So right
-after boot any reading at or above empty shows ~100%, a partly filled tank
-reads 100% until it's topped up, and readings below empty go negative.
-
-**Options**
-
-- ★ **Fixed two-point calibration.** Measure the probe empty and full once,
-  hard-code `kMinCapacitance` / `kMaxCapacitance`, and clamp 0–100 in
-  firmware.
-- **Calibrate from the UI.** "Recalibrate all" captures the current reading
-  as empty (or full) and stores it on the board.
-- **Show pF until calibrated.** Have the P&ID show capacitance instead of a
-  percent until real calibration numbers exist.
+**Resolved (2026-11-18): intended.** `CapacitanceToHeightPercent` scales
+against the highest capacitance seen since boot rather than a fixed "full"
+value. The electronics lead confirmed this is intentional. Expect the
+percent to sit at 100% while the tank is filling; Cap Fill Capacitance (pF)
+shows the raw reading. No firmware change planned.
 
 ### 5. Pi script checked against firmware and UI (2026-11-13)
 
