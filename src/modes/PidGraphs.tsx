@@ -13,10 +13,13 @@ import {
   decimate,
   DISABLED_SIGNALS,
   OXTANK_COLOR,
+  SIGNAL_NOTES,
   themed,
   useTelemetryStore,
   useThrottledTelemetryVersion,
 } from "@/stores/telemetryStore";
+
+import { SignalNoteTag } from "./SignalNoteTag";
 
 /**
  * Left half of the P&ID "Graphs" view: stacked line graphs, one color per
@@ -131,9 +134,20 @@ const PidGraph = memo(function PidGraph({ config }: { config: GraphConfig }) {
   return (
     <div className="flex flex-col min-h-0 p-3 ui-card">
       <div className="flex flex-wrap items-baseline justify-between mb-1 gap-x-3">
-        <h3 className="font-medium text-[15px] tracking-[-0.01em] text-gray-text">
-          {config.title}
-        </h3>
+        <div
+          className="flex items-center gap-2"
+          title={config.signals
+            .map(({ key }) => SIGNAL_NOTES[key])
+            .filter(Boolean)
+            .join("\n")}
+        >
+          <h3 className="font-medium text-[15px] tracking-[-0.01em] text-gray-text">
+            {config.title}
+          </h3>
+          {config.signals.map(({ key }) => (
+            <SignalNoteTag key={key} signal={key} />
+          ))}
+        </div>
         <div className="flex flex-wrap items-baseline gap-x-4 whitespace-nowrap">
           {config.signals.map(({ key, label }) => (
             <span key={key} className="inline-flex items-baseline gap-1.5">
