@@ -426,6 +426,13 @@ export function createLaunchMachine(
           const fsState = context.deviceStates.fsState;
           const command = event.value;
 
+          // ABORT is always allowed: no arming, any station state, even before
+          // the first state arrives or when already in ABORT (re-sending it is
+          // harmless).
+          if (command.command === "STATE_ABORT") {
+            return true;
+          }
+
           if (!fsState) {
             return false;
           }

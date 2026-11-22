@@ -93,7 +93,6 @@ export const RelayControlPanel = memo(function RelayControlPanel() {
   );
 
   const isEnginePrime = fsState === "ENGINE_PRIME";
-  const isFire = fsState === "FIRE";
 
   const handleToggle = useCallback(
     (relayKey: RelayKey) => {
@@ -163,6 +162,14 @@ export const RelayControlPanel = memo(function RelayControlPanel() {
     state.can({
       type: "SEND_FS_COMMAND",
       value: { command: "STATE_FIRE" },
+    }),
+  );
+
+  // ABORT never needs arming and is allowed in every station state.
+  const canAbort = useLaunchMachineSelector((state) =>
+    state.can({
+      type: "SEND_FS_COMMAND",
+      value: { command: "STATE_ABORT" },
     }),
   );
 
@@ -370,11 +377,11 @@ export const RelayControlPanel = memo(function RelayControlPanel() {
 
             <button
               onClick={() => handleFsCommand("STATE_ABORT")}
-              disabled={!canSendFsCommand && !isEnginePrime && !isFire}
+              disabled={!canAbort}
               className={[
                 "rounded-card border-2 transition-all flex flex-col items-center justify-center p-2",
                 "bg-gray-bg-2 border-transparent text-gray-text",
-                !canSendFsCommand && !isEnginePrime && !isFire
+                !canAbort
                   ? "cursor-not-allowed opacity-50"
                   : "cursor-pointer hover:bg-gray-el-bg-hover",
               ].join(" ")}
